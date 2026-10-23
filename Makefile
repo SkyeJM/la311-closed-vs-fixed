@@ -46,5 +46,8 @@ ingest: ## Full pull of every dataset via the bulk export (slow: ~17M rows)
 refresh: ## Incremental refresh of the current-year dataset (rows modified since the watermark)
 	$(PY) -m ingest refresh
 
+profile: ## Regenerate docs/PROFILE.md from the raw pulls
+	$(PY) -m ingest profile
+
 build findings eval serve deploy:
 	@echo "'make $@' arrives in a later phase (brief section 8)." && exit 1

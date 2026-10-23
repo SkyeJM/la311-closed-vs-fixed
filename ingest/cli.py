@@ -10,6 +10,7 @@ import typer
 
 from ingest import discover as discovery
 from ingest.config import RAW_DIR, ROOT, SAMPLES_DIR, Dataset, load_registry
+from ingest.profile import Profiler
 from ingest.pull import pull_full, refresh_incremental
 from ingest.sample import pull_sample
 from ingest.schema import diff_pins, load_pin, pin_from_metadata, save_pin
@@ -172,3 +173,10 @@ def refresh(
                 f"{dataset.id}: {delta['rows']:,} rows modified since {delta['since']} "
                 f"(watermark {delta['watermark']}) -> {delta['file']}"
             )
+
+
+@app.command()
+def profile() -> None:
+    """Write docs/PROFILE.md and docs/profile/*.csv from the raw pulls (aggregates only)."""
+    path = Profiler(RAW_DIR).run()
+    typer.echo(f"wrote {path.relative_to(ROOT)}")
