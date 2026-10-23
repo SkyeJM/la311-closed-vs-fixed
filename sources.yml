@@ -1,0 +1,50 @@
+# Pinned registry of MyLA311 open datasets on data.lacity.org (all CC0).
+#
+# era = system of record, never inferred from dates:
+#   legacy  = MyLA311 (Aug 2015 - 2025), status only
+#   current = new MyLA311 "Cases" (from 2025-03-28), with resolution codes
+#
+# Every dataset is a saved filter on a private parent table (legacy parent 69nn-wkid, current
+# parent qdp3-rdjj; both return 403). Each filter's exact SoQL is pinned in ingest/schemas/.
+# `make discover` flags catalog entries that are in neither `datasets` nor `ignored`.
+
+domain: data.lacity.org
+
+datasets:
+  - {id: ms7h-a45h, era: legacy, year: 2015, name: MyLA311 Service Request Data 2015}
+  - {id: ndkd-k878, era: legacy, year: 2016, name: MyLA311 Service Request Data 2016}
+  - {id: eq98-9f8w, era: legacy, year: 2017, name: MyLA311 Service Request Data 2017}
+  - {id: h65r-yf5i, era: legacy, year: 2018, name: MyLA311 Service Request Data 2018}
+  - {id: pvft-t768, era: legacy, year: 2019, name: MyLA311 Service Request Data 2019}
+  - {id: rq3b-xjk8, era: legacy, year: 2020, name: MyLA311 Service Request Data 2020}
+  - {id: 97z7-y5bt, era: legacy, year: 2021, name: MyLA311 Service Request Data 2021}
+  - {id: i5ke-k6by, era: legacy, year: 2022, name: MyLA311 Service Request Data 2022}
+  - {id: 4a4x-mna2, era: legacy, year: 2023, name: MyLA311 Service Request Data 2023}
+  - {id: b7dx-7gc3, era: legacy, year: 2024, name: MyLA311 Service Request Data 2024}
+  - {id: h73f-gn57, era: legacy, year: 2025, name: MyLA311 Service Request Data 2025}
+  - {id: 73a2-6ar5, era: current, year: 2025, name: MyLA311 Cases March 2025 to December 2025}
+  - {id: 2cy6-i7zn, era: current, year: 2026, name: MyLA311 Cases 2026, refresh: incremental}
+
+# Catalog hits that are deliberately not sources. Each needs a reason.
+ignored:
+  - id: d7h2-83jy
+    name: MyLA311 Streetlight Service Request Data
+    reason: >-
+      Legacy streetlight subset that also exposes resolutioncode/reasoncode/dateservicerendered.
+      Publicly reachable, but its description says "This copy is private and for internal City use
+      only", so it is excluded (decided 2026-10-23; see docs/DECISIONS.md).
+  - id: iwu4-fgpx
+    name: MyLA311 Bureau of Street Lighting (BSL) Service Request Map
+    reason: Map visualization built on d7h2-83jy.
+  - id: bpyg-ytsg
+    name: 311 Call Center Service Request Data - Archived 2013-2014
+    reason: Pre-MyLA311 call-center archive; a different system, out of scope.
+  - id: bihg-rw73
+    name: LA_311_bulky
+    reason: Community-created filter of the 2016 dataset.
+  - id: 2fse-gjp4
+    name: Homeless Encampment 311 Service Request 2018
+    reason: Community-created filter of the 2018 dataset.
+  - id: tsrc-szkh
+    name: ITA- Monthly Downloads My LA 311 App
+    reason: App download statistics (2014), not request-level data.

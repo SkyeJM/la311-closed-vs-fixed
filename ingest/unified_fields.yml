@@ -1,0 +1,51 @@
+# Unified schema (brief section 3.2): unified column -> Socrata API field name in each era.
+# null = that era has no such field. tests/test_unified_fields.py checks every entry against the
+# pinned schemas in ingest/schemas/, and checks that every source field is mapped or dropped.
+
+fields:
+  request_id: {legacy: srnumber, current: casenumber}  # different formats; prefix with era downstream
+  created_at: {legacy: createddate, current: createddate}
+  updated_at: {legacy: updateddate, current: systemmodstamp}
+  closed_at: {legacy: closeddate, current: closeddate}  # "Not all request types use this field."
+  service_date: {legacy: servicedate, current: service_date__c}  # scheduled date, not proof of service
+  service_rendered_at: {legacy: null, current: date_service_was_rendered}  # text type in source
+  status: {legacy: status, current: status}  # different vocabularies
+  request_type: {legacy: requesttype, current: type}  # different vocabularies; crosswalk seed
+  department: {legacy: owner, current: department_name__c}
+  assigned_to: {legacy: assignto, current: assigned_to__c}
+  channel: {legacy: requestsource, current: origin}
+  created_by_org:
+    legacy: createdbyuserorganization
+    current: created_by_user_organization
+    missing_in: [ms7h-a45h, ndkd-k878, eq98-9f8w, h65r-yf5i, 97z7-y5bt]  # 2015-2018 and 2021 views
+  call_action: {legacy: actiontaken, current: action_taken__c}  # call-center action, not a resolution
+  resolution_code: {legacy: null, current: resolution_code__c}
+  reason_code: {legacy: null, current: reason_code__c}
+  is_anonymous: {legacy: anonymous, current: reported_anonymously__c}  # "Y"/"N" vs boolean
+  address: {legacy: address, current: locator_gis_returned_address}  # never leaves the warehouse
+  lat: {legacy: latitude, current: geolocation__latitude__s}
+  lon: {legacy: longitude, current: geolocation__longitude__s}
+  zip: {legacy: zipcode, current: zipcode__c}  # text vs number in source
+  cd: {legacy: cd, current: locator_council_district}
+  cd_member: {legacy: cdmember, current: locator_sr_council_district}  # holds the member's name
+  nc_code: {legacy: nc, current: locator_sr_neigborhood_council}  # sic: "neigborhood"
+  nc_name: {legacy: ncname, current: locator_sr_neigborhood_council_1}
+  apc: {legacy: apc, current: locator_sr_area_planning}
+  police_area: {legacy: policeprecinct, current: locator_sr_community_police}  # name vs number
+  address_verified: {legacy: addressverified, current: null}
+  approximate_address: {legacy: approximateaddress, current: null}  # pin dropped on a map
+  mobile_os: {legacy: mobileos, current: null}
+
+# Source fields deliberately left out: address parts (privacy; `address` covers it), the
+# `location` point (duplicates lat/lon), and the Thomas Bros. map grid (an obsolete paper index).
+dropped:
+  legacy: [housenumber, direction, streetname, suffix, location, tbmpage, tbmcolumn, tbmrow]
+  current:
+    - locator_sr_house_number_
+    - locator_direction_suffix
+    - locator_sr_street_name__c
+    - locator_service_request_suffix
+    - location
+    - locator_sr_tb_map_grid_page
+    - locator_sr_tb_column__c
+    - locator_sr_tb_row__c
