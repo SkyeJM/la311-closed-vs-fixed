@@ -1,0 +1,3 @@
+out/
+.venv/
+serving_synthetic.duckdb

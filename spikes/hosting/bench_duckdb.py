@@ -108,10 +108,15 @@ def run_query(path: str, sql: str) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--rows", type=int, default=18_000_000)
+    parser.add_argument("--build-only", metavar="PATH", help="Only build the timestamps variant.")
     parser.add_argument("--child", nargs=2, help=argparse.SUPPRESS)
     args = parser.parse_args()
     if args.child:
         print(json.dumps(run_query(*args.child)))
+        return
+    if args.build_only:  # used by the Vercel build step (pyproject.toml)
+        build(Path(args.build_only), "timestamps", args.rows)
+        print(f"built {args.build_only}: {Path(args.build_only).stat().st_size / 1e6:,.0f} MB")
         return
     out_dir = HERE / "out"
     out_dir.mkdir(exist_ok=True)
