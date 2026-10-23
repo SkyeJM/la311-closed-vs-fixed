@@ -1,14 +1,16 @@
-"""`python -m ingest`: discover, pin, check, and sample MyLA311 datasets on data.lacity.org."""
+"""`python -m ingest`: discover, pin, check, sample, pull and refresh MyLA311 datasets."""
 
 from __future__ import annotations
 
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from typing import Annotated
 
 import typer
 
 from ingest import discover as discovery
-from ingest.config import ROOT, SAMPLES_DIR, Dataset, load_registry
+from ingest.config import RAW_DIR, ROOT, SAMPLES_DIR, Dataset, load_registry
+from ingest.pull import pull_full, refresh_incremental
 from ingest.sample import pull_sample
 from ingest.schema import diff_pins, load_pin, pin_from_metadata, save_pin
 from ingest.socrata import SocrataClient
@@ -113,4 +115,60 @@ def sample(
             typer.echo(
                 f"{dataset.id}: {manifest['rows']:,} rows over {len(manifest['rows_by_month'])} "
                 f"months -> {(SAMPLES_DIR / manifest['file']).relative_to(ROOT)}"
+            )
+
+
+@app.command()
+def pull(
+    source: Sources = None,
+    all_: AllSources = False,
+    workers: Annotated[int, typer.Option(help="Datasets downloaded at once.")] = 3,
+    keep_csv: Annotated[bool, typer.Option(help="Keep the downloaded export CSV.")] = False,
+) -> None:
+    """Full pull via the bulk export to data/raw/{id}/full.parquet (fails on schema drift)."""
+    datasets = _selected(source, all_)
+    with SocrataClient(load_registry().domain) as client:
+        live_pins = {}
+        for dataset in datasets:  # check every dataset before downloading anything
+            live_pins[dataset.id] = pin_from_metadata(client.view_metadata(dataset.id))
+            _fail_on_drift(dataset, live_pins[dataset.id])
+
+        def run(dataset: Dataset) -> dict:
+            return pull_full(client, dataset, live_pins[dataset.id], RAW_DIR, keep_csv)
+
+        with ThreadPoolExecutor(workers) as pool:
+            for m in pool.map(run, datasets):
+                diff = m["live_count_after_pull"] - m["rows"]
+                check = "matches live count" if diff == 0 else f"live count differs by {diff:+,}"
+                typer.secho(
+                    f"{m['dataset_id']}: {m['rows']:,} rows ({check}), "
+                    f"{m['csv_bytes'] / 1e6:,.0f} MB CSV in {m['seconds']:,.0f} s",
+                    fg=None if diff == 0 else "yellow",
+                )
+
+
+@app.command()
+def refresh(
+    source: Sources = None,
+    overlap_days: Annotated[
+        int, typer.Option(help="Re-read this many days before the watermark.")
+    ] = 3,
+) -> None:
+    """Incremental refresh of `refresh: incremental` datasets via the row API (systemmodstamp)."""
+    registry = load_registry()
+    datasets = (
+        [registry.get(s) for s in source]
+        if source
+        else [d for d in registry.datasets if d.refresh == "incremental"]
+    )
+    with SocrataClient(registry.domain) as client:
+        for dataset in datasets:
+            live_pin = pin_from_metadata(client.view_metadata(dataset.id))
+            _fail_on_drift(dataset, live_pin)
+            delta = refresh_incremental(client, dataset, live_pin, RAW_DIR, overlap_days)["deltas"][
+                -1
+            ]
+            typer.echo(
+                f"{dataset.id}: {delta['rows']:,} rows modified since {delta['since']} "
+                f"(watermark {delta['watermark']}) -> {delta['file']}"
             )

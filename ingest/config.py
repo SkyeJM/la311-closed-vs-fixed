@@ -15,6 +15,7 @@ SCHEMAS_DIR = ROOT / "ingest" / "schemas"
 UNIFIED_FIELDS_FILE = ROOT / "ingest" / "unified_fields.yml"
 DATA_DIR = ROOT / "data"
 SAMPLES_DIR = DATA_DIR / "samples"
+RAW_DIR = DATA_DIR / "raw"
 
 load_dotenv(ROOT / ".env")
 

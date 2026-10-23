@@ -7,6 +7,7 @@ jitter. Client errors such as 403 (private views) fail immediately.
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 import httpx
 from tenacity import (
@@ -29,6 +30,17 @@ def is_retryable(exc: BaseException) -> bool:
     if isinstance(exc, httpx.HTTPStatusError):
         return exc.response.status_code in RETRYABLE_STATUS
     return isinstance(exc, httpx.TransportError)
+
+
+def retrying():
+    """Fresh retry decorator: exponential backoff with jitter, six attempts, then re-raise."""
+    return retry(
+        retry=retry_if_exception(is_retryable),
+        wait=wait_exponential_jitter(multiplier=2, max=60),
+        stop=stop_after_attempt(6),
+        before_sleep=before_sleep_log(log, logging.WARNING),
+        reraise=True,
+    )
 
 
 class SocrataClient:
@@ -56,17 +68,26 @@ class SocrataClient:
     def __exit__(self, *exc_info: object) -> None:
         self._http.close()
 
-    @retry(
-        retry=retry_if_exception(is_retryable),
-        wait=wait_exponential_jitter(multiplier=2, max=60),
-        stop=stop_after_attempt(6),
-        before_sleep=before_sleep_log(log, logging.WARNING),
-        reraise=True,
-    )
+    @retrying()
     def get(self, path: str, params: dict[str, str | int] | None = None) -> httpx.Response:
         response = self._http.get(path, params=params)
         response.raise_for_status()
         return response
+
+    @retrying()
+    def download(self, path: str, dest: Path, params: dict[str, str] | None = None) -> dict:
+        """Stream a large response to `dest` via a temp file; a retry restarts from scratch."""
+        partial = dest.with_name(dest.name + ".part")
+        written = 0
+        with self._http.stream("GET", path, params=params) as response:
+            response.raise_for_status()
+            with partial.open("wb") as fh:
+                for chunk in response.iter_bytes(1 << 20):
+                    fh.write(chunk)
+                    written += len(chunk)
+            last_modified = response.headers.get("last-modified")
+        partial.replace(dest)
+        return {"bytes": written, "last_modified": last_modified}
 
     def view_metadata(self, dataset_id: str) -> dict:
         return self.get(f"/api/views/{dataset_id}.json").json()

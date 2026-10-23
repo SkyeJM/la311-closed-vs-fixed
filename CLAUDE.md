@@ -28,7 +28,8 @@ Full brief (local only, gitignored): `docs/BRIEF.md`. Decisions: `docs/DECISIONS
 - **Era** is the system of record (which dataset a row came from), never inferred from dates.
 - **Tests are offline;** mark live-API tests `@pytest.mark.live`.
 - **Makefile** must work with GNU Make 3.81.
-- **DuckDB 2.x** rejects implicit aliases that are keywords (`... AS month` works, `... month` doesn't).
+- **DuckDB 2.x:** implicit aliases that are keywords fail (`... AS month` works, `... month` doesn't),
+  and relations have no `fetchone()` (use `con.execute(...).fetchone()` or `rel.fetchall()`).
 
 ## Data traps (details in docs/DATA_NOTES.md)
 - Every dataset is a saved filter on a private parent table. The filter SoQL is pinned in `ingest/schemas/`; filter drift = population drift.
