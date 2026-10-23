@@ -1,0 +1,180 @@
+{
+  "id": "i5ke-k6by",
+  "name": "MyLA311 Service Request Data 2022",
+  "parent": "69nn-wkid",
+  "schema_hash": "04246edf989ed192",
+  "filter_hash": "39a65d97fdc8c16b",
+  "saved_filter": "SELECT `srnumber`, `createddate`, `updateddate`, `actiontaken`, `owner`, `requesttype`, `status`, `requestsource`, `createdbyuserorganization`, `mobileos`, `anonymous`, `assignto`, `servicedate`, `closeddate`, `addressverified`, `approximateaddress`, `address`, `housenumber`, `direction`, `streetname`, `suffix`, `zipcode`, `latitude`, `longitude`, `location`, `tbmpage`, `tbmcolumn`, `tbmrow`, `apc`, `cd`, `cdmember`, `nc`, `ncname`, `policeprecinct` WHERE (`createddate` BETWEEN \"2022-01-01T00:00:00\" AND \"2022-12-31T23:59:59\") and ((upper(`requesttype`) = \"HOMELESS ENCAMPMENT\") or (upper(`requesttype`) = \"OTHER\") or (upper(`requesttype`) = \"DEAD ANIMAL REMOVAL\") or (upper(`requesttype`) = \"ILLEGAL DUMPING PICKUP\") or (upper(`requesttype`) = \"BULKY ITEMS\") or (upper(`requesttype`) = \"METAL/HOUSEHOLD APPLIANCES\") or (upper(`requesttype`) = \"FEEDBACK\") or (upper(`requesttype`) = \"SINGLE STREETLIGHT ISSUE\") or (upper(`requesttype`) = \"GRAFFITI REMOVAL\") or (upper(`requesttype`) = \"REPORT WATER WASTE\") or (upper(`requesttype`) = \"MULTIPLE STREETLIGHT ISSUE\") or (upper(`requesttype`) = \"ELECTRONIC WASTE\"))",
+  "columns": [
+    {
+      "field": "srnumber",
+      "type": "text",
+      "display": "SRNumber"
+    },
+    {
+      "field": "createddate",
+      "type": "calendar_date",
+      "display": "CreatedDate"
+    },
+    {
+      "field": "updateddate",
+      "type": "calendar_date",
+      "display": "UpdatedDate"
+    },
+    {
+      "field": "actiontaken",
+      "type": "text",
+      "display": "ActionTaken"
+    },
+    {
+      "field": "owner",
+      "type": "text",
+      "display": "Owner"
+    },
+    {
+      "field": "requesttype",
+      "type": "text",
+      "display": "RequestType"
+    },
+    {
+      "field": "status",
+      "type": "text",
+      "display": "Status"
+    },
+    {
+      "field": "requestsource",
+      "type": "text",
+      "display": "RequestSource"
+    },
+    {
+      "field": "createdbyuserorganization",
+      "type": "text",
+      "display": "CreatedByUserOrganization"
+    },
+    {
+      "field": "mobileos",
+      "type": "text",
+      "display": "MobileOS"
+    },
+    {
+      "field": "anonymous",
+      "type": "text",
+      "display": "Anonymous"
+    },
+    {
+      "field": "assignto",
+      "type": "text",
+      "display": "AssignTo"
+    },
+    {
+      "field": "servicedate",
+      "type": "calendar_date",
+      "display": "ServiceDate"
+    },
+    {
+      "field": "closeddate",
+      "type": "calendar_date",
+      "display": "ClosedDate"
+    },
+    {
+      "field": "addressverified",
+      "type": "text",
+      "display": "AddressVerified"
+    },
+    {
+      "field": "approximateaddress",
+      "type": "text",
+      "display": "ApproximateAddress"
+    },
+    {
+      "field": "address",
+      "type": "text",
+      "display": "Address"
+    },
+    {
+      "field": "housenumber",
+      "type": "number",
+      "display": "HouseNumber"
+    },
+    {
+      "field": "direction",
+      "type": "text",
+      "display": "Direction"
+    },
+    {
+      "field": "streetname",
+      "type": "text",
+      "display": "StreetName"
+    },
+    {
+      "field": "suffix",
+      "type": "text",
+      "display": "Suffix"
+    },
+    {
+      "field": "zipcode",
+      "type": "text",
+      "display": "ZipCode"
+    },
+    {
+      "field": "latitude",
+      "type": "number",
+      "display": "Latitude"
+    },
+    {
+      "field": "longitude",
+      "type": "number",
+      "display": "Longitude"
+    },
+    {
+      "field": "location",
+      "type": "point",
+      "display": "Location"
+    },
+    {
+      "field": "tbmpage",
+      "type": "number",
+      "display": "TBMPage"
+    },
+    {
+      "field": "tbmcolumn",
+      "type": "text",
+      "display": "TBMColumn"
+    },
+    {
+      "field": "tbmrow",
+      "type": "number",
+      "display": "TBMRow"
+    },
+    {
+      "field": "apc",
+      "type": "text",
+      "display": "APC"
+    },
+    {
+      "field": "cd",
+      "type": "number",
+      "display": "CD"
+    },
+    {
+      "field": "cdmember",
+      "type": "text",
+      "display": "CDMember"
+    },
+    {
+      "field": "nc",
+      "type": "number",
+      "display": "NC"
+    },
+    {
+      "field": "ncname",
+      "type": "text",
+      "display": "NCName"
+    },
+    {
+      "field": "policeprecinct",
+      "type": "text",
+      "display": "PolicePrecinct"
+    }
+  ]
+}

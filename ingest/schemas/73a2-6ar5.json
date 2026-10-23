@@ -1,0 +1,180 @@
+{
+  "id": "73a2-6ar5",
+  "name": "MyLA311 Cases March 2025 to December 2025",
+  "parent": "qdp3-rdjj",
+  "schema_hash": "a43e090269d53a50",
+  "filter_hash": "fe88d8e6cb7a76d9",
+  "saved_filter": "SELECT `casenumber`, `createddate`, `systemmodstamp`, `action_taken__c`, `department_name__c`, `type`, `status`, `origin`, `created_by_user_organization`, `reported_anonymously__c`, `assigned_to__c`, `service_date__c`, `closeddate`, `date_service_was_rendered`, `reason_code__c`, `resolution_code__c`, `locator_gis_returned_address`, `locator_sr_house_number_`, `locator_direction_suffix`, `locator_sr_street_name__c`, `locator_service_request_suffix`, `zipcode__c`, `geolocation__latitude__s`, `geolocation__longitude__s`, `location`, `locator_sr_tb_map_grid_page`, `locator_sr_tb_column__c`, `locator_sr_tb_row__c`, `locator_sr_area_planning`, `locator_council_district`, `locator_sr_council_district`, `locator_sr_neigborhood_council`, `locator_sr_neigborhood_council_1`, `locator_sr_community_police` WHERE `createddate` BETWEEN \"2025-01-01T00:00:00\" :: floating_timestamp AND \"2025-12-31T12:59:59\" :: floating_timestamp AND caseless_one_of( `type`, \"Accessible Bus Stop Issues\", \"Animal Complaint/Violation\", \"Animal Confined\", \"Animal Loose\", \"Barricade Removal\", \"Bees or Beehive\", \"Bicycle Facilities Issues\", \"Bus Pad/Landing\", \"Bus Stop Furniture\", \"Bus Stop Parking Sign & Markings\", \"Curb Issues\", \"Dead Animal Removal\", \"Dockless Mobility Enforcement\", \"Feedback\", \"Flooding\", \"General Street Inspection\", \"Graffiti Removal\", \"Guard/Warning Rail Maintenance\", \"Homeless Encampment\", \"Illegal Activities (Non-Emergency)\", \"Illegal Auto Repair or Construction, and Leaf Blower Violations\", \"Illegal Discharge of Water\", \"Illegal Dumping Food Waste\", \"Illegal Dumping Item Pickup\", \"Illegal Sign Removal, News Rack Issues\", \"Information-Only\", \"Item Pickups\", \"LADOT Council & Interagency Support\", \"Land/Mud Slide\", \"Landscape Maintenance\", \"Median Island Maintenance\", \"Nuisance Barking Dogs\", \"Obstructions\", \"Other\", \"Park Amenity and Facilities Repair\", \"Park Cleanliness, Trash and Ground Maintenance\", \"Parking Issues\", \"Parking Meter Maintenance\", \"Private Property Violation\", \"Program Research\", \"Public Right-of-Way Cleanup\", \"Public Street Receptacles\", \"Report a Sidewalk Problem\", \"Report Water Wasting\", \"Searchlight & Generator Permits\", \"Service Not Complete\", \"Sewer or Sidewalk Rebates\", \"Sidewalk Repair Access Request Program\", \"Streetlight ADA Repair Services\", \"Streetlight Non-Repair Services\", \"Streetlight Repair Services\", \"Street Pavement Issues\", \"Street Sweeping\", \"Street Tree Inspection\", \"Street Tree Violations\", \"Taxi Complaints\", \"Traffic Safety\", \"Traffic Signal Issues\", \"Traffic Sign Issues\", \"Tree Emergency\", \"Tree Obstruction\", \"Trees or Pests in the Park\", \"Watershed Protection Division (WPD) Enforcement\" )",
+  "columns": [
+    {
+      "field": "casenumber",
+      "type": "text",
+      "display": "CaseNumber"
+    },
+    {
+      "field": "createddate",
+      "type": "calendar_date",
+      "display": "CreatedDate"
+    },
+    {
+      "field": "systemmodstamp",
+      "type": "calendar_date",
+      "display": "UpdatedDate"
+    },
+    {
+      "field": "action_taken__c",
+      "type": "text",
+      "display": "ActionTaken"
+    },
+    {
+      "field": "department_name__c",
+      "type": "text",
+      "display": "Owner"
+    },
+    {
+      "field": "type",
+      "type": "text",
+      "display": "RequestType"
+    },
+    {
+      "field": "status",
+      "type": "text",
+      "display": "Status"
+    },
+    {
+      "field": "origin",
+      "type": "text",
+      "display": "RequestSource"
+    },
+    {
+      "field": "created_by_user_organization",
+      "type": "text",
+      "display": "CreatedByUserOrganization"
+    },
+    {
+      "field": "reported_anonymously__c",
+      "type": "checkbox",
+      "display": "Anonymous"
+    },
+    {
+      "field": "assigned_to__c",
+      "type": "text",
+      "display": "AssignTo"
+    },
+    {
+      "field": "service_date__c",
+      "type": "calendar_date",
+      "display": "ServiceDate"
+    },
+    {
+      "field": "closeddate",
+      "type": "calendar_date",
+      "display": "ClosedDate"
+    },
+    {
+      "field": "date_service_was_rendered",
+      "type": "text",
+      "display": "DateServiceRendered"
+    },
+    {
+      "field": "reason_code__c",
+      "type": "text",
+      "display": "ReasonCode"
+    },
+    {
+      "field": "resolution_code__c",
+      "type": "text",
+      "display": "ResolutionCode"
+    },
+    {
+      "field": "locator_gis_returned_address",
+      "type": "text",
+      "display": "Address"
+    },
+    {
+      "field": "locator_sr_house_number_",
+      "type": "text",
+      "display": "HouseNumber"
+    },
+    {
+      "field": "locator_direction_suffix",
+      "type": "text",
+      "display": "Direction"
+    },
+    {
+      "field": "locator_sr_street_name__c",
+      "type": "text",
+      "display": "StreetName"
+    },
+    {
+      "field": "locator_service_request_suffix",
+      "type": "text",
+      "display": "Suffix"
+    },
+    {
+      "field": "zipcode__c",
+      "type": "number",
+      "display": "ZipCode"
+    },
+    {
+      "field": "geolocation__latitude__s",
+      "type": "number",
+      "display": "Latitude"
+    },
+    {
+      "field": "geolocation__longitude__s",
+      "type": "number",
+      "display": "Longitude"
+    },
+    {
+      "field": "location",
+      "type": "point",
+      "display": "Location"
+    },
+    {
+      "field": "locator_sr_tb_map_grid_page",
+      "type": "number",
+      "display": "TBMPage"
+    },
+    {
+      "field": "locator_sr_tb_column__c",
+      "type": "text",
+      "display": "TBMColumn"
+    },
+    {
+      "field": "locator_sr_tb_row__c",
+      "type": "number",
+      "display": "TBMRow"
+    },
+    {
+      "field": "locator_sr_area_planning",
+      "type": "text",
+      "display": "APC"
+    },
+    {
+      "field": "locator_council_district",
+      "type": "number",
+      "display": "CD"
+    },
+    {
+      "field": "locator_sr_council_district",
+      "type": "text",
+      "display": "CDMember"
+    },
+    {
+      "field": "locator_sr_neigborhood_council",
+      "type": "number",
+      "display": "NC"
+    },
+    {
+      "field": "locator_sr_neigborhood_council_1",
+      "type": "text",
+      "display": "NCName"
+    },
+    {
+      "field": "locator_sr_community_police",
+      "type": "number",
+      "display": "PolicePrecinct"
+    }
+  ]
+}
