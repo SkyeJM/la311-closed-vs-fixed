@@ -53,6 +53,8 @@ the synthetic database, so no large upload was needed.
 | DuckDB open in the function | 294 ms |
 | `/query` | 160 ms first (cold page cache), then ~18 ms; 0.22–0.33 s end to end from LA |
 | 110 s SSE stream | Every 5-second event arrived on time and unbuffered; finished at 110.3 s |
+| New-instance cost | DuckDB open 294–363 ms on two fresh instances. A true scale-from-zero cold start wasn't captured (instances stayed warm through ~12 min idle); re-measure on the real API in Phase 5 |
+| Cleanup | Project deleted the same day; the URL now returns `DEPLOYMENT_NOT_FOUND` |
 
 **What this means:** the real bundle limit on Hobby is **225 MB** including dependencies (about
 22 MB for FastAPI + DuckDB here), not the 500 MB in the docs. The serving file has to fit in

@@ -113,6 +113,7 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
   - A 112 MB file deployed in 34 s. Queries ran in about 18 ms warm (160 ms on first touch).
   - A 110-second SSE stream arrived unbuffered with no cutoff.
   - Files generated in the build step are bundled.
+  - A true scale-from-zero cold start wasn't captured (instances stayed warm); re-measure in Phase 5. The throwaway project was deleted.
 - **Consequence for Phase 2 (proposed):** serving holds the marts plus a slim *current-era* fact table (~4M rows); legacy years are served as aggregated marts.
 
 ## Phase 1: ingest and profile
