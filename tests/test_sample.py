@@ -4,14 +4,8 @@ from datetime import date
 import duckdb
 import pytest
 
-from ingest.sample import (
-    allocate,
-    cluster_offsets,
-    cluster_query,
-    csvs_to_parquet,
-    month_windows,
-    system_column_name,
-)
+from ingest.duck import system_column_name
+from ingest.sample import allocate, cluster_offsets, cluster_query, csvs_to_parquet, month_windows
 
 HEADER = '":id",":updated_at","casenumber","zipcode__c"\n'
 
