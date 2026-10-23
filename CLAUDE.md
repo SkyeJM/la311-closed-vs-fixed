@@ -1,0 +1,45 @@
+# Closed ≠ Fixed
+
+How often was a MyLA311 service request marked "Closed" actually fixed, and did the Mar 28, 2025
+relaunch change what "closed" means? Public CC0 data from data.lacity.org, DuckDB + dbt, a FastAPI
+API with a governed Claude agent, and Next.js on Vercel. Portfolio project by Skye Jackel-Marken.
+
+Full brief (local only, gitignored): `docs/BRIEF.md`. Decisions: `docs/DECISIONS.md`. Data quirks:
+`docs/DATA_NOTES.md`.
+
+## How we work
+- **Phase gates (brief §8).** Finish one phase, stop with a checkpoint (what was built, key numbers, surprises, decisions needed), and wait for "go". Current phase: **0, setup and spikes**.
+- **Log as you go.** Every non-obvious choice goes in `docs/DECISIONS.md` (date, options, why). Every data quirk goes in `docs/DATA_NOTES.md`, with its source query.
+- **No invented numbers.** Prose numbers come from code: `findings/findings.json` once it exists.
+- **Check current docs** for fast-moving tools: Anthropic SDK, dbt-duckdb, DuckDB (now **2.x**), Socrata, hosts.
+- **Commits:** small conventional commits on a phase branch, with `make check` passing first. One PR per phase, merged on "go".
+- **Secrets** live in `.env` (gitignored; template in `.env.example`).
+- **Money:** ask before anything costing more than a few dollars. Hosting must be $0.
+- **The repo is public.** Never commit raw data, addresses or keys; fixtures must be scrubbed.
+
+## Commands
+- `make setup` (uv sync + git hooks) · `make check` (lint + tests) · `make fmt`
+- `make discover` · `make schema-check` · `make pin` · `make ingest-sample`
+- CLI: `uv run python -m ingest --help`
+
+## Conventions
+- **Python:** 3.12 via uv, as a virtual project with no packaging. CLIs are Typer apps run as `python -m <pkg>`.
+- **Raw layer:** Parquet, all VARCHAR, Socrata *API field names* (never display names). Types are cast in dbt staging.
+- **Era** is the system of record (which dataset a row came from), never inferred from dates.
+- **Tests are offline;** mark live-API tests `@pytest.mark.live`.
+- **Makefile** must work with GNU Make 3.81.
+- **DuckDB 2.x** rejects implicit aliases that are keywords (`... AS month` works, `... month` doesn't).
+
+## Data traps (details in docs/DATA_NOTES.md)
+- Every dataset is a saved filter on a private parent table. The filter SoQL is pinned in `ingest/schemas/`; filter drift = population drift.
+- Bulk CSV export headers are display names, and current datasets reuse legacy display names ("UpdatedDate" = `systemmodstamp`, "Owner" = `department_name__c`).
+- The 2025 Cases filter ends 2025-12-31 12:59:59, so Dec 31 afternoon cases are in neither dataset.
+- Legacy year filters use inclusive BETWEEN, so rows at exactly Jan 1 00:00:00 can sit in two years. Dedupe `srnumber`.
+- Timestamps are floating, apparently local Pacific time. 2015 has minute precision only.
+- Current status "Reported" carries a `closeddate` and a resolution code; it behaves like a closed status.
+- Information-Only cases are contacts, not service requests (instantly "Closed", code "C-Closed").
+- "Driver Self Report(ed)" = crews logging their own work. The legacy Apr–Aug 2025 tail is crew-logged graffiti.
+- `action_taken__c` is a call-center action, not a resolution. `service_date__c` is a schedule, not proof of service.
+- Map resolution codes on the full string; prefixes collide ("RC-Contractor Serviced" vs "RC-Unable to Locate Address").
+- `locator_sr_council_district` holds the member's *name*. "neigborhood" is misspelled in source fields.
+- Dataset-page row counts are stale caches; count rows yourself.
