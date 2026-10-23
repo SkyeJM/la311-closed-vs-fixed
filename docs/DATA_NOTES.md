@@ -1,139 +1,140 @@
 # Data notes
 
-Every quirk found in the MyLA311 open data, with where it came from. "Live query" means SoQL
-against data.lacity.org on the date shown. "Sample" means the Phase 0 random-cluster samples
-(10,000 rows per dataset; see `docs/DECISIONS.md`). Sample shares are rough estimates, not
-findings.
+Every quirk found in the MyLA311 open data, with where it came from.
+
+- **Profile §n** = `docs/PROFILE.md`, computed from the full pulls of 2026-10-23 and regenerated with `make profile`.
+- **Live query** = SoQL against data.lacity.org on 2026-10-23.
+- **Sample** = the Phase 0 random-cluster samples. Rough only, superseded wherever the profile covers the same ground.
 
 ## How the open data is built
 - **All 13 datasets are saved filters** (`assetType: filter`) on two private parent tables.
   - Legacy parent: `69nn-wkid`. Current parent: `qdp3-rdjj`. Both return HTTP 403.
-  - Each filter's exact SoQL (`queryString`) is pinned in `ingest/schemas/{id}.json`.
+  - Each filter's SoQL (`queryString`) is pinned in `ingest/schemas/{id}.json`.
 - **Legacy filters:**
   - 12 request types: Bulky Items, Dead Animal Removal, Electronic Waste, Feedback, Graffiti Removal, Homeless Encampment, Illegal Dumping Pickup, Metal/Household Appliances, Multiple Streetlight Issue, Other, Report Water Waste, Single Streetlight Issue.
-  - A `createddate` window per year.
-- **Current filters:** the same 63 types in both 2025 and 2026 (listed in the pins). The list includes Information-Only, Program Research, Feedback and Service Not Complete.
-- **Field names point to Salesforce.** Current-era names (`casenumber`, `origin`, `systemmodstamp`, `*__c`, `*__s`) match Salesforce Case objects, so the new MyLA311 appears to run on Salesforce.
-  - Hypothesis: resolution codes are per-department picklists, which would explain the inconsistent code vocabularies.
+  - A `createddate` window per year. The 2015 filter starts 2015-08-01 because MyLA311 launched in August 2015.
+- **Current filters:** the same 63 types in both 2025 and 2026 (listed in the pins).
+- **Field names point to Salesforce.**
+  - Current-era names (`casenumber`, `origin`, `systemmodstamp`, `*__c`, `*__s`) match Salesforce Case objects, so the new MyLA311 appears to run on Salesforce.
+  - Hypothesis: resolution codes are per-department picklists, which would fit their inconsistency.
   - Legacy SR numbers (`1-` plus digits) look like Siebel row IDs.
 
-## Coverage and row counts (live queries, 2026-10-23)
-| Dataset | Rows | Created range |
-|---|---|---|
-| 2015 `ms7h-a45h` | 237,305 | 2015-08 to 2015-12 (MyLA311 launched Aug 2015; the filter starts 2015-08-01) |
-| 2024 `b7dx-7gc3` | 1,442,347 | 2024 |
-| 2025 legacy `h73f-gn57` | 423,053 | Jan 137,352 · Feb 115,026 · Mar 117,441 · Apr 14,288 · May 14,479 · Jun 12,609 · Jul 9,527 · Aug 2,278 · Sep 13 · Oct 39 · Nov 1 · Dec 0 |
-| 2025 Cases `73a2-6ar5` | 1,740,673 | 2025-03-28 06:10:07 to 2025-12-31 12:59:54 |
-| 2026 Cases `2cy6-i7zn` | 1,945,823 | 2026-01-01 00:00:31 to 2026-10-23 15:00:00 (refreshed through the day) |
+## Coverage, counts, duplicates
+- **Every full pull matches a live `count(*)` taken right after it.** 16,008,398 rows across 13 datasets (Profile §1).
+  - Monthly volumes are in Profile §2.
+  - One 2022 download hit a read timeout and succeeded on retry.
+- **No request ID appears twice**, within or across datasets (Profile §3). The legacy filters' inclusive `BETWEEN` year windows overlap at a few exact Jan 1 midnights, but no request was created at those instants. Staging still dedupes defensively.
+- **The legacy 2025 dataset runs to 2025-11-03.**
+  - Its tail (Apr 14,288 · May 14,479 · Jun 12,609 · Jul 9,527 · Aug 2,278) is almost entirely crew-logged graffiti (Profile §10).
+  - After August, only a trickle of Homeless Encampment self-service requests remains.
+- **Dataset-page counts are stale caches.** For example, the metadata reported 70,976 non-null values for 2026 Cases. Always count rows yourself.
+- **The legacy datasets are still being touched.** `rowsUpdatedAt` is 2026-10-12, because the views share a parent table. Pulls are point-in-time with manifests.
+- **The 2026 dataset is published in hourly batches.** Its latest `createddate` and `systemmodstamp` both sat exactly on the hour (16:00:00).
 
-- Other legacy years get counted in Phase 1.
-- **Dataset-page counts are stale caches.** The metadata reports 1,467,201 non-null values for 2025 Cases and 70,976 for 2026. Always count rows yourself.
-- **The legacy datasets are still being touched.** Their `rowsUpdatedAt` is 2026-10-12, because they share a parent table. Treat legacy pulls as point-in-time and record a manifest.
-
-## Gaps and overlaps
+## Gaps
 - **Dec 31, 2025 afternoon is missing from both public datasets.**
-  - The 2025 Cases filter ends at `2025-12-31T12:59:54`, i.e. `BETWEEN "2025-01-01T00:00:00" AND "2025-12-31T12:59:59"`. That's probably a typo for 23:59:59.
-  - Hourly counts for Dec 31 stop after hour 12. The 2026 dataset starts at 2026-01-01.
-  - The parent table is private, so these cases are unrecoverable from public data.
-  - For scale: Dec 30, 2025 had 4,173 cases created between 13:00 and 23:59; Dec 31 had 3,361 cases through 12:59 (live hourly counts).
-- **Legacy year windows overlap at exact midnights.** Several filters use an inclusive `BETWEEN` that ends at the next Jan 1 00:00:00, so a row created at exactly that instant matches two datasets.
-  - Affected instants: 2016-01-01, 2017-01-01, 2019-01-01, 2020-01-01, 2021-01-01, 2022-01-01.
-  - Dedupe on `srnumber` across datasets in staging.
-- **The 2025 Cases metadata is wrong in two places.** The title says "March 2025 to December 2025" while the filter starts 2025-01-01; the description says "for 2020."
+  - The 2025 Cases filter ends `2025-12-31T12:59:59`, probably a typo for 23:59:59. The last case is 12:59:54, and the 2026 dataset starts 2026-01-01.
+  - For scale: Dec 30, 2025 had 4,173 cases created between 13:00 and 23:59 (live hourly counts).
+- **The 2025 Cases metadata is wrong in two places.** The title says "March 2025 to December 2025" but the filter starts 2025-01-01; the description says "for 2020."
 
-## Field names and types
-- **The bulk export (`rows.csv`) differs from the row API in format, not values:**
-  - Headers are display names.
-  - Timestamps are `MM/DD/YYYY hh:mm:ss AM`, a 12-hour clock with no milliseconds.
-  - Booleans are `true`/`false`. Case numbers keep their leading zeros.
-  - Rows come in the saved filter's sort order.
-  - The current era's `location` point is empty in the export (lat/lon are populated).
-  - Checked on the 2015 and 2026 exports.
-- **Bulk-export CSV headers are display names, and current datasets reuse legacy display names.**
-  - Examples: "UpdatedDate" = `systemmodstamp`, "Owner" = `department_name__c`, "RequestType" = `type`, "RequestSource" = `origin`, "CDMember" = `locator_sr_council_district`.
-  - Always map headers via the pinned `display` → `field` pairs. The SODA row API (`/resource/{id}.csv`) uses field names.
-- **`createdbyuserorganization` is missing from the 2015–2018 and 2021 legacy views** (33 columns instead of 34).
+## Field names, types and formats
+- **The bulk export differs from the row API in format, not values.**
+  - Export headers are display names, and current datasets reuse legacy display names: "UpdatedDate" = `systemmodstamp`, "Owner" = `department_name__c`, "RequestType" = `type`, "RequestSource" = `origin`, "CDMember" = `locator_sr_council_district`.
+  - Export timestamps are `MM/DD/YYYY hh:mm:ss AM`; the row API uses ISO.
+  - The current era's `location` point is empty in the export.
+  - Ingest maps headers through the pins and keeps values as delivered.
+- **`createdbyuserorganization` is missing from the 2015–2018 and 2021 legacy views** (100% null, Profile §7).
 - **Types differ across eras:**
 
   | Field | Legacy | Current |
   |---|---|---|
   | zip | text | number |
   | house number | number | text |
-  | anonymous | "Y"/"N" text | boolean (`true`/`false`) |
-  | police area | name (e.g. "77TH STREET") | number (e.g. 21) |
+  | anonymous | "Y"/"N" | `true`/`false` |
+  | police area | name | number |
 
-  `date_service_was_rendered` is text in the source.
-- **ID formats:**
-  - Legacy `1-` plus 8 digits (2015) or 10 digits (2024–25).
-  - Current is 8 digits, zero-padded, so keep it as text.
-  - Legacy ID trailing digits are **not** uniform, so they can't be used for hash-style sampling.
+- **ID formats:** legacy `1-` plus 8–10 digits, with non-uniform trailing digits; current is 8 zero-padded digits, so keep it as text.
 - **`locator_sr_council_district` holds the council member's name.** "neigborhood" is misspelled in two current field names.
 
 ## Timestamps
-- **All timestamps are floating (no time zone), formatted `YYYY-MM-DDTHH:MM:SS.000`.** Milliseconds are always `.000` (sample).
-- **Current-era times appear to be local Pacific time.**
-  - A case created at "00:03" reached Socrata at 08:20Z, which is 00:20 PST.
-  - Dec 30, 2025 hourly counts peak at 12:00 with 801 cases and drop to single digits overnight (live query).
-  - Legacy time zone is still to be confirmed on full data in Phase 1.
-- **2015 timestamps have minute precision**: 100% of sampled 2015 `createddate`s have seconds = 00, against about 1.6% (≈ 1/60) in other years. "Instant close" thresholds must allow for this.
-- **No anomalies in the samples:**
-  - No `closeddate` earlier than `createddate`, and no date-only (midnight) `closeddate`s, in any of the five samples.
-  - The excluded streetlight view shows date-only closes (e.g. created 02:02, closed 00:00 the same day), so Phase 1 checks every year for both.
+- **Both eras are local Pacific time.** Hour-of-day peaks fall at 09:00–15:00 in both (Profile §4). Floating timestamps have no time zone, so durations crossing a DST change can be off by an hour.
+- **Precision changes over time.** Share of `createddate`s with :00 seconds (Profile §4):
+  - 2015–2019: about 99–100% (minute precision).
+  - 2020: 13.8% (the switch happened mid-year).
+  - 2021 onward: about 1.6% (second precision).
 
-## Vocabularies (samples; counts are rows in the sample)
-- **Legacy statuses:** Closed, Cancelled, Open, Pending, Referred Out, Forward. Official definition (column description): "Closed – The request has been completed."
-- **Current statuses:** Closed, Reported, Cancelled, Workorder Created, In Progress, New, Closed Ext-Referred, Potential Duplicate. Duplicate Confirm wasn't in the samples.
-- **In the current era, "Reported" behaves like a closed status.** In the 20,000-row current sample:
-  - Every Closed (17,198), Reported (997), Cancelled (738) and Closed Ext-Referred (94) case has a `closeddate`. Nearly all have a resolution code (17,181, 997, 737 and 93).
-  - Workorder Created, In Progress, New and Potential Duplicate cases have no `closeddate`.
-  - This is the evidence for the Phase 1 "terminal status" proposal.
-- **`actiontaken` (legacy) is "SR Created" in 29,986 of 30,000 sampled rows.**
-- **Current `action_taken__c` is null in about 47% of sampled rows.** Its values are SR Created, Information Provided, Transferred, Status Provided and similar. It's a call action, not a resolution.
-- **Channels changed between eras.**
-  - Legacy channels in the sample (30,000 rows): Call 14,418, Mobile App 8,378, Self Service 3,281, Driver Self Report 2,575, Email 1,241, plus Council's Office, Voicemail and a few others.
-  - Current channels in the sample (20,000 rows): Call 10,473, Self Service 9,014, recycLA Service Provider 217, Driver Self Reported 114, Mobile App 24, plus Email, Council's Office, Voicemail, Chat, Social and Letter.
-  - "Mobile App" nearly disappears, apparently folded into Self Service. "Driver Self Report" became "Driver Self Reported."
-  - The source docs say "Driver Self Report = by work crews for work done in field then entered into system", i.e. crews logging their own work. Those requests are closed almost by construction and must be split out of closure metrics.
-- **Sparsity of current fields (sample):** `reason_code__c` 9.4% non-null, `date_service_was_rendered` 0.6% (not entirely null), `service_date__c` 1.9%, `assigned_to__c` 63%, lat/lon 93%.
-- **Raw nulls:** empty fields from the SODA CSV come through as NULL, not '' (sample check).
+  Any instant-close threshold must be at least a few minutes, or legacy years can't be compared.
+- **Legacy streetlight closes in 2017–2021 are often date-only (midnight)** (Profile §4).
+  - Share of closes at midnight: Single Streetlight Issue 77.9%, Multiple 50.3%.
+  - Nearly all of the ~14K negative durations are streetlights, mostly 1–24 hours "before" creation.
+  - Durations for those years are day-level.
+- **Other legacy types and the current era have essentially no negative durations.**
 
-## Specific types
-- **Information-Only:** 5,051 of 20,000 sampled current rows. All are status Closed with code "C-Closed", and all closed within 60 seconds.
-- **Service Not Complete** (sample):
-  - LASAN rows mostly have no reason code.
-  - recycLA rows carry trash-collection codes such as "0200-Blocked in By Vehicle/Object", "0240-SR-Scheduled", "0222-Ahead of Regular Service" and "0212-Not SNC - On Call Request".
-  - This is consistent with missed-collection complaints. It isn't yet usable as a "not fixed" signal.
-- **The legacy rows after the cutover are crew-logged graffiti.**
-  - Of the sampled legacy-2025 rows from Apr–Aug 2025, 1,251 of 1,257 are Graffiti Removal via Driver Self Report. By month: Apr 334/338, May 340/342, Jun 298/298, Jul 225/225, Aug 54/54.
-  - So the overlap looks like a split by channel (crews kept logging their own removals in the old system), not double-recording. Phase 1 checks whether the new system has crew-logged graffiti in those months.
+## Statuses
+- **Legacy:**
+  - Closed: 99.9% have a closed date.
+  - Cancelled and Referred Out: 100%.
+  - Open, Pending and Forward: rarely (0–4% of rows).
+  - Official definition (column description): "Closed – The request has been completed."
+- **Current statuses:** Closed, Reported, Cancelled and Closed Ext-Referred all have a closed date on 100% of rows. Workorder Created, New, In Progress, Potential Duplicate, Duplicate Confirm and Inspection Required (2 rows; not in the brief) have none (Profile §5).
+- **"Reported" means the 311 record ends at intake.**
+  - Four types are 100% "Reported" and about 99% closed within a minute, then handed to another department's system: Homeless Encampment (LSD), Report a Sidewalk Problem (DPW), Private Property Violation (LADBS), Report Water Wasting (LADWP).
+  - 311 data can't say whether these were fixed (Profile §11b).
+  - The legacy Homeless Encampment, by contrast, was closed by LASAN with ordinary statuses.
 
-## Instant closes in the samples (indicative only)
-- Share of closed rows with `closeddate − createddate` between 0 and 60 seconds:
+## Channels and crew self-reports
+- **"Driver Self Report" means crews logging work they already did** (column description: "by work crews for work done in field then entered into system").
+  - That's 15.4% of all legacy rows, and 57.0% of legacy Graffiti Removal.
+  - 79% of legacy crew self-reports close within 5 minutes (Profile §9, §12).
+- **In the current system, crew self-reports ("Driver Self Reported") barely exist until March 2026.** They then climb to 48% of graffiti in August 2026 (Profile §10). Graffiti closure trends inside the current era will move because of how work is logged, not how it's done.
+- **Fast closes are almost all crew self-reports or intake handoffs.** All other requests close within 5 minutes only 0.7% (legacy) and 1.2% (current) of the time (Profile §12).
+- **Channel vocabulary changed.**
+  - "Mobile App" is 25.8% of legacy rows and 0.1% of current rows; it was apparently folded into Self Service.
+  - New current channels include "recycLA Service Provider", Chat and Social.
+  - 61 current rows still use the legacy spelling "Driver Self Report".
 
-  | Sample | Share |
-  |---|---|
-  | 2015 | 0.0% (minute precision) |
-  | 2024 | 1.3% |
-  | 2025 legacy | 7.6% |
-  | 2025 Cases | 34.4% |
-  | 2026 Cases | 32.6% |
+## The Apr–Aug 2025 overlap
+- **The overlap is a split by channel, not double-recording.**
+  - After the cutover, legacy graffiti is crew self-reports; current graffiti is resident-reported (Self Service and Call).
+  - Of 51,513 post-cutover legacy graffiti rows, 3,022 have a current graffiti case within 50 m on the same day (±1 day), against 2,708 in an equal-width placebo 7–8 days away. The excess is about 0.6% (Profile §10).
 
-- The current-era shares include Information-Only contacts. Phase 1 recomputes on full data with service requests only.
+## Request types and the crosswalk
+- **The bulky / illegal-dumping boundary moved at the cutover.**
+  - Legacy bulky + metal + e-waste ran about 60–77K/month with illegal dumping about 9–12K/month.
+  - Current Item Pickups and Illegal Dumping Item Pickup run about 37–45K/month *each*.
+  - Combined volume is steady, so the two must be one crosswalk category (Profile §11c).
+- **Streetlights:** current Streetlight Repair Services matches legacy Single + Multiple Streetlight Issue volume in the same months a year earlier. Streetlight ADA Repair Services and Non-Repair Services are small and current-era only.
+- **Information-Only:** 877,137 rows in 2025–2026, all "Closed" with code "C-Closed", split between ITA and LASAN departments. In 2026, 85.9% of "C-Closed" rows are Information-Only, which confirms the brief (Profile §6).
+- **Program Research** (LASAN customer care): almost all "1004-Closed", with about half closed within a minute.
+- **"Other" (current):** mostly "GI-General Information" replies.
+- **Service Not Complete:** LASAN rows have no reason codes. recycLA rows carry collection codes such as "0200-Blocked in By Vehicle/Object" and "0212-Not SNC - On Call Request". They're mostly resolved as completed or "RCAN-Cancelled by Contractor". These are missed-collection complaints, not a general "not fixed" signal (Profile §13).
+
+## Resolution codes
+- **There are more codes than the brief estimated:** 149 distinct in 2025 Cases, 160 in 2026, 171 combined (the brief said about 120). Per-code stats are in `docs/profile/resolution_codes.csv`.
+- **Prefix collisions include:**
+  - C: C-Closed, C-Report has been received, C-Report has been referred out.
+  - DUP, RC, CAN, COM, INC, IP, NAR, UA
+  - NOV: NOV-Not Operator Vehicle vs NOV-Notice of Violation
+  - Map on the full string (Profile §6).
+
+## Null rates worth knowing (Profile §7)
+- **Lat/lon:** missing for 18.8% (2016) and 19.3% (2017) of legacy rows, so re-report and geography work is weaker for those years. Current-era geography is 6–9% missing.
+- **`service_date__c` is 98% null in the current era,** against about 5% for legacy `servicedate`, so it isn't comparable.
+- **`date_service_was_rendered`** is populated for 1.8% of 2026 rows only. The brief said entirely null; it's close.
+- **`assigned_to`** is about 35% null in the current era against 1–2% in legacy. `action_taken__c` is about 47–50% null.
 
 ## Catalog entries that aren't sources (see `sources.yml` → `ignored`)
-- **`d7h2-83jy`, MyLA311 Streetlight Service Request Data.**
-  - Built on the legacy parent and limited to the two legacy streetlight types.
-  - It exposes three extra columns, `resolutioncode`, `reasoncode` and `dateservicerendered`, so the legacy system *did* record resolution codes even though the yearly views omit them.
-  - 241,712 rows (2015-08-05 to 2025-07-04), 194,610 with a resolution code (live aggregate query; no rows pulled).
+- **`d7h2-83jy`, legacy streetlight view.**
+  - It exposes `resolutioncode`, `reasoncode` and `dateservicerendered`, so the legacy system *did* record resolution codes even though the yearly views omit them.
+  - 241,712 rows, 194,610 with a code (live aggregate; nothing pulled).
   - Its description says "This copy is private and for internal City use only", so it's excluded (decision 2026-10-23).
-- **`iwu4-fgpx`:** a map built on the streetlight view.
-- **`bpyg-ytsg`:** the pre-MyLA311 call-center archive (2013–2014).
-- **`bihg-rw73`, `2fse-gjp4`:** community-made filters.
+- **`iwu4-fgpx`:** a map built on that view.
+- **`bpyg-ytsg`:** the pre-MyLA311 call-center archive.
+- **`bihg-rw73`, `2fse-gjp4`:** community filters.
 - **`tsrc-szkh`:** app download statistics.
 
 ## Socrata API notes
-- SODA 2.x works without an app token at our volumes. Unauthenticated aggregate queries on the current datasets returned in about 1–2 s.
-- System fields (`:id`, `:created_at`, `:updated_at`, `:version`) are available with `$select=:*, *`.
-  - `:updated_at` is a Socrata-side row-change time in UTC, a candidate watermark for incremental refresh alongside `systemmodstamp` (Phase 1).
+- **App token:** SODA 2.x worked without one at our volumes. Aggregates on the current datasets returned in about 1–2 s; bulk exports streamed at about 3–5 MB/s.
+- **System fields** (`:id`, `:created_at`, `:updated_at`, `:version`) come with `$select=:*, *`.
   - `:id` order follows creation order, so it isn't random.
-- Response headers `X-SODA2-Fields`, `X-SODA2-Types` and `Last-Modified` describe the result, and `Last-Modified` is useful for refresh checks.
+  - `:updated_at` is a UTC portal-ingest time.
