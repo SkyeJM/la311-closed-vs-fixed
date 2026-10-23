@@ -37,10 +37,14 @@ Full brief (local only, gitignored): `docs/BRIEF.md`. Decisions: `docs/DECISIONS
 - Bulk CSV export headers are display names, and current datasets reuse legacy display names ("UpdatedDate" = `systemmodstamp`, "Owner" = `department_name__c`).
 - The 2025 Cases filter ends 2025-12-31 12:59:59, so Dec 31 afternoon cases are in neither dataset.
 - Legacy year filters use inclusive BETWEEN, so rows at exactly Jan 1 00:00:00 can sit in two years. Dedupe `srnumber`.
-- Timestamps are floating, apparently local Pacific time. 2015 has minute precision only.
-- Current status "Reported" carries a `closeddate` and a resolution code; it behaves like a closed status.
+- Timestamps are floating local Pacific time. 2015–2019 have minute precision (2020 mixed); legacy
+  streetlight closes in 2017–2021 are often date-only (midnight), hence ~14K negative durations.
+- Current status "Reported" = the 311 record ends at intake (a handoff). Homeless Encampment, Report a
+  Sidewalk Problem, Private Property Violation and Report Water Wasting are 100% Reported.
 - Information-Only cases are contacts, not service requests (instantly "Closed", code "C-Closed").
-- "Driver Self Report(ed)" = crews logging their own work. The legacy Apr–Aug 2025 tail is crew-logged graffiti.
+- "Driver Self Report(ed)" = crews logging their own work: 15% of legacy rows, 57% of legacy graffiti,
+  and back in current graffiti from 2026. Closed by construction; excluded from cross-era comparisons.
+- The bulky / illegal-dumping boundary moved at the cutover: crosswalk them as one category.
 - `action_taken__c` is a call-center action, not a resolution. `service_date__c` is a schedule, not proof of service.
 - Map resolution codes on the full string; prefixes collide ("RC-Contractor Serviced" vs "RC-Unable to Locate Address").
 - `locator_sr_council_district` holds the member's *name*. "neigborhood" is misspelled in source fields.
