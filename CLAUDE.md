@@ -8,7 +8,7 @@ Full brief (local only, gitignored): `docs/BRIEF.md`. Decisions: `docs/DECISIONS
 `docs/DATA_NOTES.md`.
 
 ## How we work
-- **Phase gates (brief §8).** Finish one phase, stop with a checkpoint (what was built, key numbers, surprises, decisions needed), and wait for "go". Current phase: **0, setup and spikes**.
+- **Phase gates (brief §8).** Finish one phase, stop with a checkpoint (what was built, key numbers, surprises, decisions needed), and wait for "go". Current phase: **1, ingest and profile**.
 - **Log as you go.** Every non-obvious choice goes in `docs/DECISIONS.md` (date, options, why). Every data quirk goes in `docs/DATA_NOTES.md`, with its source query.
 - **No invented numbers.** Prose numbers come from code: `findings/findings.json` once it exists.
 - **Check current docs** for fast-moving tools: Anthropic SDK, dbt-duckdb, DuckDB (now **2.x**), Socrata, hosts.
@@ -20,6 +20,7 @@ Full brief (local only, gitignored): `docs/BRIEF.md`. Decisions: `docs/DECISIONS
 ## Commands
 - `make setup` (uv sync + git hooks) · `make check` (lint + tests) · `make fmt`
 - `make discover` · `make schema-check` · `make pin` · `make ingest-sample`
+- `make ingest` (full pulls → `data/raw/{id}/full.parquet` + manifests) · `make refresh` (current-year delta) · `make profile` (→ `docs/PROFILE.md`)
 - CLI: `uv run python -m ingest --help`
 
 ## Conventions

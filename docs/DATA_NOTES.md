@@ -42,6 +42,13 @@ findings.
 - **The 2025 Cases metadata is wrong in two places.** The title says "March 2025 to December 2025" while the filter starts 2025-01-01; the description says "for 2020."
 
 ## Field names and types
+- **The bulk export (`rows.csv`) differs from the row API in format, not values:**
+  - Headers are display names.
+  - Timestamps are `MM/DD/YYYY hh:mm:ss AM`, a 12-hour clock with no milliseconds.
+  - Booleans are `true`/`false`. Case numbers keep their leading zeros.
+  - Rows come in the saved filter's sort order.
+  - The current era's `location` point is empty in the export (lat/lon are populated).
+  - Checked on the 2015 and 2026 exports.
 - **Bulk-export CSV headers are display names, and current datasets reuse legacy display names.**
   - Examples: "UpdatedDate" = `systemmodstamp`, "Owner" = `department_name__c`, "RequestType" = `type`, "RequestSource" = `origin`, "CDMember" = `locator_sr_council_district`.
   - Always map headers via the pinned `display` → `field` pairs. The SODA row API (`/resource/{id}.csv`) uses field names.

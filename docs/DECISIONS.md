@@ -108,3 +108,39 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
   - Upstash Redis free tier (via the Marketplace) for hourly and daily counters.
   - An Anthropic Console workspace spend limit as the hard backstop.
 - **Fallbacks:** MotherDuck Lite for the data if the bundle won't fit; Cloud Run if Skye adds a card.
+
+## Phase 1: ingest and profile
+
+### 2026-10-23 · Full pulls use the bulk export; values are stored exactly as delivered
+- **Options:** the bulk export (`rows.csv?accessType=DOWNLOAD`, one streamed file per dataset); paging the SODA row API (`$limit`/`$offset`).
+- **Chosen:** the bulk export, as the brief recommends.
+- **How:**
+  - The export's headers are display names, so they're mapped to API field names through the pin. Any unknown or missing column fails the pull.
+  - Values stay as delivered, including timestamps like `12/31/2015 09:59:00 PM`. A `_pull_method` column tells staging which format a row uses.
+  - Any line DuckDB can't parse fails the pull instead of being skipped.
+  - Every pull is reconciled against a live `count(*)`.
+- **Why:**
+  - One streamed request per dataset; 2015's 237,305 rows took 28 s.
+  - Reformatting at ingest would make raw differ from the source. Keeping parsing in staging puts it in one reviewable place.
+  - Failing on bad lines is the difference between a loud error and a silently smaller denominator.
+
+### 2026-10-23 · Incremental refresh: `systemmodstamp` watermark with a 3-day overlap
+- **Options:** Socrata's `:updated_at` (portal ingest time); `systemmodstamp` (the source system's modification time); full re-pulls only.
+- **Chosen:**
+  - `systemmodstamp`, as the brief specifies, re-reading 3 days before the watermark.
+  - Each refresh writes an append-only `delta_<UTC>.parquet`. Staging keeps the latest version of each case.
+  - A full pull supersedes all deltas.
+- **Why:**
+  - Modifications can reach the portal out of order, and the overlap makes late arrivals harmless because duplicates are resolved downstream.
+  - Deltas can't see deleted or re-filtered cases, so a periodic full pull is still the source of truth. Weekly is the plan for the stretch-goal refresh job.
+
+### 2026-10-23 · Profile proposals: a mechanical rule where the data decides, a reviewed list where judgment does
+- **Terminal statuses** use a rule: a status is terminal if at least 99% of its rows have a closed date.
+- **Non-service types** are an explicit list in `ingest/profile.py`, with a reason per type, shown next to the evidence.
+  - **Why:** Information-Only cases carry the generic code "C-Closed", so any rule based on code labels would miss the most obvious contact type.
+- **Crosswalk:** the brief's guesses, checked by volume either side of the cutover and by department.
+
+### 2026-10-23 · DuckDB lockdown order for read-only serving (spike finding, used in Phase 4)
+- **Finding:** with DuckDB 2.0, putting `enable_external_access=false` in the connect config makes `temp_directory` impossible to set.
+- **Working sequence:** connect read-only with `temp_directory`, then `SET enable_external_access = false`, then `SET lock_configuration = true`.
+- **Tested locally:** this blocks re-enabling external access, reading local files, raising the memory limit, and writing tables. It's the layer under the `run_sql` SQL parser.
