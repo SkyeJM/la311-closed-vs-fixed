@@ -1,0 +1,33 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Data: never committed (raw rows include street addresses). Rebuild with `make ingest`.
+data/
+*.duckdb
+*.duckdb.wal
+*.parquet
+!tests/fixtures/**/*.parquet
+
+# dbt
+dbt/target/
+dbt/logs/
+dbt/dbt_packages/
+
+# Web
+node_modules/
+.next/
+.vercel/
+
+# Local-only working files
+docs/BRIEF.md
+logs/
+.DS_Store
