@@ -6,5 +6,6 @@ requires-python = ">=3.12"
 dependencies = ["fastapi>=0.120", "duckdb>=2.0.0"]
 
 [tool.vercel.scripts]
-# Generate the ~320 MB synthetic database during the build instead of uploading it.
-build = "python bench_duckdb.py --build-only serving_synthetic.duckdb --rows 18000000"
+# Generate the synthetic database during the build instead of uploading it. 6M rows (~112 MB)
+# deploys; 18M rows (335 MB) exceeded Hobby's 225 MB function bundle limit.
+build = "python bench_duckdb.py --build-only serving_synthetic.duckdb --rows 6000000"

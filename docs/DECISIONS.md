@@ -69,7 +69,7 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
 ### 2026-10-23 · MIT license for code; the City's data stays CC0
 - **Why:** MIT is the conventional choice for portfolio code. Easy to change.
 
-### 2026-10-23 · Hosting: Vercel Hobby, API as a Python service beside Next.js (pending Skye and a free test deploy)
+### 2026-10-23 · Hosting: Vercel Hobby, API as a Python service beside Next.js (test deploy passed; pending Skye's confirmation)
 - **Constraint:** $0/month, no card, no paid tiers (Skye).
 - **Options researched 2026-10-23** (details and sources in `spikes/hosting/README.md`):
   - Vercel Hobby
@@ -108,6 +108,12 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
   - Upstash Redis free tier (via the Marketplace) for hourly and daily counters.
   - An Anthropic Console workspace spend limit as the hard backstop.
 - **Fallbacks:** MotherDuck Lite for the data if the bundle won't fit; Cloud Run if Skye adds a card.
+- **Test deploy, 2026-10-23** (throwaway project on Skye's Hobby account; details in `spikes/hosting/README.md`):
+  - The real bundle limit is **225 MB including dependencies**, not the documented 500 MB: an 18M-row synthetic file was rejected at 357 MB.
+  - A 112 MB file deployed in 34 s. Queries ran in about 18 ms warm (160 ms on first touch).
+  - A 110-second SSE stream arrived unbuffered with no cutoff.
+  - Files generated in the build step are bundled.
+- **Consequence for Phase 2 (proposed):** serving holds the marts plus a slim *current-era* fact table (~4M rows); legacy years are served as aggregated marts.
 
 ## Phase 1: ingest and profile
 
