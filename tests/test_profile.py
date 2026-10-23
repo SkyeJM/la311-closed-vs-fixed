@@ -114,6 +114,8 @@ def test_profiler_writes_every_section(tmp_path):
     for section in range(1, 14):
         assert f"## {section}. " in report
     assert "Total: 6 rows across 4 datasets." in report
-    assert "Proposed non-service list: Feedback, Information-Only, Program Research." in report
+    assert (
+        "Proposed non-service list: Feedback, Information-Only, Other, Program Research." in report
+    )
     assert (docs / "profile" / "resolution_codes.csv").exists()
     assert "1335 N NORMANDIE" not in report  # no addresses are ever loaded

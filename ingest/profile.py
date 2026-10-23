@@ -37,10 +37,16 @@ INFO_CODE_PATTERN = r"^(GI|IP|KA|PE|RF)-|Information|Info Provided|Report has be
 # Proposed non-service types (contacts, not service requests), each with the reason shown in
 # PROFILE.md. Starts from the brief; revised against the evidence table in section 11a.
 PROPOSED_NON_SERVICE = {
-    "Information-Only": "an informational contact by definition (brief §3.3)",
+    "Information-Only": 'informational contact by definition; always closed at once as "C-Closed"',
     "Feedback": "comments about the service, not a request for work (both eras)",
-    "Program Research": "brief's candidate; confirm against the evidence below",
+    "Program Research": 'LASAN customer-care research: nearly all "1004-Closed", rarely a work '
+    "code",
+    "Other": 'current era: mostly "GI-General Information" replies; legacy "Other" is not '
+    "crosswalked because it can't be characterized",
 }
+# Crews logging their own work ("by work crews for work done in field then entered into
+# system"): closed almost by construction, so excluded from every cross-era comparison.
+CREW_CHANNELS = ("Driver Self Report", "Driver Self Reported")
 # Brief section 4.5 starting guesses, checked here by volume, timing and department.
 CROSSWALK_GUESSES = [
     (
@@ -60,6 +66,46 @@ CROSSWALK_GUESSES = [
     ("Water waste", ["Report Water Waste"], ["Report Water Wasting"]),
     ("Other", ["Other"], ["Other"]),
     ("Feedback", ["Feedback"], ["Feedback"]),
+    (
+        "Pickups combined (bulky + illegal dumping)",
+        ["Bulky Items", "Metal/Household Appliances", "Electronic Waste", "Illegal Dumping Pickup"],
+        ["Item Pickups", "Illegal Dumping Item Pickup"],
+    ),
+]
+# Proposed crosswalk after checking the guesses: unified category, legacy types, current types,
+# and how far the eras can be compared. Crew self-reports are excluded in every category.
+PROPOSED_CROSSWALK = [
+    (
+        "Bulky & dumped item pickups",
+        ["Bulky Items", "Metal/Household Appliances", "Electronic Waste", "Illegal Dumping Pickup"],
+        ["Item Pickups", "Illegal Dumping Item Pickup"],
+        "full; one category because the bulky/illegal-dumping boundary moved at the cutover",
+    ),
+    (
+        "Streetlight repair",
+        ["Single Streetlight Issue", "Multiple Streetlight Issue"],
+        ["Streetlight Repair Services"],
+        "full; legacy 2017-2021 closes are often date-only, so durations there are day-level",
+    ),
+    (
+        "Graffiti",
+        ["Graffiti Removal"],
+        ["Graffiti Removal"],
+        "resident-reported only: legacy graffiti is mostly crew self-reports",
+    ),
+    ("Dead animal", ["Dead Animal Removal"], ["Dead Animal Removal"], "full"),
+    (
+        "Homeless encampment",
+        ["Homeless Encampment"],
+        ["Homeless Encampment"],
+        "volume only: current cases end at intake (status Reported)",
+    ),
+    (
+        "Water waste",
+        ["Report Water Waste"],
+        ["Report Water Wasting"],
+        "volume only: current cases are handed to LADWP at intake",
+    ),
 ]
 
 
@@ -226,7 +272,7 @@ class Profiler:
         for era in ("legacy", "current"):
             self.emit(f"**{era}**", "")
             self.table(
-                f"SELECT year(created_at) AS year, {cols}, count(*) AS total FROM r "
+                f"SELECT year(created_at)::VARCHAR AS year, {cols}, count(*) AS total FROM r "
                 f"WHERE era = '{era}' GROUP BY 1 ORDER BY 1",
                 ["year", *months, "total"],
             )
@@ -238,34 +284,22 @@ class Profiler:
 
     def duplicates(self) -> None:
         self.emit("## 3. Duplicate IDs", "")
-        self.table(
-            "WITH ids AS (SELECT era, request_id, count(*) AS n, count(DISTINCT dataset_id) AS ds, "
-            "min(created_at) AS created FROM r GROUP BY 1, 2 HAVING count(*) > 1) "
-            "SELECT era, count(*) AS duplicated_ids, sum(n) AS rows_involved, "
-            "count(*) FILTER (ds > 1) AS ids_in_two_datasets, "
-            "count(*) FILTER (ds > 1 AND strftime(created, '%m-%d %H:%M:%S') = '01-01 00:00:00') "
-            "AS at_jan1_midnight FROM ids GROUP BY 1 ORDER BY 1",
-            [
-                "era",
-                "duplicated IDs",
-                "rows involved",
-                "IDs in 2 datasets",
-                "…created exactly Jan 1 00:00:00",
-            ],
+        rows = self.q(
+            "WITH ids AS (SELECT era, request_id, count(*) AS n, count(DISTINCT dataset_id) AS ds "
+            "FROM r GROUP BY 1, 2 HAVING count(*) > 1) "
+            "SELECT era, count(*), sum(n), count(*) FILTER (ds > 1) FROM ids GROUP BY 1 ORDER BY 1"
         )
-        self.con.execute(
-            "CREATE TEMP TABLE dup AS SELECT * EXCLUDE (dataset_id) FROM r "
-            "QUALIFY count(*) OVER (PARTITION BY era, request_id) > 1"
-        )
-        dup_rows = dict(self.q("SELECT era, count(*) FROM dup GROUP BY era"))
-        distinct_rows = dict(
-            self.q("SELECT era, count(*) FROM (SELECT DISTINCT * FROM dup) GROUP BY era")
-        )
-        self.emit(
-            *md_table(
-                ["era", "duplicate-ID rows", "rows that exactly copy another (ignoring dataset)"],
-                [(era, n, n - distinct_rows.get(era, 0)) for era, n in sorted(dup_rows.items())],
+        checked = self.q("SELECT count(*) FROM (SELECT DISTINCT era, request_id FROM r)")[0][0]
+        if not rows:
+            self.emit(
+                f"No request ID appears twice, within a dataset or across datasets "
+                f"({checked:,} distinct IDs). The legacy filters' inclusive year boundaries "
+                "never caught a request created exactly at midnight on Jan 1.",
+                "",
             )
+            return
+        self.emit(
+            *md_table(["era", "duplicated IDs", "rows involved", "IDs in two datasets"], rows)
         )
 
     def timestamps(self) -> None:
@@ -315,6 +349,14 @@ class Profiler:
             "AS over_1d FROM r WHERE closed_at < created_at GROUP BY 1, 2 ORDER BY n DESC LIMIT 15",
             ["era", "type", "negative", "< 1 h", "1–24 h", "≥ 1 day"],
         )
+        self.emit("Legacy types with date-only closes (2017–2021, where they occur):", "")
+        self.table(
+            "SELECT request_type, count(closed_at) AS closed, "
+            "round(100 * avg((closed_at = date_trunc('day', closed_at))::INT), 1) AS pct "
+            "FROM r WHERE era = 'legacy' AND year(created_at) BETWEEN 2017 AND 2021 "
+            "GROUP BY 1 HAVING pct >= 1 ORDER BY pct DESC",
+            ["legacy type", "rows with closed date", "% date-only closes"],
+        )
 
     def statuses(self) -> None:
         self.emit("## 5. Statuses", "")
@@ -346,6 +388,16 @@ class Profiler:
             "SELECT count(DISTINCT resolution_code), count(resolution_code) FROM r "
             "WHERE era = 'current'"
         )[0]
+        per_dataset = self.q(
+            "SELECT label, count(DISTINCT resolution_code) FROM r_labeled WHERE era = 'current' "
+            "GROUP BY label ORDER BY any_value(sort)"
+        )
+        self.emit(
+            "Distinct codes by dataset: "
+            + "; ".join(f"{label} {n:,}" for label, n in per_dataset)
+            + ".",
+            "",
+        )
         self.emit(
             f"{n_codes:,} distinct codes on {n_rows:,} rows. Per-code volume, statuses, "
             "departments and types are in `docs/profile/resolution_codes.csv`, the input to "
@@ -466,6 +518,20 @@ class Profiler:
             "FROM r GROUP BY 1, 2 ORDER BY 1, n DESC",
             ["era", "channel", "rows", "% of era"],
         )
+        crew = sql_in(list(CREW_CHANNELS))
+        self.emit(
+            'Crew self-reports ("Driver Self Report(ed)": crews logging work they did) by type. '
+            "These close almost by construction.",
+            "",
+        )
+        self.table(
+            f"SELECT era, request_type, count(*) FILTER (channel IN {crew}) AS crew, "
+            f"round(100 * avg((channel IN {crew})::INT), 1), "
+            "round(100 * avg((date_diff('second', created_at, closed_at) BETWEEN 0 AND 300)::INT) "
+            f"FILTER (channel IN {crew}), 1) FROM r GROUP BY 1, 2 HAVING crew > 0 "
+            "ORDER BY crew DESC LIMIT 12",
+            ["era", "type", "crew self-reports", "% of the type", "% of those closed ≤5 min"],
+        )
 
     def overlap(self) -> None:
         self.emit(
@@ -499,10 +565,22 @@ class Profiler:
             ],
         )
         self.emit(
+            "Current-system Graffiti Removal by channel. Crews start logging their own removals "
+            "in the new system during 2026:",
+            "",
+        )
+        self.table(
+            "SELECT strftime(created_at, '%Y-%m') AS month, count(*) AS n, "
+            "count(*) FILTER (channel = 'Self Service'), count(*) FILTER (channel = 'Call'), "
+            f"count(*) FILTER (channel IN {sql_in(list(CREW_CHANNELS))}) FROM r "
+            "WHERE era = 'current' AND request_type = 'Graffiti Removal' GROUP BY 1 ORDER BY 1",
+            ["month", "rows", "Self Service", "Call", "crew self-report"],
+        )
+        self.emit(
             "Double-recording check: for each post-cutover legacy graffiti row with coordinates, "
             "is there a current-system graffiti case within 50 m created within ±1 day? The "
-            "placebo repeats the search 7–9 days away, which estimates how often an unrelated "
-            "case is simply nearby.",
+            "placebo repeats the search 7–8 days away in either direction (the same 48-hour total "
+            "width), which estimates how often an unrelated case is simply nearby.",
             "",
         )
         self.table(
@@ -522,11 +600,11 @@ class Profiler:
             "cos(radians(c.lat)) * pow(sin(radians(c.lon - lx.lon) / 2), 2))) <= 50) "
             "SELECT (SELECT count(*) FROM l), "
             "count(DISTINCT request_id) FILTER (hours <= 24), "
-            "count(DISTINCT request_id) FILTER (hours BETWEEN 168 AND 216) FROM pairs",
+            "count(DISTINCT request_id) FILTER (hours BETWEEN 168 AND 191) FROM pairs",
             [
                 "legacy graffiti rows (post-cutover)",
                 "with a current case ≤50 m, ±1 day",
-                "placebo: ≤50 m, 7–9 days away",
+                "placebo: ≤50 m, 7–8 days away",
             ],
         )
 
@@ -558,6 +636,22 @@ class Profiler:
                 "median h",
                 "p90 h",
             ],
+        )
+        self.emit(
+            "What the fast closes are made of (same rows, split by crew self-reports and by "
+            "cases whose 311 record ends at intake):",
+            "",
+        )
+        crew = sql_in(list(CREW_CHANNELS))
+        self.table(
+            "SELECT era, CASE WHEN channel IN " + crew + " THEN 'crew self-report' "
+            "WHEN status = 'Reported' THEN 'ends at intake (Reported)' ELSE 'other requests' END "
+            "AS grp, count(*) AS n, round(100 * avg((d <= 60)::INT), 1), "
+            "round(100 * avg((d <= 300)::INT), 1), round(quantile_cont(d, 0.5) / 3600, 1) "
+            "FROM (SELECT era, channel, status, date_diff('second', created_at, closed_at) AS d "
+            f"FROM r WHERE request_type NOT IN {sql_in(self.non_service)} "
+            "AND closed_at >= created_at) GROUP BY 1, 2 ORDER BY 1, 2",
+            ["era", "group", "rows", "% ≤1 min", "% ≤5 min", "median h"],
         )
 
     def special_types(self) -> None:
@@ -645,6 +739,19 @@ class Profiler:
             )
         )
         self.emit(
+            '**"Reported" ends the 311 record at intake.** Every current type with any '
+            '"Reported" cases, and how they close:',
+            "",
+        )
+        self.table(
+            "SELECT request_type, count(*) AS n, mode(department), "
+            "round(100 * avg((status = 'Reported')::INT), 1), "
+            "round(100 * avg((date_diff('second', created_at, closed_at) BETWEEN 0 AND 60)::INT)"
+            ", 1), mode(resolution_code) FROM r WHERE era = 'current' GROUP BY 1 "
+            "HAVING count(*) FILTER (status = 'Reported') > 0 ORDER BY n DESC",
+            ["current type", "rows", "dept", "% Reported", "% closed ≤60 s", "most common code"],
+        )
+        self.emit(
             "### 11c. Type crosswalk",
             "",
             "The brief's guesses, checked by volume either side of the cutover. 'Legacy/mo' "
@@ -657,11 +764,11 @@ class Profiler:
             row = self.q(
                 "SELECT "
                 f"count(*) FILTER (era = 'legacy' AND request_type IN {sql_in(legacy_types)} "
-                "AND created_at >= '2025-01-01' AND created_at < '2025-03-01') / 2, "
+                "AND created_at >= '2025-01-01' AND created_at < '2025-03-01') // 2, "
                 f"count(*) FILTER (era = 'current' AND request_type IN {sql_in(current_types)} "
-                "AND created_at >= '2025-05-01' AND created_at < '2025-07-01') / 2, "
+                "AND created_at >= '2025-05-01' AND created_at < '2025-07-01') // 2, "
                 f"count(*) FILTER (era = 'legacy' AND request_type IN {sql_in(legacy_types)} "
-                "AND created_at >= '2024-05-01' AND created_at < '2024-07-01') / 2, "
+                "AND created_at >= '2024-05-01' AND created_at < '2024-07-01') // 2, "
                 "mode(department) FILTER (era = 'legacy' "
                 f"AND request_type IN {sql_in(legacy_types)}), "
                 "mode(department) FILTER (era = 'current' "
@@ -690,6 +797,33 @@ class Profiler:
             "AND regexp_matches(request_type, 'Streetlight|Dumping|Pickup|Bulky') "
             "GROUP BY 1 ORDER BY n DESC",
             ["current type", "rows", "main dept"],
+        )
+        self.emit("Pickups per month around the cutover: the combined volume holds steady.", "")
+        self.table(
+            "SELECT strftime(created_at, '%Y-%m') AS month, "
+            "count(*) FILTER (era = 'legacy' AND request_type IN "
+            "('Bulky Items', 'Metal/Household Appliances', 'Electronic Waste')), "
+            "count(*) FILTER (era = 'legacy' AND request_type = 'Illegal Dumping Pickup'), "
+            "count(*) FILTER (era = 'current' AND request_type = 'Item Pickups'), "
+            "count(*) FILTER (era = 'current' AND request_type = 'Illegal Dumping Item Pickup') "
+            "FROM r WHERE created_at >= '2024-10-01' AND created_at < '2025-10-01' "
+            "GROUP BY 1 ORDER BY 1",
+            [
+                "month",
+                "legacy bulky + metal + e-waste",
+                "legacy illegal dumping",
+                "current Item Pickups",
+                "current Illegal Dumping Item Pickup",
+            ],
+        )
+        self.emit(
+            "**Proposed crosswalk.** Everything else is labeled current-era only. Crew "
+            "self-reports are excluded from every cross-era comparison.",
+            "",
+            *md_table(
+                ["unified category", "legacy types", "current types", "comparability"],
+                [(c, ", ".join(lt), ", ".join(ct), note) for c, lt, ct, note in PROPOSED_CROSSWALK],
+            ),
         )
 
     # -- report -------------------------------------------------------------------------------
