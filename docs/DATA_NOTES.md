@@ -118,7 +118,7 @@ findings.
   - Built on the legacy parent and limited to the two legacy streetlight types.
   - It exposes three extra columns, `resolutioncode`, `reasoncode` and `dateservicerendered`, so the legacy system *did* record resolution codes even though the yearly views omit them.
   - 241,712 rows (2015-08-05 to 2025-07-04), 194,610 with a resolution code (live aggregate query; no rows pulled).
-  - Its description says "This copy is private and for internal City use only", so it's excluded pending a decision.
+  - Its description says "This copy is private and for internal City use only", so it's excluded (decision 2026-10-23).
 - **`iwu4-fgpx`:** a map built on the streetlight view.
 - **`bpyg-ytsg`:** the pre-MyLA311 call-center archive (2013–2014).
 - **`bihg-rw73`, `2fse-gjp4`:** community-made filters.

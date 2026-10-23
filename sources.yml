@@ -32,7 +32,7 @@ ignored:
     reason: >-
       Legacy streetlight subset that also exposes resolutioncode/reasoncode/dateservicerendered.
       Publicly reachable, but its description says "This copy is private and for internal City use
-      only", so it is excluded until the City confirms it is meant to be public (docs/DECISIONS.md).
+      only", so it is excluded (decided 2026-10-23; see docs/DECISIONS.md).
   - id: iwu4-fgpx
     name: MyLA311 Bureau of Street Lighting (BSL) Service Request Map
     reason: Map visualization built on d7h2-83jy.

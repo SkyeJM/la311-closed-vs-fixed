@@ -52,9 +52,9 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
   - Minute-of-hour sampling fails on 2015, whose timestamps have only minute precision.
 - **Limitation:** clusters make fine-grained distributions (hour of day) lumpy. Samples are for field checks and quick looks only; Phase 1 profiles the full data.
 
-### 2026-10-23 · Exclude `d7h2-83jy` (legacy streetlight view with resolution codes), pending Skye
+### 2026-10-23 · Exclude `d7h2-83jy` (legacy streetlight view with resolution codes)
 - **Options:** use it as legacy E1 evidence for streetlights; exclude it; ask the City first.
-- **Chosen (provisional):** excluded. It's listed under `ignored` in `sources.yml`, and no rows were pulled.
+- **Chosen:** excluded (Skye, 2026-10-23). It's listed under `ignored` in `sources.yml`, and no rows were pulled. Legacy outcomes therefore stay E2 (behavioral) only.
 - **Why:**
   - The view is public, marked official and listed in the catalog, but its own description says "This copy is private and for internal City use only."
   - Building findings on data the publisher calls internal would be hard to defend in an interview, even though anyone can reach it.
