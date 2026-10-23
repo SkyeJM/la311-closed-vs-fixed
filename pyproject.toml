@@ -1,0 +1,36 @@
+[project]
+name = "la311-closed-vs-fixed"
+version = "0.1.0"
+description = "Closed ≠ Fixed: how often a Closed MyLA311 service request was actually fixed."
+requires-python = ">=3.12"
+dependencies = [
+    "duckdb>=2.0.0",
+    "httpx>=0.28.1",
+    "python-dotenv>=1.2.4",
+    "pyyaml>=6.0.3",
+    "tenacity>=9.2.1",
+    "typer>=0.27.3",
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.7.0",
+    "pytest>=9.1.1",
+    "ruff>=0.17.2",
+]
+
+[tool.uv]
+package = false  # an app, not a library: run modules with `uv run python -m <pkg>`
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+markers = ["live: calls the live Socrata API (deselected by default; CI never runs these)"]
+addopts = "-m 'not live'"
