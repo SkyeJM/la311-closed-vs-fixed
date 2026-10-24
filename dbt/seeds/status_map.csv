@@ -1,0 +1,17 @@
+era,status,is_terminal,status_outcome,note
+legacy,Closed,true,closed_unspecified,"Defined as ""The request has been completed""; the legacy era publishes no resolution field"
+legacy,Cancelled,true,cancelled,
+legacy,Referred Out,true,referred_out_of_scope,
+legacy,Open,false,,
+legacy,Pending,false,,
+legacy,Forward,false,,
+current,Closed,true,closed_unspecified,Applies only when the case has no resolution code
+current,Reported,true,closed_unspecified,"Intake handoff to another department's system; how it counts in the fix rate is a Phase 3 decision"
+current,Cancelled,true,cancelled,Applies only when the case has no resolution code
+current,Closed Ext-Referred,true,referred_out_of_scope,Applies only when the case has no resolution code
+current,Workorder Created,false,,
+current,New,false,,
+current,In Progress,false,,
+current,Potential Duplicate,false,,
+current,Duplicate Confirm,false,,
+current,Inspection Required,false,,

@@ -1,0 +1,11 @@
+# No secrets here: a local DuckDB file. `make build` sets LA311_WAREHOUSE (and CI points it at a
+# throwaway file built from fixtures); the default path is relative to this file.
+la311:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('LA311_WAREHOUSE', '../data/warehouse.duckdb') }}"
+      threads: 8
+      settings:
+        preserve_insertion_order: false  # lets big CREATE TABLE AS steps stream with less memory

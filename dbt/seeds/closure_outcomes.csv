@@ -1,0 +1,11 @@
+closure_outcome,counts_as_fixed,outcome_group,sort_order,description
+fixed_work_done,yes,fixed,1,Work was done on this request
+already_resolved,yes,fixed,2,"Fixed, but not by this request: already serviced or resolved by an earlier one"
+duplicate,neutral,neutral,3,Duplicate of another request; the outcome lives on the original
+not_found,no,not_fixed,4,"The crew found nothing to fix (may be legitimate, such as an item not put out)"
+referred_out_of_scope,no,not_fixed,5,Handed off to another agency or outside the City's scope
+deferred,no,not_fixed,6,Closed with the work still pending
+unable,no,not_fixed,7,"Could not be done: no access, can't locate the address, incomplete information"
+cancelled,no,cancelled,8,"Cancelled by the customer, a contractor or the department"
+info_only,not_a_service,neutral,9,Information was provided; not a service outcome
+closed_unspecified,unknown,unknown,10,"Closed without saying how: a generic code, or no code at all"
