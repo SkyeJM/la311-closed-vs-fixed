@@ -22,7 +22,8 @@ datasets:
   - {id: 4a4x-mna2, era: legacy, year: 2023, name: MyLA311 Service Request Data 2023}
   - {id: b7dx-7gc3, era: legacy, year: 2024, name: MyLA311 Service Request Data 2024}
   - {id: h73f-gn57, era: legacy, year: 2025, name: MyLA311 Service Request Data 2025}
-  - {id: 73a2-6ar5, era: current, year: 2025, name: MyLA311 Cases March 2025 to December 2025}
+  - {id: 73a2-6ar5, era: current, year: 2025, name: MyLA311 Cases March 2025 to December 2025,
+     refresh: incremental}  # 2025 cases still change: 23,160 modified Oct 1-23, 2026
   - {id: 2cy6-i7zn, era: current, year: 2026, name: MyLA311 Cases 2026, refresh: incremental}
 
 # Catalog hits that are deliberately not sources. Each needs a reason.
