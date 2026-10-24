@@ -1,0 +1,129 @@
+models:
+  - name: int_requests_unified
+    description: >
+      Both eras in one shape (brief section 3.2) with the reviewed seeds applied: unified
+      category, service vs contact, terminal status, crew self-reports, durations and spatial
+      cells. Era is the system of record. Crew and person fields are dropped here.
+    columns:
+      - name: request_id
+        data_tests: [unique, not_null]
+      - name: era
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [legacy, current]
+      - name: created_month
+        data_tests: [not_null]
+      - name: unified_category
+        description: The crosswalk category, or the raw request type when the type isn't crosswalked
+        data_tests: [not_null]
+      - name: is_crosswalked
+        description: The type belongs to a category that exists in both systems
+      - name: cross_era_comparison
+        description: "full, resident_reported_only, volume_only, or none (not crosswalked)"
+      - name: is_service_request
+        description: False for contacts listed in non_service_types
+      - name: is_terminal
+        description: From status_map; null would mean an unseen status (assert_statuses_are_mapped)
+      - name: is_crew_self_report
+        description: "Channel is \"Driver Self Report(ed)\": crews logging work they already did"
+      - name: hours_to_close
+        description: closed_at - created_at in hours, to the second; negative for some date-only closes
+      - name: is_closed_before_created
+      - name: is_closed_at_midnight
+        description: closed_at falls exactly on midnight, the sign of a date-only close
+      - name: cell_x
+        description: East-west spatial-hash cell (see macros/portability.sql)
+      - name: cell_y
+        description: North-south spatial-hash cell
+
+  - name: int_request_outcomes
+    description: >
+      One closure_outcome per terminal request: from the resolution code where the map knows it
+      (E1, current era), otherwise from the status. Null for open requests and for codes the map
+      doesn't know yet.
+    columns:
+      - name: request_id
+        data_tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('int_requests_unified')
+                field: request_id
+      - name: closure_outcome
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('closure_outcomes')
+                field: closure_outcome
+      - name: outcome_basis
+        description: "resolution_code (E1), status, unmapped_code, or open"
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [resolution_code, status, unmapped_code, open]
+      - name: code_label_source
+        description: label_source of the code-map row used, if any
+
+  - name: int_rereports
+    description: >
+      Closed service requests followed by a new request in the same unified category within
+      `rereport_radius_m` (50 m) and `rereport_window_days` (30 days) of closing. Excludes crew
+      self-reports and duplicates as re-reports. Parameters are provisional until Phase 3.
+    columns:
+      - name: request_id
+        data_tests: [unique, not_null]
+      - name: n_rereports
+        description: How many re-reports followed within the window
+      - name: first_rereport_at
+
+  - name: int_cutover_overlap
+    description: >
+      Legacy requests filed on or after the cutover, each flagged if a current case in the same
+      category was filed within 50 m and 24 hours (and, as a placebo, 7-8 days away).
+    columns:
+      - name: request_id
+        data_tests: [unique, not_null]
+      - name: has_coordinates
+      - name: has_same_day_match
+      - name: has_placebo_match
+
+unit_tests:
+  - name: most_specific_code_map_row_wins
+    description: >
+      Code + department + type beats code + department, which beats code + type, which beats
+      the code alone. Codes the map doesn't know leave the outcome null; cases with no code fall
+      back to the status; open cases get nothing.
+    model: int_request_outcomes
+    given:
+      - input: ref('int_requests_unified')
+        rows:
+          - {request_id: a, era: current, status: Closed, is_terminal: true, resolution_code: X-Code, department: D1, request_type: T1}
+          - {request_id: b, era: current, status: Closed, is_terminal: true, resolution_code: X-Code, department: D1, request_type: T2}
+          - {request_id: c, era: current, status: Closed, is_terminal: true, resolution_code: X-Code, department: D2, request_type: T2}
+          - {request_id: d, era: current, status: Closed, is_terminal: true, resolution_code: X-Code, department: D2, request_type: T3}
+          - {request_id: e, era: current, status: Closed, is_terminal: true, resolution_code: Y-Unknown, department: D1, request_type: T1}
+          - {request_id: f, era: current, status: Cancelled, is_terminal: true, resolution_code: null, department: D1, request_type: T1}
+          - {request_id: g, era: current, status: New, is_terminal: false, resolution_code: X-Code, department: D1, request_type: T1}
+      - input: ref('resolution_code_map')
+        rows:
+          - {resolution_code: X-Code, department: null, request_type: null, closure_outcome: closed_unspecified, label_source: human}
+          - {resolution_code: X-Code, department: null, request_type: T2, closure_outcome: not_found, label_source: human}
+          - {resolution_code: X-Code, department: D1, request_type: null, closure_outcome: info_only, label_source: human}
+          - {resolution_code: X-Code, department: D1, request_type: T1, closure_outcome: referred_out_of_scope, label_source: human}
+      - input: ref('status_map')
+        rows:
+          - {era: current, status: Closed, is_terminal: true, status_outcome: closed_unspecified}
+          - {era: current, status: Cancelled, is_terminal: true, status_outcome: cancelled}
+          - {era: current, status: New, is_terminal: false, status_outcome: null}
+    expect:
+      rows:
+        - {request_id: a, closure_outcome: referred_out_of_scope, outcome_basis: resolution_code}
+        - {request_id: b, closure_outcome: info_only, outcome_basis: resolution_code}
+        - {request_id: c, closure_outcome: not_found, outcome_basis: resolution_code}
+        - {request_id: d, closure_outcome: closed_unspecified, outcome_basis: resolution_code}
+        - {request_id: e, closure_outcome: null, outcome_basis: unmapped_code}
+        - {request_id: f, closure_outcome: cancelled, outcome_basis: status}
+        - {request_id: g, closure_outcome: null, outcome_basis: open}
