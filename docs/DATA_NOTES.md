@@ -3,6 +3,7 @@
 Every quirk found in the MyLA311 open data, with where it came from.
 
 - **Profile §n** = `docs/PROFILE.md`, computed from the full pulls of 2026-10-23 and regenerated with `make profile`.
+- **dbt** = the Phase 2 warehouse build of 2026-10-23 (`make build`), with the model or test named.
 - **Live query** = SoQL against data.lacity.org on 2026-10-23.
 - **Sample** = the Phase 0 random-cluster samples. Rough only, superseded wherever the profile covers the same ground.
 
@@ -28,8 +29,9 @@ Every quirk found in the MyLA311 open data, with where it came from.
   - Its tail (Apr 14,288 · May 14,479 · Jun 12,609 · Jul 9,527 · Aug 2,278) is almost entirely crew-logged graffiti (Profile §10).
   - After August, only a trickle of Homeless Encampment self-service requests remains.
 - **Dataset-page counts are stale caches.** For example, the metadata reported 70,976 non-null values for 2026 Cases. Always count rows yourself.
-- **The legacy datasets are still being touched.** `rowsUpdatedAt` is 2026-10-12, because the views share a parent table. Pulls are point-in-time with manifests.
-- **The 2026 dataset is published in hourly batches.** Its latest `createddate` and `systemmodstamp` both sat exactly on the hour (16:00:00).
+- **The legacy views' metadata changes, but their rows barely do.** `rowsUpdatedAt` is 2026-10-12 because the views share a parent table, yet no row was modified after 2026-10-01. The latest `updateddate` is 2026-06-10 in the 2024 view and 2025-11-03 in the 2025 view (live query). A periodic full re-pull is enough.
+- **The 2025 Cases dataset is still changing.** 23,160 of its rows were modified between Oct 1 and Oct 23, 2026 (live query): cases created in 2025 keep getting closed and updated. It is refreshed incrementally along with 2026 (`sources.yml`).
+- **The 2026 dataset updates during the day.** At 18:24 PDT on Oct 23 its latest case was created at 18:19:53, and `rowsUpdatedAt` read 18:20 (live query). The earlier note that it publishes in hourly batches was wrong: the first pull just happened to see a latest record at exactly 16:00:00. Because counts move, reconciliation compares staging with a live count taken right after each pull or refresh (dbt `assert_staging_reconciles_to_manifest`).
 
 ## Gaps
 - **Dec 31, 2025 afternoon is missing from both public datasets.**
@@ -53,8 +55,10 @@ Every quirk found in the MyLA311 open data, with where it came from.
   | anonymous | "Y"/"N" | `true`/`false` |
   | police area | name | number |
 
-- **ID formats:** legacy `1-` plus 8–10 digits, with non-uniform trailing digits; current is 8 zero-padded digits, so keep it as text.
+- **ID formats:** legacy `1-` plus 8–10 digits, with non-uniform trailing digits (one 17-digit outlier); current is 8 zero-padded digits, so keep it as text.
 - **`locator_sr_council_district` holds the council member's name.** "neigborhood" is misspelled in two current field names.
+- **ZIP fields hold junk.** Legacy: 9,385 single digits and about 25 values with street text bled in (e.g. "JR BLVD, 9xxxx"). Current: 1,818 single digits, 354 six-digit values and 2 ZIP+4 without a dash. Staging keeps 5-digit ZIPs only (the street text never leaves raw).
+- **`assigned_to` holds about 150 crew, yard and queue codes** (144 distinct in legacy, 152 in current). Nothing downstream of staging uses it: the brief rules out claims about crews.
 
 ## Timestamps
 - **Both eras are local Pacific time.** Hour-of-day peaks fall at 09:00–15:00 in both (Profile §4). Floating timestamps have no time zone, so durations crossing a DST change can be off by an hour.
@@ -70,11 +74,22 @@ Every quirk found in the MyLA311 open data, with where it came from.
   - Durations for those years are day-level.
 - **Other legacy types and the current era have essentially no negative durations.**
 
+## Locations
+- **Some current-era coordinates are nowhere near LA.** 2,208 current rows fall outside latitude 33.6–34.4, as far as lat -43.5 and lon 176 (live aggregate). Every legacy coordinate lies inside the city's box. Staging nulls out-of-box points and flags them (`has_out_of_area_coordinates`), so they can't create false spatial matches.
+- **Council district 0 and NC code 0 mean "none".**
+  - CD 0: 3,338 current rows.
+  - NC 0: 93,282 current rows, almost all without a name.
+  - Legacy NC 0: 6,459 rows named "HISTORIC CULTURAL NORTH NC" or "NORTH WESTWOOD NC", NCs the current system codes as 128 and 127.
+  - Staging sets 0 to null.
+- **NC names vary by year and system** ("Sylmar" vs "SYLMAR NC"; three spellings for some codes), and NC boundaries changed when councils split. `dim_geography` uses each code's most common current-era name; cross-era NC comparisons are approximate.
+- **Current-era geography gaps:** 215,936 cases have no CD, NC or coordinates; 61,813 have coordinates but no CD or NC; 25,965 have a CD and NC but no coordinates (live aggregate).
+- **The busiest points are real places, not geocoder defaults.** The top service-request coordinates each carry only 1–5 distinct address strings (counted, never printed). One point has 11,711 current-era graffiti cases. Only 4 current points are shared by 50 or more different addresses (720 rows). Re-reports there reflect real recurrence.
+
 ## Statuses
 - **Legacy:**
   - Closed: 99.9% have a closed date.
   - Cancelled and Referred Out: 100%.
-  - Open, Pending and Forward: rarely (0–4% of rows).
+  - Open, Pending and Forward: rarely (0–4% of rows). Those closed dates are on requests that are still open, so dbt defines time to close for terminal statuses only (`fct_service_requests`).
   - Official definition (column description): "Closed – The request has been completed."
 - **Current statuses:** Closed, Reported, Cancelled and Closed Ext-Referred all have a closed date on 100% of rows. Workorder Created, New, In Progress, Potential Duplicate, Duplicate Confirm and Inspection Required (2 rows; not in the brief) have none (Profile §5).
 - **"Reported" means the 311 record ends at intake.**
@@ -97,6 +112,7 @@ Every quirk found in the MyLA311 open data, with where it came from.
 - **The overlap is a split by channel, not double-recording.**
   - After the cutover, legacy graffiti is crew self-reports; current graffiti is resident-reported (Self Service and Call).
   - Of 51,513 post-cutover legacy graffiti rows, 3,022 have a current graffiti case within 50 m on the same day (±1 day), against 2,708 in an equal-width placebo 7–8 days away. The excess is about 0.6% (Profile §10).
+  - The dbt model reproduces this with exact hours instead of hour boundaries: 2,955 same-day matches against 2,700 placebo, about 0.5% excess (dbt `int_cutover_overlap`).
 
 ## Request types and the crosswalk
 - **The bulky / illegal-dumping boundary moved at the cutover.**

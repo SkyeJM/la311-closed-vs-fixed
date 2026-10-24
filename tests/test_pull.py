@@ -124,6 +124,8 @@ def test_refresh_pages_from_watermark_minus_overlap(tmp_path):
     seen = []
 
     def handler(request):
+        if request.url.path.endswith(".json"):  # the live count taken after the delta
+            return httpx.Response(200, json=[{"n": "5"}])
         seen.append(dict(request.url.params))
         return httpx.Response(200, text=pages[request.url.params["$offset"]])
 
@@ -136,6 +138,7 @@ def test_refresh_pages_from_watermark_minus_overlap(tmp_path):
     assert seen[0]["$where"] == "systemmodstamp >= '2026-03-01T16:51:35'"
     delta = manifest["deltas"][-1]
     assert delta["rows"] == 3
+    assert delta["live_count_after_refresh"] == 5
     assert manifest["files"][delta["file"]] == 3
     stored = duckdb.sql(f"SELECT DISTINCT _pull_method FROM '{out / delta['file']}'").fetchall()
     assert stored == [("soda_delta",)]

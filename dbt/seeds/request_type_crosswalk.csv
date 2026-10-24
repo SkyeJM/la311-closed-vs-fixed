@@ -1,0 +1,18 @@
+era,request_type,unified_category
+legacy,Bulky Items,Bulky & dumped item pickups
+legacy,Metal/Household Appliances,Bulky & dumped item pickups
+legacy,Electronic Waste,Bulky & dumped item pickups
+legacy,Illegal Dumping Pickup,Bulky & dumped item pickups
+current,Item Pickups,Bulky & dumped item pickups
+current,Illegal Dumping Item Pickup,Bulky & dumped item pickups
+legacy,Single Streetlight Issue,Streetlight repair
+legacy,Multiple Streetlight Issue,Streetlight repair
+current,Streetlight Repair Services,Streetlight repair
+legacy,Graffiti Removal,Graffiti
+current,Graffiti Removal,Graffiti
+legacy,Dead Animal Removal,Dead animal
+current,Dead Animal Removal,Dead animal
+legacy,Homeless Encampment,Homeless encampment
+current,Homeless Encampment,Homeless encampment
+legacy,Report Water Waste,Water waste
+current,Report Water Wasting,Water waste

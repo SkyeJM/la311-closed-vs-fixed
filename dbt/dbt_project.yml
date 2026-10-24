@@ -1,0 +1,53 @@
+# dbt project for Closed ≠ Fixed. Run it through the Makefile (`make build`), which sets the
+# paths; run directly from this directory and the defaults below point at ../data.
+name: la311
+version: "0.2.0"
+profile: la311
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+clean-targets: ["target", "dbt_packages"]
+
+flags:
+  send_anonymous_usage_stats: false  # no telemetry from local or CI runs
+
+# Raw Parquet is read from $LA311_RAW_ROOT (models/staging/_raw__sources.yml): dbt doesn't render
+# Jinja inside `vars`, so the path can't live here.
+vars:
+  # Raw source tables (models/staging/_raw__sources.yml) by era. tests/test_dbt_project.py checks
+  # both against sources.yml, so a new dataset can't be pulled but left out of staging.
+  legacy_datasets: [legacy_2015, legacy_2016, legacy_2017, legacy_2018, legacy_2019, legacy_2020,
+    legacy_2021, legacy_2022, legacy_2023, legacy_2024, legacy_2025]
+  current_datasets: [current_2025, current_2026]
+  cutover_date: "2025-03-28"  # first record in the new MyLA311 system (brief section 3.3)
+  # E2 proxy parameters (brief section 4.3). Provisional: Phase 3 justifies each from the data.
+  instant_close_minutes: 5
+  rereport_radius_m: 50
+  rereport_window_days: 30
+  # false while resolution_code_map.csv holds only the brief's first guesses: unmapped codes warn.
+  # Phase 3 sets it to true with the reviewed map, and from then on an unmapped code fails the
+  # build (the brief's alerting for new codes).
+  code_map_final: false
+
+models:
+  la311:
+    +materialized: table
+    +persist_docs:
+      relation: true
+      columns: true
+    staging:
+      +schema: staging
+    intermediate:
+      +schema: intermediate
+    marts:
+      +schema: marts
+
+seeds:
+  la311:
+    +schema: seeds
+
+data_tests:
+  la311:
+    +store_failures: false

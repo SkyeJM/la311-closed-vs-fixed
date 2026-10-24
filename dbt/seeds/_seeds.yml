@@ -1,0 +1,131 @@
+seeds:
+  - name: non_service_types
+    description: >
+      Request types that are contacts rather than service requests (Phase 1 proposal, signed off
+      by Skye 2026-10-23; evidence in docs/PROFILE.md section 11a). They are left out of every
+      service metric and counted in mart_contacts_info_only instead. Legacy "Other" is not listed:
+      without codes it can't be characterized, so it stays a service type that isn't crosswalked.
+    config:
+      column_types: {era: varchar, request_type: varchar, reason: varchar}
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [era, request_type]
+    columns:
+      - name: era
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [legacy, current]
+
+  - name: unified_categories
+    description: >
+      Categories that exist in both systems, and how far they can be compared across the
+      cutover (docs/PROFILE.md section 11c). Crew self-reports are excluded from every
+      cross-era comparison.
+    config:
+      column_types: {unified_category: varchar, cross_era_comparison: varchar, comparability_note: varchar}
+    columns:
+      - name: unified_category
+        data_tests: [unique, not_null]
+      - name: cross_era_comparison
+        description: "full: every measure; resident_reported_only: full, but legacy volume is mostly crew self-reports, which are excluded; volume_only: request counts only"
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [full, resident_reported_only, volume_only]
+
+  - name: request_type_crosswalk
+    description: >
+      Maps raw request types in each era to a unified category (signed off 2026-10-23). Types
+      not listed here are labeled current-era only (or legacy only) and are never compared
+      across eras.
+    config:
+      column_types: {era: varchar, request_type: varchar, unified_category: varchar}
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [era, request_type]
+    columns:
+      - name: unified_category
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('unified_categories')
+                field: unified_category
+
+  - name: status_map
+    description: >
+      Every status in each era: whether it is terminal (Phase 1 rule: at least 99% of rows carry
+      a closed date; signed off 2026-10-23) and the outcome a terminal status implies when a
+      case has no resolution code. An unseen status fails the build
+      (assert_statuses_are_mapped).
+    config:
+      column_types: {era: varchar, status: varchar, is_terminal: boolean, status_outcome: varchar, note: varchar}
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [era, status]
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "(status_outcome is not null) = is_terminal"
+    columns:
+      - name: status_outcome
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('closure_outcomes')
+                field: closure_outcome
+
+  - name: closure_outcomes
+    description: >
+      The outcome taxonomy (brief section 4.2): one row per closure_outcome class, with whether
+      it counts as fixed and the group the metrics roll it up into.
+    config:
+      column_types: {closure_outcome: varchar, counts_as_fixed: varchar, outcome_group: varchar, sort_order: integer, description: varchar}
+    columns:
+      - name: closure_outcome
+        data_tests:
+          - unique
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [fixed_work_done, already_resolved, duplicate, not_found, referred_out_of_scope, deferred, unable, cancelled, info_only, closed_unspecified]
+      - name: counts_as_fixed
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["yes", "no", neutral, not_a_service, unknown]
+      - name: outcome_group
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [fixed, not_fixed, cancelled, neutral, unknown]
+
+  - name: resolution_code_map
+    description: >
+      Resolution code -> closure_outcome. PROVISIONAL in Phase 2: it holds only the brief's
+      first-guess examples (label_source = brief_first_guess). Phase 3 replaces it with the
+      AI-labeled, human-reviewed map. Optional department and request_type columns override the
+      code-level row for one context; the most specific matching row wins.
+    config:
+      column_types: {resolution_code: varchar, department: varchar, request_type: varchar, closure_outcome: varchar, label_source: varchar, rationale: varchar}
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [resolution_code, department, request_type]
+    columns:
+      - name: resolution_code
+        data_tests: [not_null]
+      - name: closure_outcome
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('closure_outcomes')
+                field: closure_outcome
+      - name: label_source
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [brief_first_guess, ai_accepted, ai_overridden, human]
