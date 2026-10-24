@@ -21,6 +21,8 @@ data/
 dbt/target/
 dbt/logs/
 dbt/dbt_packages/
+build/
+site/
 
 # Web
 node_modules/
