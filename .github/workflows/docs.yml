@@ -1,0 +1,41 @@
+name: dbt docs
+
+# Publishes the dbt docs site to GitHub Pages. It is built from synthetic fixtures
+# (tests/fixtures/synthetic_raw.py), so CI never needs the real data. Manual until GitHub Pages
+# is enabled for the repo (Settings > Pages > Source: GitHub Actions); then add `push` to main.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Actions are pinned to commit SHAs (version in the comment) so a moved tag can't change CI.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: astral-sh/setup-uv@07a047e608db84b3d8c06cd9a7c7dcc9c355c18e  # v10.3.2
+      - run: uv sync --locked
+      - run: cd dbt && uv run dbt deps
+      - run: make docs-site
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9  # v5.0.0
+        with:
+          path: site/
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346  # v5.0.1
