@@ -10,6 +10,9 @@ test-paths: ["tests"]
 macro-paths: ["macros"]
 clean-targets: ["target", "dbt_packages"]
 
+flags:
+  send_anonymous_usage_stats: false  # no telemetry from local or CI runs
+
 # Raw Parquet is read from $LA311_RAW_ROOT (models/staging/_raw__sources.yml): dbt doesn't render
 # Jinja inside `vars`, so the path can't live here.
 vars:
