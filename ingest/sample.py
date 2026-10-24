@@ -13,7 +13,6 @@ from __future__ import annotations
 import json
 import math
 import random
-import re
 import tempfile
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, date, datetime
@@ -22,6 +21,7 @@ from pathlib import Path
 import duckdb
 
 from ingest.config import Dataset
+from ingest.duck import soda_csvs_to_parquet, sql_str
 from ingest.socrata import SocrataClient
 
 METHOD = "soda_csv_stratified_random_clusters"
@@ -90,49 +90,14 @@ def cluster_offsets(
     return pairs
 
 
-def system_column_name(name: str) -> str:
-    """Socrata system fields such as ":updated_at" become "_socrata_updated_at"."""
-    if not name.startswith(":"):
-        return name
-    return "_socrata_" + re.sub(r"[^0-9a-z_]+", "_", name[1:].lower()).strip("_")
-
-
-def _sql_str(value: str) -> str:
-    return "'" + value.replace("'", "''") + "'"
-
-
 def csvs_to_parquet(
     csv_paths: list[Path], dest: Path, dataset_id: str, expected_fields: set[str]
 ) -> dict[str, int]:
-    """Combine CSVs named YYYY-MM[_suffix].csv into one all-VARCHAR Parquet file.
-
-    Drops rows repeated across overlapping clusters and fails if the CSV columns don't match the
-    pinned fields. Returns row counts per month.
-    """
-    con = duckdb.connect()
-    files = "[" + ", ".join(_sql_str(str(p)) for p in csv_paths) + "]"
-    source = f"read_csv({files}, header = true, all_varchar = true, filename = true)"
-    columns = [row[0] for row in con.execute(f"DESCRIBE SELECT * FROM {source}").fetchall()]
-    data_columns = {c for c in columns if not c.startswith(":") and c != "filename"}
-    if data_columns != expected_fields:
-        raise ValueError(
-            f"{dataset_id}: CSV columns differ from the pinned schema. "
-            f"Unexpected: {sorted(data_columns - expected_fields)}; "
-            f"missing: {sorted(expected_fields - data_columns)}"
-        )
-    select = ", ".join(f'"{c}" AS "{system_column_name(c)}"' for c in columns if c != "filename")
+    """Combine cluster CSVs named YYYY-MM_NNNN.csv into one Parquet file; row counts per month."""
     month = r"regexp_extract(filename, '(\d{4}-\d{2})[^/]*\.csv$', 1)"
-    dedupe = (
-        'QUALIFY row_number() OVER (PARTITION BY ":id" ORDER BY filename) = 1'
-        if ":id" in columns
-        else ""
-    )
-    con.execute(
-        f"COPY (SELECT {select}, {_sql_str(dataset_id)} AS _dataset_id, {month} AS _sample_month "
-        f"FROM {source} {dedupe}) TO {_sql_str(str(dest))} (FORMAT parquet, COMPRESSION zstd)"
-    )
-    counts = con.execute(
-        f"SELECT _sample_month, count(*) FROM read_parquet({_sql_str(str(dest))}) "
+    soda_csvs_to_parquet(csv_paths, dest, dataset_id, expected_fields, {"_sample_month": month})
+    counts = duckdb.sql(
+        f"SELECT _sample_month, count(*) FROM read_parquet({sql_str(str(dest))}) "
         "GROUP BY 1 ORDER BY 1"
     ).fetchall()
     return dict(counts)

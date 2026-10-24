@@ -8,7 +8,7 @@ Full brief (local only, gitignored): `docs/BRIEF.md`. Decisions: `docs/DECISIONS
 `docs/DATA_NOTES.md`.
 
 ## How we work
-- **Phase gates (brief §8).** Finish one phase, stop with a checkpoint (what was built, key numbers, surprises, decisions needed), and wait for "go". Current phase: **0, setup and spikes**.
+- **Phase gates (brief §8).** Finish one phase, stop with a checkpoint (what was built, key numbers, surprises, decisions needed), and wait for "go". Current phase: **1, ingest and profile**.
 - **Log as you go.** Every non-obvious choice goes in `docs/DECISIONS.md` (date, options, why). Every data quirk goes in `docs/DATA_NOTES.md`, with its source query.
 - **No invented numbers.** Prose numbers come from code: `findings/findings.json` once it exists.
 - **Check current docs** for fast-moving tools: Anthropic SDK, dbt-duckdb, DuckDB (now **2.x**), Socrata, hosts.
@@ -20,6 +20,7 @@ Full brief (local only, gitignored): `docs/BRIEF.md`. Decisions: `docs/DECISIONS
 ## Commands
 - `make setup` (uv sync + git hooks) · `make check` (lint + tests) · `make fmt`
 - `make discover` · `make schema-check` · `make pin` · `make ingest-sample`
+- `make ingest` (full pulls → `data/raw/{id}/full.parquet` + manifests) · `make refresh` (current-year delta) · `make profile` (→ `docs/PROFILE.md`)
 - CLI: `uv run python -m ingest --help`
 
 ## Conventions
@@ -28,17 +29,22 @@ Full brief (local only, gitignored): `docs/BRIEF.md`. Decisions: `docs/DECISIONS
 - **Era** is the system of record (which dataset a row came from), never inferred from dates.
 - **Tests are offline;** mark live-API tests `@pytest.mark.live`.
 - **Makefile** must work with GNU Make 3.81.
-- **DuckDB 2.x** rejects implicit aliases that are keywords (`... AS month` works, `... month` doesn't).
+- **DuckDB 2.x:** implicit aliases that are keywords fail (`... AS month` works, `... month` doesn't),
+  and relations have no `fetchone()` (use `con.execute(...).fetchone()` or `rel.fetchall()`).
 
 ## Data traps (details in docs/DATA_NOTES.md)
 - Every dataset is a saved filter on a private parent table. The filter SoQL is pinned in `ingest/schemas/`; filter drift = population drift.
 - Bulk CSV export headers are display names, and current datasets reuse legacy display names ("UpdatedDate" = `systemmodstamp`, "Owner" = `department_name__c`).
 - The 2025 Cases filter ends 2025-12-31 12:59:59, so Dec 31 afternoon cases are in neither dataset.
 - Legacy year filters use inclusive BETWEEN, so rows at exactly Jan 1 00:00:00 can sit in two years. Dedupe `srnumber`.
-- Timestamps are floating, apparently local Pacific time. 2015 has minute precision only.
-- Current status "Reported" carries a `closeddate` and a resolution code; it behaves like a closed status.
+- Timestamps are floating local Pacific time. 2015–2019 have minute precision (2020 mixed); legacy
+  streetlight closes in 2017–2021 are often date-only (midnight), hence ~14K negative durations.
+- Current status "Reported" = the 311 record ends at intake (a handoff). Homeless Encampment, Report a
+  Sidewalk Problem, Private Property Violation and Report Water Wasting are 100% Reported.
 - Information-Only cases are contacts, not service requests (instantly "Closed", code "C-Closed").
-- "Driver Self Report(ed)" = crews logging their own work. The legacy Apr–Aug 2025 tail is crew-logged graffiti.
+- "Driver Self Report(ed)" = crews logging their own work: 15% of legacy rows, 57% of legacy graffiti,
+  and back in current graffiti from 2026. Closed by construction; excluded from cross-era comparisons.
+- The bulky / illegal-dumping boundary moved at the cutover: crosswalk them as one category.
 - `action_taken__c` is a call-center action, not a resolution. `service_date__c` is a schedule, not proof of service.
 - Map resolution codes on the full string; prefixes collide ("RC-Contractor Serviced" vs "RC-Unable to Locate Address").
 - `locator_sr_council_district` holds the member's *name*. "neigborhood" is misspelled in source fields.
