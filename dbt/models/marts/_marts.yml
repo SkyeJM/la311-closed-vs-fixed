@@ -1,0 +1,296 @@
+models:
+  - name: fct_service_requests
+    description: >
+      One row per service request in either era (contacts excluded). The warehouse's analysis
+      table: it keeps coordinates for spatial work and is never served. Outcomes come from the
+      resolution code where the (provisional) map knows it, otherwise from the status. E2 proxy
+      parameters (instant close, re-report radius and window) are dbt vars, provisional until
+      Phase 3.
+    columns:
+      - name: request_id
+        description: "'legacy:' or 'current:' + the published ID"
+        data_tests: [unique, not_null]
+      - name: era
+        description: System of record (legacy MyLA311, or the new system from 2025-03-28)
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [legacy, current]
+      - name: source_dataset_id
+      - name: source_request_id
+      - name: created_at
+        data_tests: [not_null]
+      - name: updated_at
+      - name: closed_at
+      - name: created_month
+      - name: request_type
+        description: Raw request type in its own era's vocabulary
+      - name: unified_category
+        description: Crosswalk category, or the raw type when the type isn't crosswalked
+      - name: is_crosswalked
+        description: Comparable across eras (see cross_era_comparison for how far)
+      - name: cross_era_comparison
+        description: "full, resident_reported_only, volume_only, or none"
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [full, resident_reported_only, volume_only, none]
+      - name: department
+      - name: channel
+      - name: created_by_org
+      - name: is_crew_self_report
+        description: Crews logging work they already did. Excluded from every cross-era comparison.
+      - name: is_anonymous
+      - name: status
+      - name: is_terminal
+        description: The status ends the case (status_map)
+        data_tests: [not_null]
+      - name: status_outcome
+        description: The outcome the status alone implies (E2); measured the same way in both eras
+      - name: resolution_code
+        description: Current era only
+      - name: reason_code
+      - name: closure_outcome
+        description: >
+          Outcome class (brief section 4.2). Null when the request is open, or when its code
+          isn't in resolution_code_map yet.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [fixed_work_done, already_resolved, duplicate, not_found, referred_out_of_scope, deferred, unable, cancelled, info_only, closed_unspecified]
+      - name: outcome_basis
+        description: "resolution_code (E1), status, unmapped_code, or open"
+      - name: code_label_source
+        description: Where the code's label came from (brief_first_guess in Phase 2)
+      - name: counts_as_fixed
+        description: "yes, no, neutral, not_a_service or unknown (from closure_outcomes)"
+      - name: outcome_group
+        description: "fixed, not_fixed, cancelled, neutral or unknown (from closure_outcomes)"
+      - name: hours_to_close
+        description: Hours from creation to closing, to the second, for terminal requests only. Negative for some date-only closes.
+      - name: is_closed_before_created
+      - name: is_closed_at_midnight
+      - name: is_instant_close
+        description: Closed within `instant_close_minutes` (provisional 5) of creation (E2)
+      - name: is_rereport_eligible
+        description: Closed, located, and its whole re-report window is observable
+      - name: n_rereports_30d
+        description: New same-category requests within 50 m and 30 days of closing; null if not eligible
+      - name: is_rereported_30d
+        description: At least one re-report (E2); null if not eligible
+      - name: first_rereport_at
+      - name: cd
+        description: Council district (1-15)
+      - name: nc_code
+        description: Neighborhood council code
+      - name: nc_name
+        description: Neighborhood council name as published (spelling varies; use dim_geography)
+      - name: apc
+      - name: zip
+      - name: lat
+        description: Never served (brief section 10)
+      - name: lon
+        description: Never served (brief section 10)
+      - name: has_out_of_area_coordinates
+      - name: is_approximate_address
+        description: Legacy only; the location was a pin dropped on a map
+    data_tests:
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "(is_instant_close is null and hours_to_close is null) or is_terminal"
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "(is_rereported_30d is not null) = is_rereport_eligible"
+
+  - name: dim_request_category
+    description: >
+      One row per raw request type in each era, with its unified category, whether and how far
+      it can be compared across eras, and whether it is a service request.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [era, request_type]
+    columns:
+      - name: era
+      - name: request_type
+      - name: unified_category
+      - name: is_crosswalked
+      - name: cross_era_comparison
+      - name: comparability_note
+      - name: is_service_request
+      - name: non_service_reason
+        description: Why the type is a contact rather than a service request
+      - name: n_requests
+      - name: first_created_at
+      - name: last_created_at
+      - name: main_department
+        description: The department that owns most requests of this type
+
+  - name: dim_resolution_code
+    description: >
+      One row per resolution code seen in the new system, with its code-level mapping and how
+      it is used. PROVISIONAL mapping in Phase 2 (brief first guesses only).
+    columns:
+      - name: resolution_code
+        data_tests: [unique, not_null]
+      - name: code_prefix
+        description: The part before the first "-". Prefixes collide, so never map on them.
+      - name: closure_outcome
+      - name: counts_as_fixed
+      - name: outcome_group
+      - name: label_source
+      - name: rationale
+      - name: n_context_overrides
+        description: Map rows that override this code for one department or request type
+      - name: is_mapped
+      - name: n_cases
+      - name: n_service_cases
+      - name: n_departments
+      - name: n_request_types
+      - name: main_department
+      - name: main_request_type
+      - name: main_status
+      - name: first_seen_at
+      - name: last_seen_at
+
+  - name: dim_geography
+    description: >
+      Council districts and neighborhood councils, the only areas the UI and the AI aggregate
+      to. Each NC takes its most common current-era name.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [geo_level, geo_code]
+    columns:
+      - name: geo_level
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [council_district, neighborhood_council]
+      - name: geo_code
+        data_tests: [not_null]
+      - name: geo_name
+        data_tests: [not_null]
+      - name: primary_cd
+        description: For an NC, the council district most of its requests fall in
+      - name: n_requests_legacy
+      - name: n_requests_current
+
+  - name: mart_outcomes_monthly
+    description: >
+      Outcome mix by creation month (brief Q1): service-request counts by era, category, type,
+      department and closure outcome, plus additive sums for durations and E2 proxies. Rates
+      are computed from these counts (metrics.yml, Phase 3).
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [created_month, era, unified_category, request_type, department, is_crew_self_report, is_terminal, closure_outcome]
+    columns:
+      - name: created_month
+      - name: era
+      - name: unified_category
+      - name: request_type
+      - name: department
+      - name: is_crew_self_report
+      - name: is_terminal
+      - name: closure_outcome
+        description: Null on terminal rows = a code not mapped yet; null on open rows = open
+      - name: n_requests
+      - name: n_instant_close
+      - name: n_with_duration
+        description: Requests with a non-negative time to close
+      - name: sum_hours_to_close
+        description: Sum over n_with_duration (for means; medians come from mart_cutover_comparison)
+      - name: n_closed_before_created
+      - name: n_rereport_eligible
+      - name: n_rereported_30d
+
+  - name: mart_gap_by_district
+    description: >
+      Where the closed-vs-fixed gap is (brief Q2 and Q7): current-era service requests by
+      quarter, category, department, council district and resolution code.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [created_quarter, unified_category, request_type, department, cd, is_crew_self_report, is_terminal, resolution_code, closure_outcome]
+    columns:
+      - name: created_quarter
+      - name: unified_category
+      - name: request_type
+      - name: department
+      - name: cd
+      - name: is_crew_self_report
+      - name: is_terminal
+      - name: resolution_code
+      - name: closure_outcome
+      - name: n_requests
+
+  - name: mart_cutover_comparison
+    description: >
+      The cutover and the long run (brief Q4 and Q6): crosswalked categories by month and era,
+      crew self-reports excluded, with E2 measures that mean the same thing in both systems.
+      Closure measures are null for volume-only categories.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [created_month, unified_category, era]
+    columns:
+      - name: created_month
+      - name: unified_category
+      - name: era
+      - name: cross_era_comparison
+      - name: is_overlap_month
+        description: Mar-Aug 2025, when both systems have rows
+      - name: n_requests
+      - name: n_terminal
+      - name: n_status_cancelled
+      - name: n_status_referred
+      - name: n_instant_close
+      - name: n_with_duration
+      - name: p50_hours_to_close
+        description: Median over non-negative durations
+      - name: p90_hours_to_close
+      - name: n_closed_before_created
+      - name: n_closed_at_midnight
+      - name: n_rereport_eligible
+      - name: n_rereported_30d
+
+  - name: mart_bulky_items
+    description: >
+      Bulky and dumped item pickups in the new system (brief Q3), by month, type, neighborhood
+      council, council district, closing weekday and resolution code.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [created_month, request_type, nc_code, cd, closed_weekday, is_terminal, resolution_code, closure_outcome]
+    columns:
+      - name: created_month
+      - name: request_type
+      - name: nc_code
+      - name: cd
+      - name: closed_weekday
+        description: Day the case closed (the crew's visit), 0 = Sunday
+      - name: is_terminal
+      - name: resolution_code
+      - name: closure_outcome
+      - name: n_requests
+      - name: n_rereport_eligible
+      - name: n_rereported_30d
+
+  - name: mart_contacts_info_only
+    description: >
+      Contacts that are not service requests (Information-Only, Feedback, Program Research,
+      current-era Other), by month, era, type, channel, department and code.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [created_month, era, request_type, channel, department, resolution_code]
+    columns:
+      - name: created_month
+      - name: era
+      - name: request_type
+      - name: channel
+      - name: department
+      - name: resolution_code
+      - name: n_contacts
+      - name: n_closed_within_60s

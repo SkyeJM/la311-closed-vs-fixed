@@ -162,7 +162,8 @@ def refresh_incremental(
 
     The overlap re-reads recent days because modifications can reach the portal out of order;
     staging keeps the latest version of each case. Deleted or re-filtered cases are invisible to
-    deltas, so a periodic full pull is still needed.
+    deltas, so a periodic full pull is still needed. The live count taken right after the delta
+    is what dbt's reconciliation test expects staging to hold.
     """
     if dataset.refresh != "incremental":
         raise ValueError(f"{dataset.id} is not marked `refresh: incremental` in sources.yml")
@@ -203,6 +204,7 @@ def refresh_incremental(
                 "_pulled_at": f"TIMESTAMPTZ {sql_str(pulled_at.isoformat())}",
             },
         )
+    live_count = live_row_count(client, dataset.id)
     manifest = json.loads((out / "manifest.json").read_text())
     manifest["files"][dest.name] = rows
     manifest["deltas"].append(
@@ -212,6 +214,7 @@ def refresh_incremental(
             "watermark": watermark.isoformat(),
             "since": since.isoformat(),
             "rows": rows,
+            "live_count_after_refresh": live_count,
         }
     )
     write_manifest(out, manifest)

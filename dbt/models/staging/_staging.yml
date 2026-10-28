@@ -1,0 +1,168 @@
+models:
+  - name: stg_legacy__requests
+    description: >
+      One row per legacy MyLA311 service request (Aug 2015 - Nov 2025) from the 11 yearly
+      datasets, typed from the raw strings. The legacy system published a status but no
+      resolution. Address fields are never selected.
+    columns:
+      - name: request_id
+        description: "'legacy:' + the SR number; unique across both eras"
+        data_tests: [unique, not_null]
+      - name: source_request_id
+        description: SR number as published (`srnumber`)
+      - name: source_dataset_id
+        description: Socrata dataset the row came from
+        data_tests: [not_null]
+      - name: created_at
+        description: Creation time, floating local (Pacific) time. Minute precision in 2015-2019.
+        data_tests: [not_null]
+      - name: updated_at
+        description: Last update (`updateddate`)
+      - name: closed_at
+        description: Closing time. Legacy streetlight closes in 2017-2021 are often date-only (midnight).
+      - name: service_date
+        description: Scheduled Sanitation service date; not proof that service happened
+      - name: status
+        description: "Legacy status: Closed, Cancelled, Referred Out, Open, Pending, Forward"
+        data_tests: [not_null]
+      - name: request_type
+        data_tests: [not_null]
+      - name: department
+        description: Owning department (`owner`)
+      - name: assigned_to
+        description: Crew or yard code. Kept in staging only; nothing downstream uses it.
+      - name: channel
+        description: How the request came in (`requestsource`); "Driver Self Report" = crews logging their own work
+      - name: created_by_org
+        description: Missing from the 2015-2018 and 2021 views
+      - name: call_action
+        description: Call-center action (almost always "SR Created"), not a resolution
+      - name: is_anonymous
+      - name: zip
+        description: 5-digit ZIP; other values (single digits, street text) are set to null
+      - name: cd
+        description: Council district number (1-15)
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+              config:
+                severity: warn
+      - name: cd_member
+        description: Council member's name (sic)
+      - name: nc_code
+        description: Neighborhood council code; 0 (no NC) is set to null
+      - name: nc_name
+      - name: apc
+        description: Area planning commission
+      - name: police_area
+        description: LAPD area name
+      - name: address_verified
+        description: "Address verification code: Y, N, M or P"
+      - name: is_approximate_address
+        description: The location was a pin dropped on a map
+      - name: mobile_os
+      - name: pull_method
+        description: bulk_export (legacy rows are never refreshed)
+      - name: pulled_at
+      - name: lat
+        description: Latitude; null when outside a box around the city
+      - name: lon
+        description: Longitude; null when outside a box around the city
+      - name: has_out_of_area_coordinates
+        description: The source had coordinates, but outside the city box
+
+  - name: stg_current__cases
+    description: >
+      One row per case in the new MyLA311 system (from 2025-03-28), typed from the raw strings.
+      Each dataset is a full pull plus incremental deltas; the latest version of each case wins.
+      Address fields are never selected.
+    columns:
+      - name: request_id
+        description: "'current:' + the case number; unique across both eras"
+        data_tests: [unique, not_null]
+      - name: source_request_id
+        description: Case number as published (8 digits, zero-padded, kept as text)
+      - name: source_dataset_id
+        data_tests: [not_null]
+      - name: created_at
+        data_tests: [not_null]
+      - name: updated_at
+        description: Last modification (`systemmodstamp`), the incremental-refresh watermark
+      - name: closed_at
+      - name: service_date
+        description: Scheduled service date (`service_date__c`); 98% null
+      - name: service_rendered_on
+        description: Date service was rendered; populated on under 2% of rows
+      - name: status
+        data_tests: [not_null]
+      - name: request_type
+        data_tests: [not_null]
+      - name: department
+      - name: assigned_to
+        description: Crew, yard or queue. Kept in staging only; nothing downstream uses it.
+      - name: channel
+        description: How the case came in (`origin`); "Driver Self Reported" = crews logging their own work
+      - name: created_by_org
+      - name: call_action
+        description: Call-center action, not a resolution; null on about half of rows
+      - name: resolution_code
+        description: How the case was closed, in "CODE-Label" form. Map on the full string; prefixes collide.
+      - name: reason_code
+      - name: is_anonymous
+      - name: zip
+      - name: cd
+        description: Council district number; 0 is set to null
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+              config:
+                severity: warn
+      - name: cd_member
+      - name: nc_code
+      - name: nc_name
+      - name: apc
+      - name: police_area
+        description: LAPD area number
+      - name: pull_method
+        description: bulk_export or soda_delta (which timestamp format the row arrived in)
+      - name: pulled_at
+      - name: lat
+      - name: lon
+      - name: has_out_of_area_coordinates
+
+  - name: stg_ingest__files
+    description: One row per raw Parquet file on disk, with its dataset and row count.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [dataset_id, file_name]
+    columns:
+      - name: dataset_id
+      - name: file_name
+        description: full.parquet or delta_<UTC>.parquet
+      - name: n_rows
+
+  - name: stg_ingest__manifests
+    description: >
+      One row per dataset from its ingest manifest (data/raw/{id}/manifest.json): when it was
+      pulled and refreshed, and the live row count staging must match.
+    columns:
+      - name: dataset_id
+        data_tests: [unique, not_null]
+      - name: dataset_name
+      - name: era
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [legacy, current]
+      - name: full_pull_at
+      - name: full_pull_method
+      - name: full_pull_rows
+      - name: live_count_after_pull
+      - name: n_deltas
+      - name: last_refresh_at
+      - name: expected_rows
+        description: Live count after the latest full pull or refresh
+        data_tests: [not_null]

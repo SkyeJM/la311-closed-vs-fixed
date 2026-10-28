@@ -1,0 +1,6 @@
+era,request_type,reason
+current,Information-Only,"Informational contact by definition: always closed at once with the generic code ""C-Closed"""
+current,Feedback,"Comments about the service, not a request for work"
+legacy,Feedback,"Comments about the service, not a request for work"
+current,Program Research,"LASAN customer-care research: nearly all ""1004-Closed"" and rarely a work code"
+current,Other,"Mostly ""GI-General Information"" replies (85.6% of coded rows carry information codes)"

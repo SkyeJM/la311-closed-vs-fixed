@@ -10,7 +10,7 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
 - **Consequences:**
   - Raw data and samples are gitignored.
   - A pre-commit hook blocks files over 500 KB and anything that looks like an API key.
-  - CI fixtures (Phase 2) will have address text removed and coordinates coarsened.
+  - CI fixtures (Phase 2) will have address text removed and coordinates coarsened. Phase 2 went further: the fixtures are fully synthetic (see "CI builds dbt on synthetic fixtures").
   - Commits use a repo-local identity with Skye's GitHub noreply address, so no personal email lands in public history.
 
 ### 2026-10-23 · uv-managed virtual project, no packaging
@@ -69,7 +69,7 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
 ### 2026-10-23 · MIT license for code; the City's data stays CC0
 - **Why:** MIT is the conventional choice for portfolio code. Easy to change.
 
-### 2026-10-23 · Hosting: Vercel Hobby, API as a Python service beside Next.js (test deploy passed; pending Skye's confirmation)
+### 2026-10-23 · Hosting: Vercel Hobby, API as a Python service beside Next.js (confirmed by Skye at the Phase 1 gate)
 - **Constraint:** $0/month, no card, no paid tiers (Skye).
 - **Options researched 2026-10-23** (details and sources in `spikes/hosting/README.md`):
   - Vercel Hobby
@@ -114,7 +114,7 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
   - A 110-second SSE stream arrived unbuffered with no cutoff.
   - Files generated in the build step are bundled.
   - A true scale-from-zero cold start wasn't captured (instances stayed warm); re-measure in Phase 5. The throwaway project was deleted.
-- **Consequence for Phase 2 (proposed):** serving holds the marts plus a slim *current-era* fact table (~4M rows); legacy years are served as aggregated marts.
+- **Consequence for Phase 2:** serving holds the marts plus a slim *current-era* fact table; legacy years are served as aggregated marts. Built in Phase 2 at 75 MB (see "Serving export" below).
 
 ## Phase 1: ingest and profile
 
@@ -151,3 +151,109 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
 - **Finding:** with DuckDB 2.0, putting `enable_external_access=false` in the connect config makes `temp_directory` impossible to set.
 - **Working sequence:** connect read-only with `temp_directory`, then `SET enable_external_access = false`, then `SET lock_configuration = true`.
 - **Tested locally:** this blocks re-enabling external access, reading local files, raising the memory limit, and writing tables. It's the layer under the `run_sql` SQL parser.
+
+### 2026-10-23 · Phase 1 sign-off
+- **What was asked:** the Phase 1 checkpoint asked for answers to five decisions along with "go", and recommended yes on each.
+- **Skye's reply:** "go", with no changes, taken as accepting the recommendations:
+  1. **Non-service types:** Information-Only, Program Research and current-era Other, plus Feedback in both eras. Legacy "Other" stays a service type that isn't crosswalked: without codes it can't be characterized.
+  2. **Terminal statuses:** legacy Closed, Cancelled, Referred Out; current Closed, Reported, Cancelled, Closed Ext-Referred.
+  3. **Crosswalk:** six categories, with crew self-reports excluded from every cross-era comparison.
+  5. **Hosting:** Vercel Hobby.
+- **Deferred:** decision 4 (whether intake-only "Reported" cases count against the fix rate) moves to Phase 3 with the taxonomy.
+- **Where they live:** dbt seeds (`non_service_types`, `status_map`, `request_type_crosswalk`, `unified_categories`), so each is a reviewable data file rather than SQL.
+
+## Phase 2: dbt models
+
+### 2026-10-23 · dbt-core 1.12 with dbt-duckdb 1.11, on DuckDB 2.0
+- **Options:** dbt v2 (the new Rust engine, now the default `pip install dbt`); dbt-core 1.x with dbt-duckdb; downgrading DuckDB to 1.5 for safety.
+- **Chosen:** dbt-core 1.12.6, dbt-duckdb 1.11.0 and DuckDB 2.0.0, with dbt_utils 1.4.1.
+- **Why:**
+  - The brief names dbt-core + dbt-duckdb.
+  - dbt's docs list DuckDB as "CLI only" in v2, the default v2 build isn't open source (the Apache build is `dbt-oss`), and dbt-duckdb has an open issue about hanging under the new engine.
+  - dbt says v1.x "remains fully supported".
+  - DuckDB 2.0 shipped on 2026-10-21. A smoke test passed seeds, tables, views, generic and singular tests, unit tests and static docs, and dbt-duckdb's nightly CI already covers 2.0.
+- **Upgrade path:** the project avoids deprecated syntax (`data_tests:`, `arguments:` for test inputs), so a later move to v2 should be mechanical.
+
+### 2026-10-23 · One dbt source per Socrata dataset, kept in sync with `sources.yml`
+- **Options:** one glob over every raw file, with era read from the manifests; one source per era; one source per dataset.
+- **Chosen:** one source table per dataset (`legacy_2015` … `current_2026`), each linked to its portal page in the docs. Staging unions them from two dbt vars (`legacy_datasets`, `current_datasets`).
+- **Why:**
+  - It's the conventional dbt layout, and lineage shows every published dataset.
+  - `tests/test_dbt_project.py` fails if the sources or the vars disagree with `sources.yml`.
+  - The manifest reconciliation fails if a pulled dataset isn't staged, so "Cases 2027" can't be half-added.
+- **DuckDB-specific reads stay at the source edge:** `read_parquet` locations live under `config` (not `meta`, so local paths stay out of the docs), and `UNION ALL BY NAME` absorbs the five legacy views that lack a column.
+
+### 2026-10-23 · Staging keeps no addresses and cleans locations conservatively
+- **Address fields:** never selected, because nothing needs them. Coordinates cover every spatial join (brief section 10: data minimization).
+- **Coordinates:** points outside a box around the city (lat 33.6–34.4, lon -118.8 to -118.0) are nulled and flagged, so they can't create false spatial matches. About 2,200 current-era cases geocode to other continents.
+- **Codes:** council district 0 and NC code 0 mean "none" and become null. Only 5-digit ZIPs are kept (9-digit ZIP+4 is truncated).
+- **Dropped downstream:** `assigned_to` (about 150 crew and yard codes; the brief rules out claims about crews), `cd_member` (a person's name) and police area (names in one era, numbers in the other).
+- **Deduplication:** within a dataset, staging keeps the latest version of each case across the full pull and its deltas. It does *not* dedupe across datasets: Phase 1 found no shared IDs, so a unique test fails loudly if that changes, instead of silently dropping rows.
+
+### 2026-10-23 · Reconciliation is against the live count after the latest pull or refresh
+- **Options:** compare staging with the rows on disk; with the manifest's file counts; with the portal's own count.
+- **Chosen:** both checks.
+  - `assert_staging_reconciles_to_manifest` compares each dataset's staged rows with the live count taken right after its latest full pull or refresh. Ingest now records that count after every refresh.
+  - `assert_raw_files_match_manifest` checks every file's row count against what ingest recorded.
+- **Why:** the first is the end-to-end claim ("what dbt built is what the portal had"), and the second localizes a failure to one file.
+- **First result:** all 13 datasets match exactly (16,009,032 rows on 2026-10-23).
+
+### 2026-10-23 · Outcome precedence: the code, then the status, never a guess
+- **Rule (`int_request_outcomes`):**
+  - A mapped resolution code decides (E1). The most specific map row wins: code + department + type, then code + department, then code + type, then the code alone. A dbt unit test pins this order.
+  - A terminal case with no code takes its status's outcome from `status_map`, which is the only option for legacy rows.
+  - A code the map doesn't know leaves the outcome null (`unmapped_code`), not a default.
+- **Why:** a default would hide new codes. Null keeps them visible, and `assert_all_resolution_codes_mapped` lists them.
+- **Phase 2 map is provisional:** `resolution_code_map.csv` holds only the brief's first-guess examples (53 codes, `label_source = brief_first_guess`).
+  - The mapping test *warns* (118 unmapped codes today, 118,291 terminal cases).
+  - Phase 3 replaces the map with the AI-labeled, reviewed one and sets `code_map_final: true`, which turns the warning into a build failure. That's the brief's alerting.
+- **Seeds beyond the brief's three:**
+  - `status_map`: terminal flag plus the outcome a status implies.
+  - `closure_outcomes`: the taxonomy, with counts_as_fixed and an outcome group.
+  - `unified_categories`: comparability per category.
+  - Each turns a signed-off decision into reviewable data.
+
+### 2026-10-23 · Re-reports: a square spatial hash plus exact distance, not H3 (parameters provisional)
+- **Options:**
+  - H3 cells with `h3_grid_disk` (a DuckDB community extension; native in Snowflake);
+  - DuckDB spatial's R-tree join;
+  - square grid cells with a 3×3 equi-join and an exact great-circle filter.
+- **Chosen:** the square grid.
+  - Cells are 55 m (the 50 m radius plus 10%, which absorbs the east-west scale change across the city). A point's neighbors within 50 m always lie in its own cell or the 8 around it.
+  - Time is split into 30-day buckets, so a window spans at most two of them.
+- **Why:**
+  - It's exact.
+  - It needs no extension download (CI and the build stay offline-safe).
+  - It's plain SQL in both DuckDB and Snowflake. H3's neighbor search needs DuckDB-only `unnest` syntax, while its single-cell function is the same in both, so H3 stays available for the stretch-goal map.
+- **Verified:** a brute-force search (bounding box plus distance, no grid) on 3,000 random closed requests matched the model on every one.
+- **Definition details:**
+  - Requests from either era count, so a legacy request closed before the cutover can be re-reported in the new system for crosswalked categories.
+  - Crew self-reports and duplicates never count as re-reports.
+  - A window counts only if it can be observed in full: it must end before the data does, and, for legacy-only types, before the cutover.
+- **Provisional:** 50 m and 30 days come from the brief. Phase 3 checks them against a placebo baseline, because pickups recur at the same buildings so often that re-reports there measure recurrence more than failure.
+
+### 2026-10-23 · Durations exist only for terminal requests; marts store counts, not rates
+- **Durations:** about 1% of legacy Open rows (and some Forward rows) carry a closed date although the request is open. `hours_to_close` and `is_instant_close` are therefore defined only when the status is terminal.
+- **Marts:**
+  - They hold additive counts and sums, so any rate can be computed at any roll-up: rates of rates would be wrong.
+  - Percentiles can't be re-aggregated, so they are precomputed only at the grain where they're used (month × category × era in `mart_cutover_comparison`). The slim serving fact handles other current-era grains.
+- **Rates are defined once, in `metrics.yml` (Phase 3)**, for the marts and the AI layer.
+
+### 2026-10-23 · Serving export: an allowlist module, checked for locating fields on every build
+- **Chosen:** `api/serving.py` copies an explicit list of tables from the warehouse into `data/serving.duckdb`, along with dbt's docs as table and column comments.
+  - The tables: dims, marts, and `fct_current_requests` (current-era service requests without IDs, coordinates, ZIPs or crew fields).
+  - The build fails if any forbidden column (address, lat, lon, zip, request IDs, assigned_to, cd_member) would reach serving.
+- **Why:**
+  - One module is the allowlist for both the deploy and Phase 4's `run_sql` tool (marked per table). The row-level slim fact is reachable only through governed metric queries, never raw SQL.
+  - Carrying comments over lets the agent's `describe_table` read definitions straight from the database.
+- **Size:** 75.0 MB (2,778,200 slim-fact rows plus marts), half of the 150 MB budget set under Vercel's 225 MB bundle limit.
+
+### 2026-10-23 · CI builds dbt on synthetic fixtures, never on real rows
+- **Chosen:** `tests/fixtures/synthetic_raw.py` invents a few rows per dataset, shaped by the real pins and written through the real ingest code (bulk-export CSV → `export_to_parquet`, refresh pages → `soda_csvs_to_parquet`, plus manifests).
+  - Every row is placed to exercise one edge case: a delta update, a re-report pair, a duplicate that must not count, the cutover overlap, a date-only close, out-of-area coordinates, an unmapped code.
+  - `tests/test_dbt_fixtures.py` runs `dbt build` on them inside pytest (about 8 s) and asserts each case.
+- **Why:**
+  - The brief requires CI to build dbt without the live API.
+  - Invented rows can't leak an address, while scrubbed real rows still could.
+  - Checking specific outcomes catches logic errors that green tests alone would miss.
+- **Docs site:** `make docs-site` builds the dbt docs from the same fixtures. The static page embeds the absolute paths of whichever machine built it, so only the CI build is meant for publishing.
