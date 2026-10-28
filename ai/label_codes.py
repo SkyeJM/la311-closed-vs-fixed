@@ -252,9 +252,19 @@ def parse_label(response, context: dict) -> tuple[CodeLabel | None, str | None]:
     return label, None
 
 
+class AccountError(RuntimeError):
+    """The API refused the account itself (key, permissions, credit): no later call can work."""
+
+
+def _account_problem(exc: anthropic.APIError) -> bool:
+    if isinstance(exc, anthropic.AuthenticationError | anthropic.PermissionDeniedError):
+        return True
+    return isinstance(exc, anthropic.BadRequestError) and "credit balance" in str(exc).lower()
+
+
 class Labeler:
     """Sends one labeling request per (code, model, run), with a cached system prompt, a spend
-    cap and a JSONL log of every call."""
+    cap and a JSONL log of every call. An account-level refusal stops the whole run."""
 
     def __init__(self, client, contexts: dict[str, dict], max_usd: float, log_path: Path | None):
         self.client = client
@@ -269,10 +279,13 @@ class Labeler:
         self.max_usd = max_usd
         self.spent = 0.0
         self.log_path = log_path
+        self.fatal: str | None = None
         self._lock = threading.Lock()
 
     def call(self, code: str, model: str, run: int) -> CallResult:
         context = self.contexts[code]
+        if self.fatal:
+            raise AccountError(self.fatal)
         if self.spent >= self.max_usd:
             return CallResult(code, model, run, None, "spend cap reached", 0.0, 0.0, {})
         start = time.monotonic()
@@ -286,6 +299,9 @@ class Labeler:
                 thinking={"type": "adaptive"},
             )
         except anthropic.APIError as exc:
+            if _account_problem(exc):
+                self.fatal = f"{type(exc).__name__}: {exc}"
+                raise AccountError(self.fatal) from exc
             result = CallResult(
                 code, model, run, None, f"{type(exc).__name__}: {exc}"[:300], 0.0, 0.0, {}
             )
@@ -760,16 +776,20 @@ def run(
     client = anthropic.Anthropic(max_retries=6)  # reads ANTHROPIC_API_KEY from .env
     RUNS_DIR.mkdir(parents=True, exist_ok=True)
     log = RUNS_DIR / f"{datetime.now(UTC):%Y%m%dT%H%M%SZ}.jsonl"
-    rows, summary = label_codes(
-        client,
-        contexts,
-        selected,
-        model=model,
-        escalation_model=escalation_model,
-        max_usd=max_usd,
-        workers=workers,
-        log_path=log,
-    )
+    try:
+        rows, summary = label_codes(
+            client,
+            contexts,
+            selected,
+            model=model,
+            escalation_model=escalation_model,
+            max_usd=max_usd,
+            workers=workers,
+            log_path=log,
+        )
+    except AccountError as exc:
+        typer.secho(f"The API refused the account, so nothing was written: {exc}", fg="red")
+        raise typer.Exit(1) from exc
     write_csv(PROPOSED_FILE, rows, PROPOSED_COLUMNS)
     RUN_SUMMARY_FILE.write_text(json.dumps(summary, indent=1) + "\n")
     typer.echo(json.dumps(summary, indent=1))

@@ -7,6 +7,8 @@ import json
 from types import SimpleNamespace
 from typing import get_args
 
+import anthropic
+import httpx
 import pytest
 
 from ai import label_codes as lc
@@ -179,6 +181,26 @@ def test_spend_cap_stops_new_requests():
     assert summary["cost_usd"] == pytest.approx(0.0002)
     assert rows["G-One"]["closure_outcome"] == "fixed_work_done"
     assert summary["unlabeled_codes"] == ["H-Two"]
+
+
+def test_an_account_refusal_stops_the_run_at_the_first_call():
+    class Broke(FakeClient):
+        def create(self, **kwargs):
+            self.calls.append(("refused", kwargs["model"]))
+            response = httpx.Response(
+                400, request=httpx.Request("POST", "https://api.anthropic.com/v1/messages")
+            )
+            raise anthropic.BadRequestError(
+                "Your credit balance is too low to access the Anthropic API.",
+                response=response,
+                body=None,
+            )
+
+    client = Broke({})
+    contexts = {c: context(c) for c in ["A-One", "B-Two", "C-Three"]}
+    with pytest.raises(lc.AccountError, match="credit balance"):
+        lc.label_codes(client, contexts, list(contexts), max_usd=1, workers=2, log_path=None)
+    assert len(client.calls) == 1  # the solo first call; nothing after it reaches the API
 
 
 def test_review_order_and_finalize_label_sources():
