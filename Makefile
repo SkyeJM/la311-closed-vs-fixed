@@ -82,5 +82,8 @@ label: ## Label new resolution codes with Claude, then write ai/labels/review.cs
 label-finalize: ## Reviewed ai/labels/review.csv -> dbt/seeds/resolution_code_map.csv + agreement
 	$(PY) -m ai.label_codes finalize
 
-findings eval serve deploy:
+findings: ## Q1-Q5 numbers + E2 evidence -> findings/findings.json and findings/MEMO.md (after serving)
+	$(PY) -m findings
+
+eval serve deploy:
 	@echo "'make $@' arrives in a later phase (brief section 8)." && exit 1
