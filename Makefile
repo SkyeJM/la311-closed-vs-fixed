@@ -11,7 +11,7 @@ DBT := cd dbt && $(DBT_ENV) $(UV) run dbt
 SITE_BUILD := $(CURDIR)/build/docs-site
 
 .PHONY: help setup lint fmt test check discover schema-check pin ingest-sample ingest refresh \
-	profile build docs serving docs-site findings eval serve deploy
+	profile build docs serving docs-site label label-finalize findings eval serve deploy
 
 help: ## List targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-14s %s\n", $$1, $$2}'
@@ -73,6 +73,14 @@ docs-site: ## Public dbt docs built from synthetic fixtures (what CI publishes) 
 		$(UV) run dbt docs generate --static --target-path $(SITE_BUILD)/target \
 		--log-path $(SITE_BUILD)/logs
 	mkdir -p site && cp $(SITE_BUILD)/target/static_index.html site/index.html
+
+label: ## Label new resolution codes with Claude, then write ai/labels/review.csv (needs .env key)
+	$(PY) -m ai.label_codes context
+	$(PY) -m ai.label_codes run
+	$(PY) -m ai.label_codes review
+
+label-finalize: ## Reviewed ai/labels/review.csv -> dbt/seeds/resolution_code_map.csv + agreement
+	$(PY) -m ai.label_codes finalize
 
 findings eval serve deploy:
 	@echo "'make $@' arrives in a later phase (brief section 8)." && exit 1
