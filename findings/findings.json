@@ -1,7 +1,7 @@
 {
  "version": 1,
- "generated_at": "2026-10-28T18:26:11+00:00",
- "git_commit": "1c2d987",
+ "generated_at": "2026-10-28T18:28:42+00:00",
+ "git_commit": "6169ba5",
  "status": "provisional",
  "status_note": "The resolution-code map is still the brief's first guesses: unmapped codes count as closed without evidence of a fix until the Phase 3 review.",
  "parameters": {
@@ -1595,13 +1595,13 @@
  },
  "q4_cutover": {
   "periods": {
-   "before": {
-    "first_month": "2024-02-01",
-    "last_month": "2025-02-01"
-   },
    "after": {
     "first_month": "2025-09-01",
     "last_month": "2026-08-01"
+   },
+   "before": {
+    "first_month": "2024-02-01",
+    "last_month": "2025-02-01"
    }
   },
   "categories": [
@@ -1628,24 +1628,24 @@
      "change": -0.0026
     },
     "instant_close_rate": {
-     "before": 0.0002,
-     "after": 0.0003,
-     "change": 0.0001
+     "before": 0.0,
+     "after": 0.0,
+     "change": 0.0
     },
     "rereport_30d_rate": {
-     "before": 0.6693,
+     "before": 0.6701,
      "after": 0.6618,
-     "change": -0.0075
+     "change": -0.0083
     },
     "prior_report_30d_rate": {
-     "before": 0.743,
-     "after": 0.7087,
-     "change": -0.0343
+     "before": 0.7441,
+     "after": 0.7095,
+     "change": -0.0346
     },
     "rereport_excess_pp": {
-     "before": -7.3697,
-     "after": -4.6905,
-     "change": 2.6792
+     "before": -7.4028,
+     "after": -4.7645,
+     "change": 2.6383
     },
     "median_hours_to_close": {
      "before": 49.3688,
@@ -1676,24 +1676,24 @@
      "change": -0.0067
     },
     "instant_close_rate": {
-     "before": 0.0002,
-     "after": 0.0005,
-     "change": 0.0003
+     "before": 0.0,
+     "after": 0.0002,
+     "change": 0.0002
     },
     "rereport_30d_rate": {
-     "before": 0.1542,
-     "after": 0.1606,
-     "change": 0.0064
+     "before": 0.1544,
+     "after": 0.1604,
+     "change": 0.006
     },
     "prior_report_30d_rate": {
-     "before": 0.2117,
+     "before": 0.2118,
      "after": 0.2399,
-     "change": 0.0282
+     "change": 0.0281
     },
     "rereport_excess_pp": {
-     "before": -5.749,
-     "after": -7.939,
-     "change": -2.19
+     "before": -5.7461,
+     "after": -7.955,
+     "change": -2.2089
     },
     "median_hours_to_close": {
      "before": 15.995,
@@ -1729,19 +1729,19 @@
      "change": 0.0034
     },
     "rereport_30d_rate": {
-     "before": 0.6382,
-     "after": 0.5722,
-     "change": -0.066
+     "before": 0.6267,
+     "after": 0.5653,
+     "change": -0.0614
     },
     "prior_report_30d_rate": {
-     "before": 0.687,
-     "after": 0.611,
-     "change": -0.076
+     "before": 0.6698,
+     "after": 0.586,
+     "change": -0.0838
     },
     "rereport_excess_pp": {
-     "before": -4.8839,
-     "after": -3.8749,
-     "change": 1.009
+     "before": -4.3112,
+     "after": -2.0754,
+     "change": 2.2358
     },
     "median_hours_to_close": {
      "before": 40.7869,
@@ -1818,18 +1818,18 @@
     },
     "rereport_30d_rate": {
      "before": 0.1485,
-     "after": 0.0965,
-     "change": -0.052
+     "after": 0.0966,
+     "change": -0.0519
     },
     "prior_report_30d_rate": {
      "before": 0.4693,
-     "after": 0.39,
-     "change": -0.0793
+     "after": 0.3915,
+     "change": -0.0778
     },
     "rereport_excess_pp": {
-     "before": -32.0714,
-     "after": -29.3474,
-     "change": 2.724
+     "before": -32.0751,
+     "after": -29.489,
+     "change": 2.5861
     },
     "median_hours_to_close": {
      "before": 2157.4637,
@@ -5347,7 +5347,7 @@
      "prior_report_30d_rate": 0.7071
     },
     "not_fixed": {
-     "eligible": 303928,
+     "eligible": 303897,
      "rereport_30d_rate": 0.6789,
      "prior_report_30d_rate": 0.7134
     },
@@ -5359,9 +5359,9 @@
    },
    "Curb Issues": {
     "not_fixed": {
-     "eligible": 2010,
-     "rereport_30d_rate": 0.0851,
-     "prior_report_30d_rate": 0.1318
+     "eligible": 1991,
+     "rereport_30d_rate": 0.0849,
+     "prior_report_30d_rate": 0.1326
     },
     "unknown": {
      "eligible": 542,
@@ -5416,11 +5416,6 @@
      "rereport_30d_rate": 0.5207,
      "prior_report_30d_rate": 0.6023
     },
-    "not_fixed": {
-     "eligible": 5178,
-     "rereport_30d_rate": 0.6089,
-     "prior_report_30d_rate": 0.6835
-    },
     "unknown": {
      "eligible": 10294,
      "rereport_30d_rate": 0.5581,
@@ -5453,9 +5448,9 @@
    },
    "Parking Issues": {
     "not_fixed": {
-     "eligible": 1785,
-     "rereport_30d_rate": 0.1188,
-     "prior_report_30d_rate": 0.1681
+     "eligible": 1418,
+     "rereport_30d_rate": 0.1213,
+     "prior_report_30d_rate": 0.1678
     },
     "unknown": {
      "eligible": 5896,
@@ -5470,9 +5465,9 @@
      "prior_report_30d_rate": 0.4009
     },
     "not_fixed": {
-     "eligible": 5982,
-     "rereport_30d_rate": 0.2882,
-     "prior_report_30d_rate": 0.4248
+     "eligible": 5727,
+     "rereport_30d_rate": 0.2782,
+     "prior_report_30d_rate": 0.4236
     },
     "unknown": {
      "eligible": 4044,
@@ -5487,9 +5482,9 @@
      "prior_report_30d_rate": 0.3183
     },
     "not_fixed": {
-     "eligible": 3460,
-     "rereport_30d_rate": 0.2503,
-     "prior_report_30d_rate": 0.2986
+     "eligible": 3356,
+     "rereport_30d_rate": 0.253,
+     "prior_report_30d_rate": 0.3015
     },
     "unknown": {
      "eligible": 12283,
@@ -5499,9 +5494,9 @@
    },
    "Traffic Safety": {
     "not_fixed": {
-     "eligible": 2568,
-     "rereport_30d_rate": 0.097,
-     "prior_report_30d_rate": 0.1417
+     "eligible": 2416,
+     "rereport_30d_rate": 0.0969,
+     "prior_report_30d_rate": 0.1436
     },
     "unknown": {
      "eligible": 2664,
@@ -5516,7 +5511,7 @@
      "prior_report_30d_rate": 0.1287
     },
     "unknown": {
-     "eligible": 8450,
+     "eligible": 8449,
      "rereport_30d_rate": 0.0981,
      "prior_report_30d_rate": 0.2038
     }

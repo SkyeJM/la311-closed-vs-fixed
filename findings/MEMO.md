@@ -1,6 +1,6 @@
 # Closed ≠ Fixed: findings memo (v1)
 
-Data through 2026-10-28. Generated from `findings/findings.json` (commit 1c2d987); every number below is in that file with the query that produced it. Descriptive only: no claim here says why a number is what it is.
+Data through 2026-10-28. Generated from `findings/findings.json` (commit 6169ba5); every number below is in that file with the query that produced it. Descriptive only: no claim here says why a number is what it is.
 
 > **Provisional.** The resolution-code map is still the brief's first guesses: unmapped codes count as closed without evidence of a fix until the Phase 3 review. 118,900 service requests carry one of those codes, so category-level fix rates below are not yet meaningful where they dominate (streetlights, scooters, street services).
 
@@ -14,7 +14,7 @@ In the new MyLA311 system (requests filed Mar 2025 to Jul 2026, each followed at
 2. **Where the gap is (Q2).** The gap is concentrated in a few codes: five codes carry 85% of the 620,343 closed-but-unverified requests, and "QC-Item Not Out" alone carries 51%. The largest count is Bulky & dumped item pickups in council district 2 (26,570); the highest rate among groups of 500+ is Barricade Removal (BSS - SMD) in district 15, 100.0 points.
 3. **Bulky items (Q3).** "Item not out" closed 24% of pickups (300,512). Across 98 neighborhood councils with 1,000+ closed pickups it ranged from 11% to 40%; across weekdays only from 23% to 27%. A new pickup request within 50 m and 30 days followed 68% of item-not-out closes and 66% of completed pickups, against 71% in the 30 days before an item-not-out request was filed: repeat requests follow the place more than the outcome.
 4. **The cutover (Q4).** Comparing the year before the relaunch with the year after the overlap (crosswalked categories, crew self-reports out): graffiti closed within 30 days went from 74% to 65% and cancellations from 23% to 15%; streetlights closed within 30 days went from 16% to 12%; pickups closed within 7 days from 90% to 86%; dead animals closed within 7 days from 99% to 98%. Instant closes were at most 0.3% of closes in any category and period.
-5. **Proxy validation (Q5).** Among resident-reported closes in the new system, those closed within a minute were verifiably fixed 53% of the time, against 66% for the rest. Re-reports run higher after not-fixed closes than after fixed ones (graffiti +8.8 pts, dead animals +10.0 pts, pickups +2.4 pts), but the after-close rate exceeded the before-filing baseline in only 10 of 132 category, era and parameter settings. The proxies carry some signal within a category; they can't stand in for legacy fix rates.
+5. **Proxy validation (Q5).** Among resident-reported closes in the new system, those closed within a minute were verifiably fixed 53% of the time, against 66% for the rest. Re-report rates after not-fixed closes, minus those after fixed ones: bulky & dumped item pickups +2.4 pts, service not complete +1.5 pts, dead animal +10.0 pts. Yet the after-close rate exceeded the before-filing baseline in only 10 of 132 category, era and parameter settings. The proxies carry some signal within a category; they can't stand in for legacy fix rates.
 
 ## Method notes
 

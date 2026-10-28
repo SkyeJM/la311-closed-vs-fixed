@@ -576,6 +576,8 @@ def git_commit() -> str | None:
 def build(serving: Path = SERVING, warehouse: Path | None = WAREHOUSE) -> dict:
     from findings import e2
 
+    if warehouse and serving.stat().st_mtime < warehouse.stat().st_mtime:
+        raise SystemExit(f"{serving.name} is older than {warehouse.name}: run `make serving` first")
     rec = Recorder(
         duckdb.connect(str(serving), read_only=True),
         duckdb.connect(str(warehouse), read_only=True) if warehouse else None,

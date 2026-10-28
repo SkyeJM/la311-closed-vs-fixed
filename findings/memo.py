@@ -82,12 +82,20 @@ def render(f: dict) -> str:
         and abs(qc_follow["rereport_30d_rate"] - done_follow["rereport_30d_rate"]) < 0.05
     )
 
-    def rerep_gap(category: str) -> str:
-        groups = rereports.get(category, {})
-        if "fixed" not in groups or "not_fixed" not in groups:
-            return "n/a"
-        gap = groups["not_fixed"]["rereport_30d_rate"] - groups["fixed"]["rereport_30d_rate"]
-        return pp(gap * 100)
+    # The largest categories with enough fixed and not-fixed closes to compare.
+    compared = sorted(
+        (
+            (groups["fixed"]["eligible"] + groups["not_fixed"]["eligible"], category, groups)
+            for category, groups in rereports.items()
+            if "fixed" in groups and "not_fixed" in groups
+        ),
+        key=lambda item: -item[0],
+    )[:3]
+    rerep_gaps = ", ".join(
+        f"{category.lower()} "
+        f"{pp((g['not_fixed']['rereport_30d_rate'] - g['fixed']['rereport_30d_rate']) * 100)}"
+        for _, category, g in compared
+    )
 
     provisional = f["status"] != "final"
     lines = [
@@ -169,10 +177,9 @@ def render(f: dict) -> str:
         "period.",
         f"5. **Proxy validation (Q5).** Among resident-reported closes in the new system, those "
         f"closed within a minute were verifiably fixed {pct(fix_by_speed.get('true'))} of the "
-        f"time, against {pct(fix_by_speed.get('false'))} for the rest. Re-reports run higher "
-        f"after not-fixed closes than after fixed ones (graffiti {rerep_gap('Graffiti')}, dead "
-        f"animals {rerep_gap('Dead animal')}, pickups "
-        f"{rerep_gap('Bulky & dumped item pickups')}), but the after-close rate exceeded the "
+        f"time, against {pct(fix_by_speed.get('false'))} for the rest. Re-report rates after "
+        f"not-fixed closes, minus those after fixed ones: {rerep_gaps or 'n/a'}. Yet the "
+        "after-close rate exceeded the "
         f"before-filing baseline in only {above} of {settings} category, era and parameter "
         "settings"
         + (
