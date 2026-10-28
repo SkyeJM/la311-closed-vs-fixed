@@ -144,6 +144,7 @@ Every quirk found in the MyLA311 open data, with where it came from.
 
 ## Resolution codes
 - **There are more codes than the brief estimated:** 149 distinct in 2025 Cases, 160 in 2026, 171 combined (the brief said about 120). Per-code stats are in `docs/profile/resolution_codes.csv`. Still 171 on 2026-10-28.
+- **Five cases contradict themselves:** status Cancelled with code "WC-Work Completed" (Bus Stop Furniture; warehouse). They count as verified fixed but not closed, so the gap rate and the `closed_unverified` count differ by those five.
 - **Reason codes are a fixed vocabulary** (130 values, at most 51 characters; warehouse), not free text, so they're safe to send to the labeling model as context.
 - **Some high-volume codes weren't in the brief's examples**, e.g. "RC-Request Completed" (39,136 streetlight cases) and "VMRB-Vehicle moved for rebalancing" (16,921 scooter cases). Until they're labeled, those categories show near-zero fix rates (findings status `provisional`).
 - **Prefix collisions include:**

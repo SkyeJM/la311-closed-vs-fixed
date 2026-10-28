@@ -127,3 +127,14 @@ def test_catalog_lists_definitions_and_dimensions():
     assert catalog["verified_fix_rate"]["evidence"] == "E1"
     assert "cd" in catalog["verified_fix_rate"]["dimensions"]
     assert "period" in catalog["median_hours_to_close"]["dimensions"]
+
+
+def test_every_source_column_exists_in_the_served_table(serving_db):
+    """metrics.yml can't drift from the marts: each dimension and measure must resolve."""
+    for source in metrics.catalog().sources.values():
+        columns = [f'"{d}"' for d in source.dimensions]
+        columns += [f'"{c}"' for c in (source.time_column, source.percentile_column) if c]
+        columns += [f'"{c}"' for c in source.precomputed_columns.values()]
+        measures = [f"sum({metrics._measure_sql(source, name)})" for name in source.measures]
+        serving_db.execute(f"select {', '.join(columns)} from {source.table} limit 0")
+        serving_db.execute(f"select {', '.join(measures)} from {source.table}")
