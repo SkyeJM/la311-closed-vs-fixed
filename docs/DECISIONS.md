@@ -257,3 +257,120 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
   - Invented rows can't leak an address, while scrubbed real rows still could.
   - Checking specific outcomes catches logic errors that green tests alone would miss.
 - **Docs site:** `make docs-site` builds the dbt docs from the same fixtures. The static page embeds the absolute paths of whichever machine built it, so only the CI build is meant for publishing.
+
+## Phase 3: taxonomy and metrics
+
+### 2026-10-28 · Phase 2 sign-off
+- **Skye's reply:** "go, Pages enabled, there isn't a .env file in the project yet".
+- **Done on that basis:**
+  - PR #3 merged; Phase 3 runs on `phase-3-taxonomy`.
+  - `.env` created from `.env.example` (gitignored, mode 600) for Skye to paste the API key into. Code only ever checks that the key is set; it never prints it.
+  - The docs workflow was run on main, but its deploy step got a 404: the repo still reports `has_pages: false`. My attempt to switch Pages on through the API was blocked again as a public-surface change, so Skye needs to pick **GitHub Actions** under Settings → Pages → Source. The workflow stays manual until then, so a merge can't fail on it.
+- **Decision 4 (intake handoffs):** Skye didn't object to the standing recommendation, so it's taken as accepted, as at the Phase 1 gate (next entry). Skye can still override it.
+
+### 2026-10-28 · Intake handoffs are their own outcome, outside the fix-rate base (decision 4)
+- **Options:**
+  - count status Reported as closed-unspecified (the Phase 2 placeholder);
+  - count it as referred out (not fixed);
+  - give it its own outcome and leave it out of the fix-rate denominator.
+- **Chosen:** the third option. `closure_outcome = handed_off` (outcome group `handed_off`, counts_as_fixed `not_observable`). It's set from the status even when the case has a code (`status_map.status_decides`).
+- **Why:**
+  - These cases end at intake and are worked in another department's system (LSD, LADBS, DPW, LADWP). 311 can't show whether they were fixed.
+  - Counting them as unfixed would charge the 311 record for work it never tracks. Counting them as fixed would credit work nobody can see.
+  - The codes they carry acknowledge intake rather than describe an outcome. "C-Report has been received" is on 175,529 of the 190,670 Reported cases, "C-Closed" on 13,007, and "C-Report has been referred out." on 1,905. So the status has to win over the code.
+- **Visible, not hidden:** handoffs are a slice of the outcome mix and are counted in `findings.json` (`headline.excluded_from_base`).
+
+### 2026-10-28 · One base for the fix rate and the closure rate, so the gap is a share of requests
+- **The brief's formulas:**
+  - closure_rate = closed ÷ created;
+  - verified_fix_rate = fixed ÷ terminal;
+  - gap = closure_rate − verified_fix_rate.
+- **Problem:** the two rates have different denominators, so their difference isn't a share of anything. It can even go negative when many requests are still open.
+- **Chosen:**
+  - **The fix-rate base** is every service request except those whose own record can't show a fix: duplicates and information-only closes (outcome group `neutral`) and intake handoffs. Open requests stay in.
+  - `verified_fix_rate` and the closure rate are both computed on that base. The gap (`closed_fixed_gap_pp`) then equals the share of requests that were marked closed without a code saying the problem was fixed.
+  - `closure_rate` itself stays the official view (all service requests) as context. findings.json reports both.
+- **Why open requests stay in:** dropping them would make the gap depend on how fast cases close. The headline uses requests filed at least 60 days before the data ends (`headline.window`), so few are still open.
+- **Stated as the brief asks:** `closed_not_fixed_share` doesn't count cancellations in its numerator. Cancellations carry status Cancelled, which isn't "closed", and the 0.03% of closed cases with a cancellation code count only in the denominator.
+- **"Closed" is the status:** Closed and Closed Ext-Referred, plus legacy Closed and Referred Out (`status_map.is_closed`). Legacy Referred Out is 7,819 rows.
+
+### 2026-10-28 · Instant close = marked closed within 1 minute
+- **Evidence** (`findings.json → e2_parameters.instant_close`):
+  - In the new system, 225,923 terminal service requests end within 10 seconds of filing. Nearly all are intake handoffs, duplicates and cancellations, not closes.
+  - Requests actually marked *Closed* within a minute are rare: about 1,100 resident-reported ones in 19 months (`current_seconds_to_close`). Among comparable closes it's a fraction of a percent in both eras.
+  - The threshold barely matters: the share of comparable closes within 1, 2, 5 or 10 minutes is recorded per era.
+- **Chosen:** 1 minute, applied to requests whose status says closed.
+  - A minute is the coarsest precision in the data (2015–2019 timestamps are whole minutes).
+  - It catches anything closed before a crew could have been sent.
+  - Cancellations and handoffs end differently and have their own measures.
+- **Changed from Phase 2:** 5 minutes, and any terminal status.
+
+### 2026-10-28 · Re-reports get a placebo: the same search before the request was filed
+- **Problem:** Phase 2 found that half or more of closed pickup, graffiti and encampment requests get a new nearby request within 30 days. A re-report signal is only meaningful against what that place sees anyway.
+- **Options:**
+  - a spatial placebo (the same search around a point shifted a few hundred meters);
+  - the same place a year later;
+  - the same place in the 30 days before the request was filed.
+- **Chosen:** the before-filing window. It's the same place and season, has no secular drift, and is cheap: the same equi-join, with time mirrored.
+  - Eligibility now requires *both* windows to be fully observable, so the after-close rate and its placebo describe the same requests.
+  - Only requests whose status says closed are eligible (a re-report follows a close).
+- **Result:**
+  - At 50 m and 30 days, after-close rates sit below before-filing rates in every crosswalked category with real volume, in both eras. The exceptions are tiny: 17 closed new-system encampment cases, and legacy water waste at about zero.
+  - Across a 3×4 grid of radii (25/50/100 m) and windows (7–60 days), the after-close rate exceeded the baseline in 10 of 132 settings, 9 of them for legacy water waste (`findings.json → e2_parameters.rereport`).
+  - So 50 m and 30 days stay. The conclusion doesn't hinge on them, and re-reports are read as recurrence unless they beat the placebo.
+- **Caveat:** before a streetlight request, the window often holds other reports of the same outage, so "before" isn't pure background there. Comparisons are descriptive.
+
+### 2026-10-28 · The cutover is compared on equal, fully followed periods
+- **Data trap found:** legacy requests still open when the old system was retired never close in the legacy data (see DATA_NOTES). In the year before the cutover, 31% of legacy streetlight requests are still Open.
+  - A median over closed requests silently drops exactly the slow cases.
+  - Closed shares near the cutover are cut short.
+- **Chosen** (`mart_cutover_periods`):
+  - "Before" is the 12 months ending 30 days before the cutover (legacy), so every request had 30 days to close in its own system. "After" is the 12 months after the Apr–Aug 2025 overlap (new system). Whole years balance the seasons, and the overlap's legacy tail and the new system's first months stay out.
+  - Time to close is compared as **closed within 7 / 30 days**. Medians and p90s are kept, over closed requests only, with the caveat.
+  - Monthly series carry `has_full_followup` and null those shares where follow-up is incomplete.
+
+### 2026-10-28 · metrics.yml plus a small compiler, not the dbt Semantic Layer
+- **Options:**
+  - dbt's semantic layer (MetricFlow);
+  - SQL views per metric;
+  - a YAML catalog compiled to SQL by a small module (`api/metrics.py`).
+- **Chosen:** the YAML catalog and compiler.
+- **Why:**
+  - The deployed API runs on Vercel's 225 MB bundle. Shipping dbt-core plus MetricFlow to compile queries at request time would crowd out the data.
+  - The metrics are all ratios of additive counts, which a 300-line compiler covers.
+  - The same definitions drive findings.json, the dashboard and the agent's `query_metric`, so there's one place to change a definition.
+- **How it stays honest:**
+  - Each metric lists its sources, most general first. The compiler picks the first that can answer.
+  - A source that holds only part of the population (new system only, pickups only) is refused unless the request asks for that part, so it can't answer silently for a subset.
+  - Filter values are bound parameters.
+  - Tests check every metric against the fact table and that every eligible source agrees.
+
+### 2026-10-28 · Findings run on the served marts through the metrics
+- **Chosen:** `make findings` computes Q1–Q5 on `data/serving.duckdb` through metrics.yml, the same path the UI and the agent will use. Only the E2 parameter evidence, which needs coordinates, runs on the warehouse.
+  - Every number is stored with its query (SQL, parameters and source) under an id.
+  - `findings/MEMO.md` is rendered from the JSON. Its interpretive sentences appear only when the numbers support them.
+- **Status:** `provisional` until the reviewed code map lands and `code_map_final` is true.
+
+### 2026-10-28 · AI code labeling: Haiku twice, Sonnet on doubt, a person reviews everything
+- **Shape (brief section 6B):**
+  - `ai/label_codes.py` sends each code's context (aggregates only) to `claude-haiku-5-5` twice with structured output.
+  - It escalates to `claude-sonnet-5-5` once when the runs disagree, either is low-confidence, a label contradicts its own counts_as_fixed, or a run fails.
+  - Nothing reaches the dbt seed until `finalize` reads the reviewed sheet.
+- **Choices within it:**
+  - **Context overrides come back in the same call** (`context_overrides`, naming departments or types from the input). That avoids a second round per code; an override naming anything not in the context counts as a failed run.
+  - **counts_as_fixed uses the seed's vocabulary** (yes/no/neutral/not_a_service/unknown) instead of the brief's yes/no/unknown, so a contradiction with the class can be detected.
+  - **The prompt defines the classes in general terms and never lists the brief's example codes.** Those examples still shaped the class definitions, so AI agreement with the brief's first guesses isn't an independent test. The number that matters is agreement with Skye's review.
+  - **The proposal lives in `ai/labels/`, not `dbt/seeds/`,** because dbt loads every CSV in seeds/.
+  - **The review sheet puts first** the rows that differ from the brief, low-confidence and failed rows, then escalations and overrides, then volume. `finalize` records `ai_accepted`, `ai_overridden` or `human`, and writes the agreement report (`ai/labels/agreement.json`), which findings.json picks up.
+- **API details** (checked against platform.claude.com docs on 2026-10-28):
+  - Structured outputs via `output_config.format` (GA, no beta header), with the schema from `anthropic.transform_schema`.
+  - Adaptive thinking. The SDK (2.3) has no temperature parameter for these models, so the two runs differ by ordinary sampling.
+  - The system prompt (about 4K tokens, above Haiku 5.5's 512-token minimum) is cached with a breakpoint. The first request goes alone so the rest can read the cache.
+- **Cost:**
+  - A `--max-usd` spend cap of $3 stops new requests.
+  - The dry run estimates about $1.60 for 171 codes.
+  - `ai/pricing.py` holds the price table (Haiku 5.5 $0.10/$0.50 per MTok, Sonnet 5.5 $2/$10) and is reused for the Phase 4 daily cap.
+
+### 2026-10-28 · Seeds are always rebuilt
+- **Problem:** adding columns to `status_map` failed the build. dbt reloads a seed into its existing table, so the new columns didn't match.
+- **Chosen:** `+full_refresh: true` for seeds. They're tiny, and a stale table can't hide a reviewed change.
