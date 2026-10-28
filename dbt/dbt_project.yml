@@ -22,8 +22,16 @@ vars:
     legacy_2021, legacy_2022, legacy_2023, legacy_2024, legacy_2025]
   current_datasets: [current_2025, current_2026]
   cutover_date: "2025-03-28"  # first record in the new MyLA311 system (brief section 3.3)
-  # E2 proxy parameters (brief section 4.3). Provisional: Phase 3 justifies each from the data.
-  instant_close_minutes: 5
+  # Q4 compares equal periods either side of the cutover, skipping the Apr-Aug 2025 overlap when
+  # both systems had rows (mart_cutover_periods). Legacy requests still open at the cutover never
+  # close in the legacy data, so the legacy period ends `cutover_followup_days` before the cutover
+  # and every request in it has that long to close.
+  overlap_end_date: "2025-09-01"
+  cutover_compare_months: 12
+  cutover_followup_days: 30
+  # E2 proxy parameters (brief section 4.3), justified from the data in Phase 3 (docs/DECISIONS.md;
+  # the evidence is regenerated into findings/findings.json under e2_parameters).
+  instant_close_minutes: 1  # the closed-at-intake spike is all under 10 s; 1 min = legacy precision
   rereport_radius_m: 50
   rereport_window_days: 30
   # false while resolution_code_map.csv holds only the brief's first guesses: unmapped codes warn.
@@ -47,6 +55,9 @@ models:
 seeds:
   la311:
     +schema: seeds
+    # Seeds are tiny and their columns change with reviewed decisions; recreating them each build
+    # means a new column can't hit a stale table (dbt otherwise reloads into the old one).
+    +full_refresh: true
 
 data_tests:
   la311:

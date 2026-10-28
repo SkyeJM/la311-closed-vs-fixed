@@ -40,6 +40,7 @@ TABLES = [
         "mart_outcomes_monthly",
         "mart_gap_by_district",
         "mart_cutover_comparison",
+        "mart_cutover_periods",
         "mart_bulky_items",
         "mart_contacts_info_only",
     ]
@@ -49,9 +50,10 @@ TABLES = [
         """
         SELECT
             created_at, closed_at, created_month, request_type, unified_category, department,
-            channel, is_crew_self_report, status, is_terminal, status_outcome, resolution_code,
-            closure_outcome, outcome_group, counts_as_fixed, hours_to_close, is_instant_close,
-            is_rereport_eligible, is_rereported_30d, cd, nc_code
+            channel, is_crew_self_report, status, is_terminal, is_closed, status_outcome,
+            resolution_code, closure_outcome, outcome_group, counts_as_fixed, hours_to_close,
+            is_instant_close, is_rereport_eligible, is_rereported_30d, has_prior_report_30d, cd,
+            nc_code
         FROM wh.marts.fct_service_requests
         WHERE era = 'current'
         ORDER BY created_at

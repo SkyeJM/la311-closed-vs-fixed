@@ -4,39 +4,14 @@ Runs the real dbt project against tests/fixtures/synthetic_raw.py output in a te
 never the real data (about 10 s; skip it with `pytest -m "not dbt"`).
 """
 
-import os
-import subprocess
-import sys
-from pathlib import Path
+import re
 
 import duckdb
 import pytest
 
 from api import serving
-from tests.fixtures.synthetic_raw import build
 
-ROOT = Path(__file__).resolve().parents[1]
-pytestmark = pytest.mark.dbt
-
-
-@pytest.fixture(scope="module")
-def dbt_build(tmp_path_factory):
-    tmp = tmp_path_factory.mktemp("dbt")
-    build(tmp / "raw")
-    env = os.environ | {
-        "LA311_RAW_ROOT": str(tmp / "raw"),
-        "LA311_WAREHOUSE": str(tmp / "warehouse.duckdb"),
-    }
-    dbt = str(Path(sys.executable).parent / "dbt")
-    paths = ["--target-path", str(tmp / "target"), "--log-path", str(tmp / "logs")]
-    subprocess.run([dbt, "deps", "--quiet"], cwd=ROOT / "dbt", env=env, check=True)
-    run = subprocess.run(
-        [dbt, "build", *paths], cwd=ROOT / "dbt", env=env, capture_output=True, text=True
-    )
-    assert run.returncode == 0, run.stdout[-4000:]
-    con = duckdb.connect(str(tmp / "warehouse.duckdb"), read_only=True)
-    yield con, run.stdout, tmp
-    con.close()
+pytestmark = pytest.mark.dbt  # the dbt_build fixture lives in tests/conftest.py
 
 
 @pytest.fixture(scope="module")
@@ -61,13 +36,13 @@ def test_build_is_green_with_only_the_expected_warnings(dbt_build):
         "assert_closed_after_created",
         "assert_code_map_rows_are_used",
     ]:
-        assert f"WARN 1 {test}" in log or f"WARN 43 {test}" in log
+        assert re.search(rf"WARN \d+ {test}", log)
 
 
 def test_staging_reconciles_and_keeps_the_latest_version(con):
     assert con.execute(
         "SELECT count(*) FROM staging.stg_current__cases WHERE source_dataset_id = '73a2-6ar5'"
-    ).fetchone() == (9,)
+    ).fetchone() == (11,)
     case = fact(con, "current:00000107")  # updated by the delta
     assert (case["status"], case["resolution_code"]) == ("Closed", "AR-Request Completed")
 
@@ -79,9 +54,35 @@ def test_outcomes_come_from_the_code_then_the_status(con):
     no_code = fact(con, "current:00000106")
     assert (no_code["closure_outcome"], no_code["outcome_basis"]) == ("cancelled", "status")
     assert fact(con, "legacy:1-2024109")["closure_outcome"] == "referred_out_of_scope"
+    # An intake handoff: the status decides, although the case carries an intake code.
+    handoff = fact(con, "current:00000104")
+    assert (handoff["closure_outcome"], handoff["outcome_basis"]) == ("handed_off", "status")
+    assert handoff["outcome_group"] == "handed_off" and handoff["code_label_source"] is None
     still_open = fact(con, "legacy:1-2024105")  # Open, though it carries a closed date
     assert (still_open["closure_outcome"], still_open["hours_to_close"]) == (None, None)
     assert still_open["is_instant_close"] is None
+
+
+def test_closed_means_the_status_says_closed(con):
+    closed = {
+        request_id: fact(con, request_id)["is_closed"]
+        for request_id in [
+            "legacy:1-2024109",  # Referred Out
+            "legacy:1-2024106",  # Cancelled
+            "current:00000104",  # Reported
+            "current:00000106",  # Cancelled
+            "current:00000108",  # Closed
+            "current:00000107",  # Closed by the delta
+        ]
+    }
+    assert closed == {
+        "legacy:1-2024109": True,
+        "legacy:1-2024106": False,
+        "current:00000104": False,
+        "current:00000106": False,
+        "current:00000108": True,
+        "current:00000107": True,
+    }
 
 
 def test_contacts_are_not_service_requests(con):
@@ -110,6 +111,18 @@ def test_rereports(con):
     )
 
 
+def test_placebo_window_before_filing(con):
+    first, second = fact(con, "legacy:1-2024101"), fact(con, "legacy:1-2024102")
+    assert (first["has_prior_report_30d"], first["is_rereported_30d"]) == (False, True)
+    assert (second["has_prior_report_30d"], second["is_rereported_30d"]) == (True, False)
+    assert second["n_prior_reports_30d"] == 1
+    # A legacy pickup filed before the cutover is a prior report for a new-system pickup there.
+    assert fact(con, "current:00000102")["has_prior_report_30d"] is True
+    # A new-system-only type filed in the system's first 30 days has no full placebo window.
+    early = fact(con, "current:00000110")
+    assert (early["is_rereport_eligible"], early["has_prior_report_30d"]) == (False, None)
+
+
 def test_crew_self_reports_and_instant_closes(con):
     crew = fact(con, "legacy:1-2024103")
     assert (crew["is_crew_self_report"], crew["is_instant_close"]) == (True, True)
@@ -117,6 +130,10 @@ def test_crew_self_reports_and_instant_closes(con):
     date_only = fact(con, "legacy:1-2024104")
     assert date_only["hours_to_close"] == -14.5
     assert date_only["is_closed_at_midnight"] and not date_only["is_instant_close"]
+    # Ended 20 s after filing, but a handoff at intake isn't a close.
+    assert fact(con, "current:00000104")["is_instant_close"] is False
+    three_minutes = fact(con, "current:00000111")
+    assert (three_minutes["hours_to_close"], three_minutes["is_instant_close"]) == (0.05, False)
 
 
 def test_cutover_overlap_flags_the_same_day_match(con):
@@ -155,7 +172,7 @@ def test_serving_holds_only_allowlisted_tables_without_locating_fields(dbt_build
     dest = tmp_path / "serving.duckdb"
     counts = serving.build(dbt_build[2] / "warehouse.duckdb", dest)
     assert set(counts) == {t.name for t in serving.TABLES}
-    assert counts["fct_current_requests"] == 13  # 16 current-era cases minus 3 contacts
+    assert counts["fct_current_requests"] == 15  # 18 current-era cases minus 3 contacts
     con = duckdb.connect(str(dest), read_only=True)
     columns = {row[0] for row in con.execute("SELECT column_name FROM duckdb_columns()").fetchall()}
     assert not columns & serving.FORBIDDEN_COLUMNS

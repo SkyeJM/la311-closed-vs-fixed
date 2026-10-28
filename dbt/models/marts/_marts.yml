@@ -3,9 +3,9 @@ models:
     description: >
       One row per service request in either era (contacts excluded). The warehouse's analysis
       table: it keeps coordinates for spatial work and is never served. Outcomes come from the
-      resolution code where the (provisional) map knows it, otherwise from the status. E2 proxy
-      parameters (instant close, re-report radius and window) are dbt vars, provisional until
-      Phase 3.
+      status for intake handoffs (Reported), otherwise from the resolution code where the map
+      knows it, otherwise from the status. E2 proxy parameters (instant close, re-report radius
+      and window) are dbt vars, justified in docs/DECISIONS.md.
     columns:
       - name: request_id
         description: "'legacy:' or 'current:' + the published ID"
@@ -45,6 +45,9 @@ models:
       - name: is_terminal
         description: The status ends the case (status_map)
         data_tests: [not_null]
+      - name: is_closed
+        description: The status says closed (the official view behind closure_rate)
+        data_tests: [not_null]
       - name: status_outcome
         description: The outcome the status alone implies (E2); measured the same way in both eras
       - name: resolution_code
@@ -57,27 +60,31 @@ models:
         data_tests:
           - accepted_values:
               arguments:
-                values: [fixed_work_done, already_resolved, duplicate, not_found, referred_out_of_scope, deferred, unable, cancelled, info_only, closed_unspecified]
+                values: [fixed_work_done, already_resolved, duplicate, not_found, referred_out_of_scope, deferred, unable, cancelled, info_only, closed_unspecified, handed_off]
       - name: outcome_basis
         description: "resolution_code (E1), status, unmapped_code, or open"
       - name: code_label_source
-        description: Where the code's label came from (brief_first_guess in Phase 2)
+        description: Where the code's label came from (ai_accepted, ai_overridden, human; brief_first_guess before the Phase 3 review)
       - name: counts_as_fixed
-        description: "yes, no, neutral, not_a_service or unknown (from closure_outcomes)"
+        description: "yes, no, neutral, not_a_service, unknown or not_observable (from closure_outcomes)"
       - name: outcome_group
-        description: "fixed, not_fixed, cancelled, neutral or unknown (from closure_outcomes)"
+        description: "fixed, not_fixed, cancelled, neutral, unknown or handed_off (from closure_outcomes)"
       - name: hours_to_close
         description: Hours from creation to closing, to the second, for terminal requests only. Negative for some date-only closes.
       - name: is_closed_before_created
       - name: is_closed_at_midnight
       - name: is_instant_close
-        description: Closed within `instant_close_minutes` (provisional 5) of creation (E2)
+        description: Marked closed within `instant_close_minutes` (1) of being filed (E2). False for cancellations and handoffs; null for open requests
       - name: is_rereport_eligible
-        description: Closed, located, and its whole re-report window is observable
+        description: The status says closed, the request is located, and both 30-day windows (before filing, after closing) are observable
       - name: n_rereports_30d
-        description: New same-category requests within 50 m and 30 days of closing; null if not eligible
+        description: New same-category requests within 50 m and 30 days after closing; null if not eligible
       - name: is_rereported_30d
         description: At least one re-report (E2); null if not eligible
+      - name: n_prior_reports_30d
+        description: The placebo window. Same-category requests within 50 m in the 30 days before this one was filed; null if not eligible
+      - name: has_prior_report_30d
+        description: At least one prior report (the baseline for is_rereported_30d); null if not eligible
       - name: first_rereport_at
       - name: cd
         description: Council district (1-15)
@@ -101,6 +108,9 @@ models:
       - dbt_utils.expression_is_true:
           arguments:
             expression: "(is_rereported_30d is not null) = is_rereport_eligible"
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "(has_prior_report_30d is not null) = is_rereport_eligible"
 
   - name: dim_request_category
     description: >
@@ -184,7 +194,7 @@ models:
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
-            combination_of_columns: [created_month, era, unified_category, request_type, department, is_crew_self_report, is_terminal, closure_outcome]
+            combination_of_columns: [created_month, era, unified_category, request_type, department, is_crew_self_report, is_terminal, is_closed, closure_outcome]
     columns:
       - name: created_month
       - name: era
@@ -193,8 +203,11 @@ models:
       - name: department
       - name: is_crew_self_report
       - name: is_terminal
+      - name: is_closed
       - name: closure_outcome
         description: Null on terminal rows = a code not mapped yet; null on open rows = open
+      - name: outcome_group
+        description: From closure_outcomes (depends only on closure_outcome, so it doesn't change the grain)
       - name: n_requests
       - name: n_instant_close
       - name: n_with_duration
@@ -204,6 +217,8 @@ models:
       - name: n_closed_before_created
       - name: n_rereport_eligible
       - name: n_rereported_30d
+      - name: n_prior_reported_30d
+        description: Eligible requests with a same-category request nearby in the 30 days before filing (the re-report placebo)
 
   - name: mart_gap_by_district
     description: >
@@ -212,7 +227,7 @@ models:
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
-            combination_of_columns: [created_quarter, unified_category, request_type, department, cd, is_crew_self_report, is_terminal, resolution_code, closure_outcome]
+            combination_of_columns: [created_quarter, unified_category, request_type, department, cd, is_crew_self_report, is_terminal, is_closed, resolution_code, closure_outcome]
     columns:
       - name: created_quarter
       - name: unified_category
@@ -221,8 +236,10 @@ models:
       - name: cd
       - name: is_crew_self_report
       - name: is_terminal
+      - name: is_closed
       - name: resolution_code
       - name: closure_outcome
+      - name: outcome_group
       - name: n_requests
 
   - name: mart_cutover_comparison
@@ -241,19 +258,29 @@ models:
       - name: cross_era_comparison
       - name: is_overlap_month
         description: Mar-Aug 2025, when both systems have rows
+      - name: has_full_followup
+        description: Every request in the month could be followed for 30 days in its own system (legacy requests still open at the cutover never close in the legacy data)
       - name: n_requests
       - name: n_terminal
+      - name: n_closed
+        description: The status says closed (Closed, Closed Ext-Referred; legacy Closed, Referred Out)
+      - name: n_closed_within_7d
+        description: Closed within 7 days of filing; null without full follow-up
+      - name: n_closed_within_30d
+        description: Closed within 30 days of filing; null without full follow-up
       - name: n_status_cancelled
       - name: n_status_referred
       - name: n_instant_close
       - name: n_with_duration
+        description: Closed requests with a non-negative time to close (the percentiles' population)
       - name: p50_hours_to_close
-        description: Median over non-negative durations
+        description: Median time to close over closed requests with a non-negative duration
       - name: p90_hours_to_close
       - name: n_closed_before_created
       - name: n_closed_at_midnight
       - name: n_rereport_eligible
       - name: n_rereported_30d
+      - name: n_prior_reported_30d
 
   - name: mart_bulky_items
     description: >
@@ -262,7 +289,7 @@ models:
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
-            combination_of_columns: [created_month, request_type, nc_code, cd, closed_weekday, is_terminal, resolution_code, closure_outcome]
+            combination_of_columns: [created_month, request_type, nc_code, cd, closed_weekday, is_crew_self_report, is_terminal, is_closed, resolution_code, closure_outcome]
     columns:
       - name: created_month
       - name: request_type
@@ -270,12 +297,61 @@ models:
       - name: cd
       - name: closed_weekday
         description: Day the case closed (the crew's visit), 0 = Sunday
+      - name: is_crew_self_report
       - name: is_terminal
+      - name: is_closed
       - name: resolution_code
       - name: closure_outcome
+      - name: outcome_group
       - name: n_requests
       - name: n_rereport_eligible
       - name: n_rereported_30d
+      - name: n_prior_reported_30d
+
+  - name: mart_cutover_periods
+    description: >
+      The cutover in one table (brief Q4): crosswalked categories, crew self-reports excluded,
+      for 12 months ending 30 days before the new system launched (legacy; every request had 30
+      days to close before the old system stopped) and the 12 months after the Apr-Aug 2025
+      overlap ended (new system). "Closed within N days" is the fair time-to-close comparison;
+      the percentiles see only requests that closed. Percentiles are computed at this grain
+      because they can't be re-aggregated from monthly rows. Closure measures are null for
+      volume-only categories.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          arguments:
+            combination_of_columns: [unified_category, era, period]
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "(era = 'legacy') = (period = 'before')"
+    columns:
+      - name: unified_category
+      - name: era
+      - name: period
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [before, after]
+      - name: cross_era_comparison
+      - name: first_month
+      - name: last_month
+      - name: n_requests
+      - name: n_terminal
+      - name: n_closed
+      - name: n_closed_within_7d
+      - name: n_closed_within_30d
+      - name: n_status_cancelled
+      - name: n_status_referred
+      - name: n_instant_close
+      - name: n_with_duration
+        description: Closed requests with a non-negative time to close (the percentiles' population)
+      - name: p50_hours_to_close
+        description: Median time to close over requests that closed (biased low where many never closed)
+      - name: p90_hours_to_close
+      - name: n_closed_at_midnight
+      - name: n_rereport_eligible
+      - name: n_rereported_30d
+      - name: n_prior_reported_30d
 
   - name: mart_contacts_info_only
     description: >

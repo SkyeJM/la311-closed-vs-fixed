@@ -9,7 +9,7 @@ with requests as (
 ),
 
 coverage as (
-    select max(created_at) as data_end
+    select min(created_at) as data_start, max(created_at) as data_end
     from {{ ref('int_requests_unified') }}
 ),
 
@@ -22,11 +22,16 @@ flagged as (
         s.status_outcome,
         rr.n_rereports,
         rr.first_rereport_at,
-        -- A re-report window counts only when it can be observed in full: it ends before the
-        -- data does, and, for types only the legacy system had, before the cutover (nobody files
-        -- them in the legacy system after it).
+        rr.n_prior_reports,
+        -- A request is eligible when its status says closed (a re-report follows a close; a
+        -- cancellation or an intake handoff ends differently) and both windows can be observed
+        -- in full, so the re-report rate and its placebo are measured on the same requests:
+        --   * after closing: the window ends before the data does, and, for types only the legacy
+        --     system had, before the cutover (nobody files them in the legacy system after it);
+        --   * before filing: the window starts after the data does, and, for types only the new
+        --     system has, after the cutover.
         coalesce(
-            r.is_terminal
+            r.is_closed
             and r.closed_at is not null
             and r.lat is not null
             and {{ dbt.dateadd('day', days, 'r.closed_at') }} <= c.data_end
@@ -35,6 +40,13 @@ flagged as (
                 or r.era = 'current'
                 or {{ dbt.dateadd('day', days, 'r.closed_at') }}
                     < cast('{{ var("cutover_date") }}' as timestamp)
+            )
+            and {{ dbt.dateadd('day', -days, 'r.created_at') }} >= c.data_start
+            and (
+                r.is_crosswalked
+                or r.era = 'legacy'
+                or {{ dbt.dateadd('day', -days, 'r.created_at') }}
+                    >= cast('{{ var("cutover_date") }}' as timestamp)
             ),
             false
         ) as is_rereport_eligible
@@ -68,6 +80,7 @@ select
     f.is_anonymous,
     f.status,
     f.is_terminal,
+    f.is_closed,
     f.status_outcome,
     f.resolution_code,
     f.reason_code,
@@ -81,15 +94,22 @@ select
     case when f.is_terminal then f.hours_to_close end as hours_to_close,
     f.is_closed_before_created,
     f.is_closed_at_midnight,
+    -- Marked closed within a minute of being filed: before anyone could have gone out.
+    -- Cancellations and intake handoffs aren't closes, so they're never instant closes.
     case
         when f.is_terminal
-            then f.hours_to_close >= 0
+            then f.is_closed
+            and f.hours_to_close >= 0
             and f.hours_to_close <= {{ var('instant_close_minutes') }} / 60.0
     end as is_instant_close,
     f.is_rereport_eligible,
     case when f.is_rereport_eligible then coalesce(f.n_rereports, 0) end as n_rereports_30d,
-    case when f.is_rereport_eligible then f.n_rereports is not null end as is_rereported_30d,
+    case when f.is_rereport_eligible then coalesce(f.n_rereports, 0) > 0 end as is_rereported_30d,
     case when f.is_rereport_eligible then f.first_rereport_at end as first_rereport_at,
+    case when f.is_rereport_eligible then coalesce(f.n_prior_reports, 0) end
+        as n_prior_reports_30d,
+    case when f.is_rereport_eligible then coalesce(f.n_prior_reports, 0) > 0 end
+        as has_prior_report_30d,
     f.cd,
     f.nc_code,
     f.nc_name,

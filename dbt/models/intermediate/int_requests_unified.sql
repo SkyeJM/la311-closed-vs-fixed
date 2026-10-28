@@ -37,6 +37,9 @@ select
     coalesce(c.cross_era_comparison, 'none') as cross_era_comparison,
     ns.request_type is null as is_service_request,
     s.is_terminal,
+    -- The official view: the status itself says closed (Closed, Closed Ext-Referred; legacy
+    -- Closed, Referred Out). Cancelled and Reported are terminal but not closed.
+    s.is_closed,
     -- "Driver Self Report(ed)": crews logging work they already did, closed by construction.
     coalesce(r.channel in ('Driver Self Report', 'Driver Self Reported'), false)
         as is_crew_self_report,
