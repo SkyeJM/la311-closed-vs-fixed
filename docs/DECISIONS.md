@@ -374,3 +374,10 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
 ### 2026-10-28 · Seeds are always rebuilt
 - **Problem:** adding columns to `status_map` failed the build. dbt reloads a seed into its existing table, so the new columns didn't match.
 - **Chosen:** `+full_refresh: true` for seeds. They're tiny, and a stale table can't hide a reviewed change.
+
+### 2026-10-28 · Skye's answers at the first Phase 3 checkpoint
+- **Fix-rate base:** confirmed as built (duplicates, information-only closes and handoffs out; open requests in).
+- **GitHub Pages:** on, with GitHub Actions as the source. The dbt docs are published at https://skyejm.github.io/la311-closed-vs-fixed/, and the workflow now runs on every push to main that touches the dbt project, the fixtures, the Makefile or the workflow itself.
+- **Anthropic key:** added to `.env`, but the first labeling call came back "Your credit balance is too low to access the Anthropic API". The account has no prepaid API credits yet. Nothing was spent.
+  - The labeler now stops at the first account-level refusal (authentication, permission or credit) instead of logging every call as a failure and writing an empty proposal.
+  - Buying credits is Skye's decision. API usage is prepaid, and credits are non-refundable and expire a year after purchase.
