@@ -119,7 +119,7 @@ def test_filter_values_are_bound_not_spliced(serving_db):
     hostile = "LASAN' or 1=1 --"
     query = metrics.compile_query("closure_rate", filters={"department": hostile})
     assert hostile not in query.sql and query.params == [hostile]
-    assert metrics.run(serving_db, query)[0]["denominator"] == 0
+    assert metrics.run(serving_db, query)[0]["denominator"] is None  # no row matched
 
 
 def test_catalog_lists_definitions_and_dimensions():

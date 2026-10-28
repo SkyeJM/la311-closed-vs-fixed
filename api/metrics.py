@@ -260,8 +260,9 @@ def _measure_sql(source: Source, name: str) -> str:
 
 
 def _summed(source: Source, measure: str, *conditions: str) -> str:
-    total = f"sum(case when {_and(*conditions)} then {_measure_sql(source, measure)} else 0 end)"
-    return f"coalesce({total}, 0)"  # zero, not null, when no row matches
+    # Null when no row matches, or when the measure isn't defined for the rows (volume-only
+    # categories in the cutover marts): "no comparable data" rather than zero.
+    return f"sum(case when {_and(*conditions)} then {_measure_sql(source, measure)} else 0 end)"
 
 
 def _ratio_columns(part: dict, source: Source, cat: Catalog, prefix: str) -> list[str]:
