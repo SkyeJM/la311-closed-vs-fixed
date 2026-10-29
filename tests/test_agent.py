@@ -2,15 +2,12 @@
 answer contract, the tools on the fixture serving file, and the loop with a scripted client.
 """
 
-import json
-import shutil
-from types import SimpleNamespace
-
 import pytest
 
 from ai.agent import answer, charts, numbers, prompt, sqlguard, tools
 from ai.agent.loop import Agent, Budget, Settings, collect
 from api import db
+from tests.agent_fakes import FakeClient, final, gap_answer, metric_call, reply, tool_turn
 
 ALLOWED = set(tools.SQL_TABLES)
 
@@ -56,17 +53,6 @@ def test_the_guard_rejects_everything_else(sql, why):
 
 
 # --- the locked connection -------------------------------------------------------------------
-
-
-@pytest.fixture(scope="session")
-def agent_db(serving_db, dbt_build):
-    """The fixture serving file behind the API's lockdown. A copy, because DuckDB won't open one
-    file twice in a process with different settings."""
-    dest = dbt_build[2] / "agent_serving.duckdb"
-    shutil.copy(dbt_build[2] / "serving.duckdb", dest)
-    con = db.connect(dest)
-    yield con
-    con.close()
 
 
 @pytest.mark.dbt
@@ -162,22 +148,6 @@ def test_bad_charts_are_rejected(change, why):
 # --- the answer contract -------------------------------------------------------------------
 
 
-def reply(**fields):
-    base = {
-        "answer_type": "answered",
-        "answer_markdown": "**62.1%** were verified fixed.",
-        "key_numbers": [
-            {"label": "fixed", "value": 62.1, "unit": "percent", "metric": "m", "query_id": "q1"}
-        ],
-        "evidence_level": "E1",
-        "caveats": [],
-        "query_ids": ["q1"],
-        "chart": None,
-        "follow_ups": [],
-    }
-    return base | fields
-
-
 QUERIES = {"q1": {"values": [0.62123, 62.12, 2064328.0]}}
 POOL = [0.62123, 62.12, 2064328.0]
 
@@ -202,19 +172,6 @@ def test_answer_problems_name_what_to_fix():
 
 
 # --- tools on the fixture serving file -----------------------------------------------------
-
-
-def metric_call(metric, filters=(), group_by=(), date_range=(), **extra):
-    return {
-        "metric": metric,
-        "filters": [{"dimension": d, "values": v} for d, v in filters],
-        "group_by": list(group_by),
-        "time_grain": "none",
-        "date_range": list(date_range),
-        "order": "dimensions",
-        "limit": 0,
-        "min_count": 0,
-    } | extra
 
 
 @pytest.mark.dbt
@@ -288,51 +245,6 @@ def test_the_prompt_holds_definitions_not_data(agent_db):
 
 
 # --- the loop, with a scripted client --------------------------------------------------------
-
-
-class FakeClient:
-    def __init__(self, responses):
-        self.responses = list(responses)
-        self.calls = []
-        self.messages = SimpleNamespace(create=self.create)
-
-    def create(self, **kwargs):
-        self.calls.append(kwargs | {"messages": list(kwargs["messages"])})  # a snapshot
-        return self.responses.pop(0)
-
-
-def usage():
-    return SimpleNamespace(
-        input_tokens=10, cache_creation_input_tokens=0, cache_read_input_tokens=0, output_tokens=5
-    )
-
-
-def tool_turn(*calls):
-    blocks = [
-        SimpleNamespace(type="tool_use", id=f"t{i}", name=name, input=args)
-        for i, (name, args) in enumerate(calls)
-    ]
-    return SimpleNamespace(content=blocks, stop_reason="tool_use", usage=usage())
-
-
-def final(payload: dict):
-    text = SimpleNamespace(type="text", text=json.dumps(payload))
-    return SimpleNamespace(content=[text], stop_reason="end_turn", usage=usage())
-
-
-def gap_answer(markdown="The gap is shown in q1.", key_value=None):
-    keys = []
-    if key_value is not None:
-        keys = [
-            {
-                "label": "gap",
-                "value": key_value,
-                "unit": "percentage_points",
-                "metric": "closed_fixed_gap_pp",
-                "query_id": "q1",
-            }
-        ]
-    return reply(answer_markdown=markdown, key_numbers=keys, query_ids=["q1"])
 
 
 @pytest.mark.dbt

@@ -11,7 +11,8 @@ DBT := cd dbt && $(DBT_ENV) $(UV) run dbt
 SITE_BUILD := $(CURDIR)/build/docs-site
 
 .PHONY: help setup lint fmt test check discover schema-check pin ingest-sample ingest refresh \
-	profile build docs serving docs-site label label-finalize findings eval serve deploy
+	profile build docs serving docs-site label label-finalize findings eval serve ask \
+	suggested deploy
 
 help: ## List targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-14s %s\n", $$1, $$2}'
@@ -87,5 +88,14 @@ label-finalize: ## Reviewed ai/labels/review.csv -> dbt/seeds/resolution_code_ma
 findings: serving ## Q1-Q5 numbers + E2 evidence -> findings/findings.json and findings/MEMO.md
 	$(PY) -m findings
 
-eval serve deploy:
-	@echo "'make $@' arrives in a later phase (brief section 8)." && exit 1
+serve: ## Run the API locally with reload: http://127.0.0.1:8000/api/docs
+	$(UV) run uvicorn api.app:app --reload
+
+ask: ## Ask the agent one question in the terminal: make ask Q="..." [MODEL=...] (spends credit)
+	$(PY) -m ai.agent "$(Q)" $(if $(MODEL),--model $(MODEL)) --trace
+
+suggested: ## Rebuild cached answers to the suggested questions (spends credit; default model)
+	$(PY) -m api.suggested build $(if $(MODEL),--model $(MODEL))
+
+deploy:
+	@echo "'make $@' arrives in Phase 5 (brief section 8)." && exit 1
