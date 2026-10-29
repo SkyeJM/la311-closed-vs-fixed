@@ -231,8 +231,11 @@ function AnswerView({
       )}
       <p className="text-sm text-ink-2">
         Evidence: {EVIDENCE[a.evidence_level] ?? a.evidence_level}
-        {turn.cached ? " · cached answer" : ""}
-        {turn.seconds !== undefined ? ` · ${turn.seconds.toFixed(1)} s` : ""}
+        {turn.cached
+          ? " · a saved answer to a suggested question, shown instantly"
+          : turn.seconds !== undefined
+            ? ` · answered in ${turn.seconds.toFixed(1)} s`
+            : ""}
       </p>
       {turn.problems && turn.problems.length > 0 && (
         <p className="rounded border border-[#b3261e] p-2 text-sm text-[#b3261e]">

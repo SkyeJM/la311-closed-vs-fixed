@@ -1,8 +1,8 @@
 {
  "data_end": "2026-10-28T10:39:55",
  "model": "claude-sonnet-5-5",
- "generated_at": "2026-10-29T21:15:03+00:00",
- "cost_usd": 0.1587,
+ "generated_at": "2026-10-29T22:31:48+00:00",
+ "cost_usd": 0.1833,
  "answers": {
   "how many requests marked closed were verified fixed": [
    {
@@ -16,17 +16,17 @@
     "stop_reason": "tool_use",
     "usage": {
      "input_tokens": 4,
-     "cache_creation_input_tokens": 86,
-     "cache_read_input_tokens": 9785,
-     "output_tokens": 253
+     "cache_creation_input_tokens": 9871,
+     "cache_read_input_tokens": 0,
+     "output_tokens": 482
     },
-    "cost_usd": 0.003732,
-    "ms": 1992
+    "cost_usd": 0.029506,
+    "ms": 3630
    },
    {
     "type": "tool_call",
     "step": 1,
-    "id": "toolu_011LbNxQTxAb2e3LmiELc1GN",
+    "id": "toolu_014nEJDujGxMeyD6TEMtMRKL",
     "name": "query_metric",
     "input": {
      "metric": "verified_fix_rate",
@@ -52,10 +52,10 @@
    {
     "type": "tool_result",
     "step": 1,
-    "id": "toolu_011LbNxQTxAb2e3LmiELc1GN",
+    "id": "toolu_014nEJDujGxMeyD6TEMtMRKL",
     "name": "query_metric",
     "ok": true,
-    "ms": 27,
+    "ms": 22,
     "query_id": "q1",
     "sql": "with grouped as (\n    select\n        sum(case when (NOT COALESCE(outcome_group, '') IN ('neutral', 'handed_off')) and (outcome_group = 'fixed') then n_requests else 0 end) as numerator,\n        sum(case when (NOT COALESCE(outcome_group, '') IN ('neutral', 'handed_off')) then n_requests else 0 end) as denominator\n    from mart_outcomes_monthly\n    where (\"is_closed\" in (?)) and (created_month between ? and ?) and (era = 'current')\n)\nselect *, numerator / nullif(denominator, 0) as value_\nfrom grouped",
     "params": [
@@ -79,33 +79,13 @@
     "truncated": false
    },
    {
-    "type": "model_call",
-    "step": 2,
-    "stop_reason": "tool_use",
-    "usage": {
-     "input_tokens": 2,
-     "cache_creation_input_tokens": 442,
-     "cache_read_input_tokens": 9871,
-     "output_tokens": 256
-    },
-    "cost_usd": 0.004656,
-    "ms": 2004
-   },
-   {
     "type": "tool_call",
-    "step": 2,
-    "id": "toolu_01A3KEAyq6oWoXgrWSrKziEk",
+    "step": 1,
+    "id": "toolu_017MEJcXBv5RanxoNkYfJ3FW",
     "name": "query_metric",
     "input": {
-     "metric": "verified_fix_rate",
-     "filters": [
-      {
-       "dimension": "is_closed",
-       "values": [
-        "true"
-       ]
-      }
-     ],
+     "metric": "closed_unverified",
+     "filters": [],
      "group_by": [],
      "time_grain": "none",
      "date_range": [
@@ -119,113 +99,92 @@
    },
    {
     "type": "tool_result",
+    "step": 1,
+    "id": "toolu_017MEJcXBv5RanxoNkYfJ3FW",
+    "name": "query_metric",
+    "ok": true,
+    "ms": 2,
+    "query_id": "q2",
+    "sql": "with grouped as (\n    select\n        sum(case when (NOT COALESCE(outcome_group, '') IN ('neutral', 'handed_off')) and (is_closed AND COALESCE(outcome_group, '') <> 'fixed') then n_requests else 0 end) as n\n    from mart_outcomes_monthly\n    where (created_month between ? and ?) and (era = 'current')\n)\nselect *, n as value_\nfrom grouped",
+    "params": [
+     "2025-03-01",
+     "2026-07-01"
+    ],
+    "columns": [
+     "n",
+     "value"
+    ],
+    "rows": [
+     {
+      "n": 530965,
+      "value": 530965
+     }
+    ],
+    "row_count": 1,
+    "truncated": false
+   },
+   {
+    "type": "model_call",
     "step": 2,
-    "id": "toolu_01A3KEAyq6oWoXgrWSrKziEk",
-    "name": "query_metric",
-    "ok": true,
-    "ms": 0
-   },
-   {
-    "type": "model_call",
-    "step": 3,
-    "stop_reason": "tool_use",
-    "usage": {
-     "input_tokens": 2,
-     "cache_creation_input_tokens": 303,
-     "cache_read_input_tokens": 10313,
-     "output_tokens": 256
-    },
-    "cost_usd": 0.004353,
-    "ms": 1943
-   },
-   {
-    "type": "tool_call",
-    "step": 3,
-    "id": "toolu_017QE9Bs2PjTBFbQHQp4yPs6",
-    "name": "query_metric",
-    "input": {
-     "metric": "verified_fix_rate",
-     "filters": [
-      {
-       "dimension": "is_closed",
-       "values": [
-        "true"
-       ]
-      }
-     ],
-     "group_by": [],
-     "time_grain": "none",
-     "date_range": [
-      "2025-03-01",
-      "2026-07-01"
-     ],
-     "order": "dimensions",
-     "limit": 0,
-     "min_count": 0
-    }
-   },
-   {
-    "type": "tool_result",
-    "step": 3,
-    "id": "toolu_017QE9Bs2PjTBFbQHQp4yPs6",
-    "name": "query_metric",
-    "ok": true,
-    "ms": 0
-   },
-   {
-    "type": "model_call",
-    "step": 4,
     "stop_reason": "end_turn",
     "usage": {
      "input_tokens": 2,
-     "cache_creation_input_tokens": 303,
-     "cache_read_input_tokens": 10616,
-     "output_tokens": 465
+     "cache_creation_input_tokens": 873,
+     "cache_read_input_tokens": 9871,
+     "output_tokens": 550
     },
-    "cost_usd": 0.006473,
-    "ms": 3588
+    "cost_usd": 0.008674,
+    "ms": 3899
    },
    {
     "type": "answer",
     "answer": {
      "answer_type": "answered",
-     "answer_markdown": "Among closed requests in the current system (created March 2025 to July 2026), **70.7%** were verified fixed. That is **1,282,411** of **1,813,376** closed requests in the fix-rate base. The other closed requests carry a code that says the problem wasn't fixed, a generic code, or no code.",
+     "answer_markdown": "Among closed requests in the current system (created March 2025 to July 2026), **1,282,411 of 1,813,376** were verified fixed, or **70.7%**. The other **530,965** were closed without a code saying the work was done. That figure is `closed_unverified`. Those requests may or may not have been fixed. The data just doesn't record it.",
      "key_numbers": [
       {
        "label": "Closed requests verified fixed",
-       "value": 70.72,
-       "unit": "percent",
-       "metric": "verified_fix_rate",
-       "query_id": "q1"
-      },
-      {
-       "label": "Closed and verified fixed",
        "value": 1282411,
        "unit": "count",
        "metric": "verified_fix_rate",
        "query_id": "q1"
       },
       {
-       "label": "Closed requests in base",
+       "label": "Closed requests (base)",
        "value": 1813376,
        "unit": "count",
        "metric": "verified_fix_rate",
        "query_id": "q1"
+      },
+      {
+       "label": "Share of closed requests verified fixed",
+       "value": 70.7,
+       "unit": "percent",
+       "metric": "verified_fix_rate",
+       "query_id": "q1"
+      },
+      {
+       "label": "Closed without verified fix",
+       "value": 530965,
+       "unit": "count",
+       "metric": "closed_unverified",
+       "query_id": "q2"
       }
      ],
      "evidence_level": "E1",
      "caveats": [
-      "Current era only: legacy data has no resolution codes, so this can't be measured before 2025-03-28.",
-      "The base excludes duplicates, information-only closes and intake handoffs. Verified fixed means the code says work was done or already resolved."
+      "Current era only: legacy data has no resolution codes, so it can't show verified fixes.",
+      "Closed requests here exclude duplicates, information-only closes and intake handoffs, which are outside the fix-rate base. Many generic closures, especially in street services, mean 'not recorded as fixed', not 'not fixed'."
      ],
      "query_ids": [
-      "q1"
+      "q1",
+      "q2"
      ],
      "chart": null,
      "follow_ups": [
-      "Which request categories have the lowest share of closed requests verified fixed?",
-      "Which resolution codes make up most of the closed-but-not-verified requests?",
-      "How does the gap between closed and fixed vary by council district?"
+      "Which resolution codes account for the most requests closed without a verified fix?",
+      "How does the verified fix rate differ by category?",
+      "What is the gap between closure rate and verified fix rate by council district?"
      ]
     },
     "queries": {
@@ -274,6 +233,45 @@
       "evidence": "E1",
       "source": "mart_outcomes_monthly",
       "coverage": null
+     },
+     "q2": {
+      "query_id": "q2",
+      "tool": "query_metric",
+      "sql": "with grouped as (\n    select\n        sum(case when (NOT COALESCE(outcome_group, '') IN ('neutral', 'handed_off')) and (is_closed AND COALESCE(outcome_group, '') <> 'fixed') then n_requests else 0 end) as n\n    from mart_outcomes_monthly\n    where (created_month between ? and ?) and (era = 'current')\n)\nselect *, n as value_\nfrom grouped",
+      "params": [
+       "2025-03-01",
+       "2026-07-01"
+      ],
+      "columns": [
+       "n",
+       "value"
+      ],
+      "rows": [
+       {
+        "n": 530965,
+        "value": 530965
+       }
+      ],
+      "row_count": 1,
+      "truncated": false,
+      "request": {
+       "metric": "closed_unverified",
+       "filters": {},
+       "group_by": [],
+       "time_grain": null,
+       "date_range": [
+        "2025-03-01",
+        "2026-07-01"
+       ],
+       "order": "dimensions",
+       "limit": null,
+       "min_count": null
+      },
+      "metric": "closed_unverified",
+      "unit": "requests",
+      "evidence": "E1",
+      "source": "mart_outcomes_monthly",
+      "coverage": null
      }
     },
     "chart": null,
@@ -282,17 +280,17 @@
    {
     "type": "done",
     "outcome": "answered",
-    "steps": 4,
+    "steps": 2,
     "revisions": 0,
     "usage": {
-     "input_tokens": 10,
-     "cache_creation_input_tokens": 1134,
-     "cache_read_input_tokens": 40585,
-     "output_tokens": 1230,
-     "cost_usd": 0.0192135
+     "input_tokens": 6,
+     "cache_creation_input_tokens": 10744,
+     "cache_read_input_tokens": 9871,
+     "output_tokens": 1032,
+     "cost_usd": 0.0381791
     },
-    "cost_usd": 0.019214,
-    "latency_s": 9.57
+    "cost_usd": 0.038179,
+    "latency_s": 7.56
    }
   ],
   "which resolution codes make up most of the closed-but-not-fixed gap": [
@@ -312,12 +310,12 @@
      "output_tokens": 467
     },
     "cost_usd": 0.005896,
-    "ms": 2732
+    "ms": 3796
    },
    {
     "type": "tool_call",
     "step": 1,
-    "id": "toolu_018BSESDHkuf2FfD6Mgnkx93",
+    "id": "toolu_014q3zK8wuC47raixFRhgjod",
     "name": "query_metric",
     "input": {
      "metric": "closed_unverified",
@@ -338,10 +336,10 @@
    {
     "type": "tool_result",
     "step": 1,
-    "id": "toolu_018BSESDHkuf2FfD6Mgnkx93",
+    "id": "toolu_014q3zK8wuC47raixFRhgjod",
     "name": "query_metric",
     "ok": true,
-    "ms": 48,
+    "ms": 38,
     "query_id": "q1",
     "sql": "with grouped as (\n    select\n        \"resolution_code\" as resolution_code,\n        sum(case when (NOT COALESCE(outcome_group, '') IN ('neutral', 'handed_off')) and (is_closed AND COALESCE(outcome_group, '') <> 'fixed') then 1 else 0 end) as n\n    from fct_current_requests\n    where (created_month between ? and ?)\n    group by resolution_code\n),\nvalued as (\n    select *, n as value_\n    from grouped\n)\nselect *\nfrom valued\norder by value_ desc nulls last, resolution_code\nlimit 10",
     "params": [
@@ -411,7 +409,7 @@
    {
     "type": "tool_call",
     "step": 1,
-    "id": "toolu_01VRVf3gqYsrBS5PYt64yvi1",
+    "id": "toolu_017ZVmKLZpEKbjzc7Krh4fh5",
     "name": "query_metric",
     "input": {
      "metric": "closed_unverified",
@@ -430,7 +428,7 @@
    {
     "type": "tool_result",
     "step": 1,
-    "id": "toolu_01VRVf3gqYsrBS5PYt64yvi1",
+    "id": "toolu_017ZVmKLZpEKbjzc7Krh4fh5",
     "name": "query_metric",
     "ok": true,
     "ms": 2,
@@ -461,15 +459,15 @@
      "input_tokens": 2,
      "cache_creation_input_tokens": 1153,
      "cache_read_input_tokens": 9881,
-     "output_tokens": 166
+     "output_tokens": 143
     },
-    "cost_usd": 0.005535,
-    "ms": 2391
+    "cost_usd": 0.005305,
+    "ms": 1896
    },
    {
     "type": "tool_call",
     "step": 2,
-    "id": "toolu_01TYSjbDGEJ4zcptyJdcAbwd",
+    "id": "toolu_01WZNaXdM37HKt5EZXkK5mGy",
     "name": "describe_table",
     "input": {
      "table": "mart_outcomes_monthly"
@@ -478,10 +476,10 @@
    {
     "type": "tool_result",
     "step": 2,
-    "id": "toolu_01TYSjbDGEJ4zcptyJdcAbwd",
+    "id": "toolu_01WZNaXdM37HKt5EZXkK5mGy",
     "name": "describe_table",
     "ok": true,
-    "ms": 26
+    "ms": 12
    },
    {
     "type": "model_call",
@@ -489,40 +487,60 @@
     "stop_reason": "tool_use",
     "usage": {
      "input_tokens": 2,
-     "cache_creation_input_tokens": 1332,
+     "cache_creation_input_tokens": 1309,
      "cache_read_input_tokens": 11034,
-     "output_tokens": 143
+     "output_tokens": 155
     },
-    "cost_usd": 0.005867,
-    "ms": 2003
+    "cost_usd": 0.00593,
+    "ms": 2294
    },
    {
     "type": "tool_call",
     "step": 3,
-    "id": "toolu_01H793edKnHFWWbAGJsNkVqY",
-    "name": "run_sql",
+    "id": "toolu_01Q2VgTGi2TF6e37sHJpUtYv",
+    "name": "explain_resolution_code",
     "input": {
-     "sql": "select round(100.0*(317748+105644+52198)/530965,1) as top3_share_pct, round(100.0*317748/530965,1) as item_not_out_pct"
+     "code": "QC-Item Not Out"
     }
    },
    {
     "type": "tool_result",
     "step": 3,
-    "id": "toolu_01H793edKnHFWWbAGJsNkVqY",
-    "name": "run_sql",
+    "id": "toolu_01Q2VgTGi2TF6e37sHJpUtYv",
+    "name": "explain_resolution_code",
     "ok": true,
     "ms": 5,
     "query_id": "q3",
-    "sql": "SELECT ROUND(100.0 * (317748 + 105644 + 52198) / 530965, 1) AS top3_share_pct, ROUND(100.0 * 317748 / 530965, 1) AS item_not_out_pct",
-    "params": [],
+    "sql": "select resolution_code, closure_outcome, outcome_group, counts_as_fixed, label_source, rationale, n_service_cases, main_department, main_request_type, main_status, n_context_overrides from dim_resolution_code where lower(resolution_code) = lower(?)",
+    "params": [
+     "QC-Item Not Out"
+    ],
     "columns": [
-     "top3_share_pct",
-     "item_not_out_pct"
+     "resolution_code",
+     "closure_outcome",
+     "outcome_group",
+     "counts_as_fixed",
+     "label_source",
+     "rationale",
+     "n_service_cases",
+     "main_department",
+     "main_request_type",
+     "main_status",
+     "n_context_overrides"
     ],
     "rows": [
      {
-      "top3_share_pct": 89.6,
-      "item_not_out_pct": 59.8
+      "resolution_code": "QC-Item Not Out",
+      "closure_outcome": "not_found",
+      "outcome_group": "not_fixed",
+      "counts_as_fixed": "no",
+      "label_source": "ai_accepted",
+      "rationale": "claude-haiku-5-5: The code says the item was not set out for collection, which matches the schema's not_found meaning that the item wasn't there to act on, so the crew did no pickup. It could be read as unable, since the resident's failure to set the item out prevents the work, but the code's own words point to the item being absent. The context (every case closed, median 73 hours after creation, LASAN and LASAN - LSD pickup request types) does not change the label.",
+      "n_service_cases": 380058,
+      "main_department": "LASAN",
+      "main_request_type": "Illegal Dumping Item Pickup",
+      "main_status": "Closed",
+      "n_context_overrides": 0
      }
     ],
     "row_count": 1,
@@ -534,17 +552,17 @@
     "stop_reason": "tool_use",
     "usage": {
      "input_tokens": 2,
-     "cache_creation_input_tokens": 221,
-     "cache_read_input_tokens": 12366,
+     "cache_creation_input_tokens": 454,
+     "cache_read_input_tokens": 12343,
      "output_tokens": 161
     },
-    "cost_usd": 0.003403,
-    "ms": 1644
+    "cost_usd": 0.003983,
+    "ms": 1689
    },
    {
     "type": "tool_call",
     "step": 4,
-    "id": "toolu_01EeeL9448yAxYh2ABZdeF8D",
+    "id": "toolu_018UvCMKnQYBJbHtaYmNojTW",
     "name": "make_chart",
     "input": {
      "query_id": "q1",
@@ -569,10 +587,10 @@
    {
     "type": "tool_result",
     "step": 4,
-    "id": "toolu_01EeeL9448yAxYh2ABZdeF8D",
+    "id": "toolu_018UvCMKnQYBJbHtaYmNojTW",
     "name": "make_chart",
     "ok": true,
-    "ms": 14,
+    "ms": 11,
     "chart_id": "c1"
    },
    {
@@ -582,37 +600,80 @@
     "usage": {
      "input_tokens": 2,
      "cache_creation_input_tokens": 193,
-     "cache_read_input_tokens": 12587,
-     "output_tokens": 57
+     "cache_read_input_tokens": 12797,
+     "output_tokens": 239
     },
-    "cost_usd": 0.002315,
-    "ms": 1205
+    "cost_usd": 0.004156,
+    "ms": 2251
    },
    {
     "type": "tool_call",
     "step": 5,
-    "id": "toolu_014Gdt8qyyao3DzKzg9SkGZp",
-    "name": "run_sql",
+    "id": "toolu_01FDSbuBZSzyuY72HopGUNe8",
+    "name": "query_metric",
     "input": {
-     "sql": "select 1 as placeholder"
+     "metric": "closed_unverified",
+     "filters": [],
+     "group_by": [
+      "resolution_code"
+     ],
+     "time_grain": "none",
+     "date_range": [
+      "2025-03-01",
+      "2026-07-01"
+     ],
+     "order": "value_desc",
+     "limit": 10,
+     "min_count": 0
     }
    },
    {
     "type": "tool_result",
     "step": 5,
-    "id": "toolu_014Gdt8qyyao3DzKzg9SkGZp",
+    "id": "toolu_01FDSbuBZSzyuY72HopGUNe8",
+    "name": "query_metric",
+    "ok": true,
+    "ms": 0,
+    "duplicate_of": "q1"
+   },
+   {
+    "type": "model_call",
+    "step": 6,
+    "stop_reason": "tool_use",
+    "usage": {
+     "input_tokens": 2,
+     "cache_creation_input_tokens": 286,
+     "cache_read_input_tokens": 12990,
+     "output_tokens": 51
+    },
+    "cost_usd": 0.002528,
+    "ms": 1135
+   },
+   {
+    "type": "tool_call",
+    "step": 6,
+    "id": "toolu_01TtWxLThomRVYaDwt5ZJP62",
+    "name": "run_sql",
+    "input": {
+     "sql": "select 1"
+    }
+   },
+   {
+    "type": "tool_result",
+    "step": 6,
+    "id": "toolu_01TtWxLThomRVYaDwt5ZJP62",
     "name": "run_sql",
     "ok": true,
-    "ms": 2,
+    "ms": 1,
     "query_id": "q4",
-    "sql": "SELECT 1 AS placeholder",
+    "sql": "SELECT 1",
     "params": [],
     "columns": [
-     "placeholder"
+     "1"
     ],
     "rows": [
      {
-      "placeholder": 1
+      "1": 1
      }
     ],
     "row_count": 1,
@@ -620,70 +681,63 @@
    },
    {
     "type": "model_call",
-    "step": 6,
+    "step": 7,
     "stop_reason": "end_turn",
     "usage": {
      "input_tokens": 2,
-     "cache_creation_input_tokens": 104,
-     "cache_read_input_tokens": 12780,
-     "output_tokens": 755
+     "cache_creation_input_tokens": 92,
+     "cache_read_input_tokens": 13276,
+     "output_tokens": 704
     },
-    "cost_usd": 0.009092,
-    "ms": 5152
+    "cost_usd": 0.008602,
+    "ms": 4549
    },
    {
     "type": "answer",
     "answer": {
      "answer_type": "answered",
-     "answer_markdown": "Three codes make up most of the gap. Of **530,965** requests closed without a code saying the work was done (created March 2025 to July 2026), these three account for about **89.6%**:\n\n- `QC-Item Not Out`: **317,748** (about **59.8%** of the gap)\n- `C-Closed`: **105,644**\n- `1004-Closed`: **52,198**\n\nNext are `1003-Referral to External Department` (**14,957**), `IWO-Issued Work Orders to Resolve` (**6,042**) and `MNT-Maintenance to Be Performed` (**4,624**). `C-Closed` and `1004-Closed` are generic closes. They mean \"not recorded as fixed\", not \"not fixed\". `QC-Item Not Out` means the crew found no item put out, which may be legitimate.",
+     "answer_markdown": "Three codes carry most of the gap. From March 2025 to July 2026, **530,965** requests were closed without a code saying the work was done. **QC-Item Not Out** accounts for **317,748** of them, **C-Closed** for **105,644**, and **1004-Closed** for **52,198**. Next come `1003-Referral to External Department` (**14,957**), `IWO-Issued Work Orders to Resolve` (**6,042**) and `MNT-Maintenance to Be Performed` (**4,624**). QC-Item Not Out is coded `not_found`: the item wasn't put out for pickup. That can be a legitimate outcome, so it isn't necessarily a failure. C-Closed and 1004-Closed are generic codes, so they say \"not recorded as fixed\", not \"not fixed\".",
      "key_numbers": [
       {
-       "label": "Closed without a fix code",
+       "label": "Total closed without a fix code",
        "value": 530965,
        "unit": "count",
        "metric": "closed_unverified",
        "query_id": "q2"
       },
       {
-       "label": "QC-Item Not Out requests",
+       "label": "QC-Item Not Out",
        "value": 317748,
        "unit": "count",
        "metric": "closed_unverified",
        "query_id": "q1"
       },
       {
-       "label": "C-Closed requests",
+       "label": "C-Closed",
        "value": 105644,
        "unit": "count",
        "metric": "closed_unverified",
        "query_id": "q1"
       },
       {
-       "label": "1004-Closed requests",
+       "label": "1004-Closed",
        "value": 52198,
        "unit": "count",
        "metric": "closed_unverified",
        "query_id": "q1"
       },
       {
-       "label": "Top 3 codes' share of the gap",
-       "value": 89.6,
-       "unit": "percent",
-       "metric": null,
-       "query_id": "q3"
-      },
-      {
-       "label": "QC-Item Not Out share of the gap",
-       "value": 59.8,
-       "unit": "percent",
-       "metric": null,
-       "query_id": "q3"
+       "label": "1003-Referral to External Department",
+       "value": 14957,
+       "unit": "count",
+       "metric": "closed_unverified",
+       "query_id": "q1"
       }
      ],
      "evidence_level": "E1",
      "caveats": [
-      "Current era only, requests created March 2025 to July 2026. Legacy data has no resolution codes.",
-      "The shares are of the count of closed-but-unverified requests, not of all closed requests."
+      "Current era only, requests created March 2025 to July 2026; the legacy system has no resolution codes.",
+      "I give counts, not percentage shares, because no metric reports each code's share of the gap."
      ],
      "query_ids": [
       "q1",
@@ -692,9 +746,9 @@
      ],
      "chart": "c1",
      "follow_ups": [
-      "Which categories have the largest closed-but-not-fixed gap?",
-      "What share of closed requests were closed with a generic code or no code?",
-      "How does the gap vary by council district?"
+      "Which request categories carry the most closed-but-not-fixed requests?",
+      "How does the closed-but-not-fixed gap differ across council districts?",
+      "What share of closed bulky item requests were verified fixed?"
      ]
     },
     "queries": {
@@ -827,23 +881,43 @@
      },
      "q3": {
       "query_id": "q3",
-      "tool": "run_sql",
-      "sql": "SELECT ROUND(100.0 * (317748 + 105644 + 52198) / 530965, 1) AS top3_share_pct, ROUND(100.0 * 317748 / 530965, 1) AS item_not_out_pct",
-      "params": [],
+      "tool": "explain_resolution_code",
+      "sql": "select resolution_code, closure_outcome, outcome_group, counts_as_fixed, label_source, rationale, n_service_cases, main_department, main_request_type, main_status, n_context_overrides from dim_resolution_code where lower(resolution_code) = lower(?)",
+      "params": [
+       "QC-Item Not Out"
+      ],
       "columns": [
-       "top3_share_pct",
-       "item_not_out_pct"
+       "resolution_code",
+       "closure_outcome",
+       "outcome_group",
+       "counts_as_fixed",
+       "label_source",
+       "rationale",
+       "n_service_cases",
+       "main_department",
+       "main_request_type",
+       "main_status",
+       "n_context_overrides"
       ],
       "rows": [
        {
-        "top3_share_pct": 89.6,
-        "item_not_out_pct": 59.8
+        "resolution_code": "QC-Item Not Out",
+        "closure_outcome": "not_found",
+        "outcome_group": "not_fixed",
+        "counts_as_fixed": "no",
+        "label_source": "ai_accepted",
+        "rationale": "claude-haiku-5-5: The code says the item was not set out for collection, which matches the schema's not_found meaning that the item wasn't there to act on, so the crew did no pickup. It could be read as unable, since the resident's failure to set the item out prevents the work, but the code's own words point to the item being absent. The context (every case closed, median 73 hours after creation, LASAN and LASAN - LSD pickup request types) does not change the label.",
+        "n_service_cases": 380058,
+        "main_department": "LASAN",
+        "main_request_type": "Illegal Dumping Item Pickup",
+        "main_status": "Closed",
+        "n_context_overrides": 0
        }
       ],
       "row_count": 1,
       "truncated": false,
       "request": {
-       "sql": "select round(100.0*(317748+105644+52198)/530965,1) as top3_share_pct, round(100.0*317748/530965,1) as item_not_out_pct"
+       "code": "QC-Item Not Out"
       },
       "metric": null,
       "unit": null,
@@ -931,17 +1005,17 @@
    {
     "type": "done",
     "outcome": "answered",
-    "steps": 6,
+    "steps": 7,
     "revisions": 0,
     "usage": {
-     "input_tokens": 14,
-     "cache_creation_input_tokens": 3099,
-     "cache_read_input_tokens": 68433,
-     "output_tokens": 1749,
-     "cost_usd": 0.0321088
+     "input_tokens": 16,
+     "cache_creation_input_tokens": 3583,
+     "cache_read_input_tokens": 82106,
+     "output_tokens": 1920,
+     "cost_usd": 0.036400100000000005
     },
-    "cost_usd": 0.032109,
-    "latency_s": 15.23
+    "cost_usd": 0.0364,
+    "latency_s": 17.68
    }
   ],
   "how often are bulky item pickups closed because the item wasn't out": [
@@ -961,12 +1035,12 @@
      "output_tokens": 57
     },
     "cost_usd": 0.001786,
-    "ms": 1001
+    "ms": 1249
    },
    {
     "type": "tool_call",
     "step": 1,
-    "id": "toolu_01WzPaWLUBBx8VefQYPxKywT",
+    "id": "toolu_01Ke5pEaw8PwjDLu1zNyzNuG",
     "name": "explain_resolution_code",
     "input": {
      "code": "Item Not Out"
@@ -975,10 +1049,10 @@
    {
     "type": "tool_result",
     "step": 1,
-    "id": "toolu_01WzPaWLUBBx8VefQYPxKywT",
+    "id": "toolu_01Ke5pEaw8PwjDLu1zNyzNuG",
     "name": "explain_resolution_code",
     "ok": true,
-    "ms": 13,
+    "ms": 15,
     "query_id": "q1",
     "sql": "select resolution_code, closure_outcome, outcome_group, counts_as_fixed, label_source, rationale, n_service_cases, main_department, main_request_type, main_status, n_context_overrides from dim_resolution_code where resolution_code ilike '%' || ? || '%' order by n_service_cases desc nulls last limit 5",
     "params": [
@@ -1036,15 +1110,15 @@
      "input_tokens": 2,
      "cache_creation_input_tokens": 520,
      "cache_read_input_tokens": 9877,
-     "output_tokens": 98
+     "output_tokens": 129
     },
-    "cost_usd": 0.003272,
-    "ms": 1419
+    "cost_usd": 0.003582,
+    "ms": 1703
    },
    {
     "type": "tool_call",
     "step": 2,
-    "id": "toolu_019aiiu6QtuW3kJgHD8nq3hi",
+    "id": "toolu_017j3g4m9xsdHrjHzaqGgn6N",
     "name": "describe_table",
     "input": {
      "table": "mart_outcomes_monthly"
@@ -1053,10 +1127,10 @@
    {
     "type": "tool_result",
     "step": 2,
-    "id": "toolu_019aiiu6QtuW3kJgHD8nq3hi",
+    "id": "toolu_017j3g4m9xsdHrjHzaqGgn6N",
     "name": "describe_table",
     "ok": true,
-    "ms": 21
+    "ms": 19
    },
    {
     "type": "model_call",
@@ -1064,115 +1138,17 @@
     "stop_reason": "tool_use",
     "usage": {
      "input_tokens": 2,
-     "cache_creation_input_tokens": 1264,
+     "cache_creation_input_tokens": 1295,
      "cache_read_input_tokens": 10397,
-     "output_tokens": 664
+     "output_tokens": 736
     },
-    "cost_usd": 0.010844,
-    "ms": 4005
+    "cost_usd": 0.011641,
+    "ms": 4448
    },
    {
     "type": "tool_call",
     "step": 3,
-    "id": "toolu_011oxmp5PMCbpJ8ytNKzN8zL",
-    "name": "query_metric",
-    "input": {
-     "metric": "closed_unverified",
-     "filters": [
-      {
-       "dimension": "unified_category",
-       "values": [
-        "Bulky & dumped item pickups"
-       ]
-      },
-      {
-       "dimension": "era",
-       "values": [
-        "current"
-       ]
-      }
-     ],
-     "group_by": [
-      "resolution_code"
-     ],
-     "time_grain": "none",
-     "date_range": [
-      "2025-03-01",
-      "2026-07-01"
-     ],
-     "order": "value_desc",
-     "limit": 8,
-     "min_count": 0
-    }
-   },
-   {
-    "type": "tool_result",
-    "step": 3,
-    "id": "toolu_011oxmp5PMCbpJ8ytNKzN8zL",
-    "name": "query_metric",
-    "ok": true,
-    "ms": 51,
-    "query_id": "q2",
-    "sql": "with grouped as (\n    select\n        \"resolution_code\" as resolution_code,\n        sum(case when (NOT COALESCE(outcome_group, '') IN ('neutral', 'handed_off')) and (is_closed AND COALESCE(outcome_group, '') <> 'fixed') then 1 else 0 end) as n\n    from fct_current_requests\n    where (\"unified_category\" in (?)) and (created_month between ? and ?)\n    group by resolution_code\n),\nvalued as (\n    select *, n as value_\n    from grouped\n)\nselect *\nfrom valued\norder by value_ desc nulls last, resolution_code\nlimit 8",
-    "params": [
-     "Bulky & dumped item pickups",
-     "2025-03-01",
-     "2026-07-01"
-    ],
-    "columns": [
-     "resolution_code",
-     "n",
-     "value"
-    ],
-    "rows": [
-     {
-      "resolution_code": "QC-Item Not Out",
-      "n": 300512,
-      "value": 300512
-     },
-     {
-      "resolution_code": "1004-Closed",
-      "n": 14421,
-      "value": 14421
-     },
-     {
-      "resolution_code": "RBI-Reschedule for Bulky Items",
-      "n": 2370,
-      "value": 2370
-     },
-     {
-      "resolution_code": "NCPP-Not at Curb / On Private Property",
-      "n": 2310,
-      "value": 2310
-     },
-     {
-      "resolution_code": "RWG-Reschedule for White Goods",
-      "n": 1152,
-      "value": 1152
-     },
-     {
-      "resolution_code": "REW-Reschedule for E-Waste",
-      "n": 884,
-      "value": 884
-     },
-     {
-      "resolution_code": "NEP-No Encampment Present",
-      "n": 655,
-      "value": 655
-     },
-     {
-      "resolution_code": "CCAN-Cancelled by Customer",
-      "n": 387,
-      "value": 387
-     }
-    ],
-    "row_count": 8,
-    "truncated": false
-   },
-   {
-    "type": "tool_call",
-    "step": 3,
-    "id": "toolu_01VodL8X1jakGAraUec4cY6a",
+    "id": "toolu_01TEdEYP6NUpJiDoLEz1A3o2",
     "name": "query_metric",
     "input": {
      "metric": "outcome_mix",
@@ -1184,15 +1160,15 @@
        ]
       },
       {
-       "dimension": "era",
-       "values": [
-        "current"
-       ]
-      },
-      {
        "dimension": "is_closed",
        "values": [
         "true"
+       ]
+      },
+      {
+       "dimension": "era",
+       "values": [
+        "current"
        ]
       }
      ],
@@ -1212,16 +1188,16 @@
    {
     "type": "tool_result",
     "step": 3,
-    "id": "toolu_01VodL8X1jakGAraUec4cY6a",
+    "id": "toolu_01TEdEYP6NUpJiDoLEz1A3o2",
     "name": "query_metric",
     "ok": true,
-    "ms": 4,
-    "query_id": "q3",
-    "sql": "with grouped as (\n    select\n        \"closure_outcome\" as closure_outcome,\n        sum(case when (is_terminal) then n_requests else 0 end) as n\n    from mart_outcomes_monthly\n    where (\"unified_category\" in (?)) and (\"era\" in (?)) and (\"is_closed\" in (?)) and (created_month between ? and ?) and (era = 'current')\n    group by closure_outcome\n),\nvalued as (\n    select *, n / nullif(sum(n) over (), 0) as value_\n    from grouped\n)\nselect *\nfrom valued\norder by value_ desc nulls last, closure_outcome",
+    "ms": 12,
+    "query_id": "q2",
+    "sql": "with grouped as (\n    select\n        \"closure_outcome\" as closure_outcome,\n        sum(case when (is_terminal) then n_requests else 0 end) as n\n    from mart_outcomes_monthly\n    where (\"unified_category\" in (?)) and (\"is_closed\" in (?)) and (\"era\" in (?)) and (created_month between ? and ?) and (era = 'current')\n    group by closure_outcome\n),\nvalued as (\n    select *, n / nullif(sum(n) over (), 0) as value_\n    from grouped\n)\nselect *\nfrom valued\norder by value_ desc nulls last, closure_outcome",
     "params": [
      "Bulky & dumped item pickups",
-     "current",
      true,
+     "current",
      "2025-03-01",
      "2026-07-01"
     ],
@@ -1286,93 +1262,22 @@
     "truncated": false
    },
    {
-    "type": "model_call",
-    "step": 4,
-    "stop_reason": "tool_use",
-    "usage": {
-     "input_tokens": 2,
-     "cache_creation_input_tokens": 1732,
-     "cache_read_input_tokens": 11661,
-     "output_tokens": 232
-    },
-    "cost_usd": 0.00782,
-    "ms": 2343
-   },
-   {
     "type": "tool_call",
-    "step": 4,
-    "id": "toolu_0114jit3vYtUDH2oZPRRjfUj",
-    "name": "make_chart",
-    "input": {
-     "query_id": "q3",
-     "spec": {
-      "mark": "bar",
-      "encoding": {
-       "x": {
-        "field": "closure_outcome",
-        "type": "nominal",
-        "sort": "-y"
-       },
-       "y": {
-        "field": "value_pct",
-        "type": "quantitative",
-        "title": "Percent"
-       }
-      }
-     }
-    }
-   },
-   {
-    "type": "tool_result",
-    "step": 4,
-    "id": "toolu_0114jit3vYtUDH2oZPRRjfUj",
-    "name": "make_chart",
-    "ok": true,
-    "ms": 4,
-    "chart_id": "c1"
-   },
-   {
-    "type": "model_call",
-    "step": 5,
-    "stop_reason": "tool_use",
-    "usage": {
-     "input_tokens": 2,
-     "cache_creation_input_tokens": 263,
-     "cache_read_input_tokens": 13393,
-     "output_tokens": 313
-    },
-    "cost_usd": 0.005131,
-    "ms": 2455
-   },
-   {
-    "type": "tool_call",
-    "step": 5,
-    "id": "toolu_014oPax4rcvA4XFZ7iqdrmN1",
+    "step": 3,
+    "id": "toolu_01966W58EDr9t129zak2YZDU",
     "name": "query_metric",
     "input": {
-     "metric": "outcome_mix",
+     "metric": "closed_unverified",
      "filters": [
       {
        "dimension": "unified_category",
        "values": [
         "Bulky & dumped item pickups"
        ]
-      },
-      {
-       "dimension": "era",
-       "values": [
-        "current"
-       ]
-      },
-      {
-       "dimension": "is_closed",
-       "values": [
-        "true"
-       ]
       }
      ],
      "group_by": [
-      "closure_outcome"
+      "resolution_code"
      ],
      "time_grain": "none",
      "date_range": [
@@ -1380,35 +1285,76 @@
       "2026-07-01"
      ],
      "order": "value_desc",
-     "limit": 0,
+     "limit": 5,
      "min_count": 0
     }
    },
    {
     "type": "tool_result",
-    "step": 5,
-    "id": "toolu_014oPax4rcvA4XFZ7iqdrmN1",
+    "step": 3,
+    "id": "toolu_01966W58EDr9t129zak2YZDU",
     "name": "query_metric",
     "ok": true,
-    "ms": 0
+    "ms": 42,
+    "query_id": "q3",
+    "sql": "with grouped as (\n    select\n        \"resolution_code\" as resolution_code,\n        sum(case when (NOT COALESCE(outcome_group, '') IN ('neutral', 'handed_off')) and (is_closed AND COALESCE(outcome_group, '') <> 'fixed') then 1 else 0 end) as n\n    from fct_current_requests\n    where (\"unified_category\" in (?)) and (created_month between ? and ?)\n    group by resolution_code\n),\nvalued as (\n    select *, n as value_\n    from grouped\n)\nselect *\nfrom valued\norder by value_ desc nulls last, resolution_code\nlimit 5",
+    "params": [
+     "Bulky & dumped item pickups",
+     "2025-03-01",
+     "2026-07-01"
+    ],
+    "columns": [
+     "resolution_code",
+     "n",
+     "value"
+    ],
+    "rows": [
+     {
+      "resolution_code": "QC-Item Not Out",
+      "n": 300512,
+      "value": 300512
+     },
+     {
+      "resolution_code": "1004-Closed",
+      "n": 14421,
+      "value": 14421
+     },
+     {
+      "resolution_code": "RBI-Reschedule for Bulky Items",
+      "n": 2370,
+      "value": 2370
+     },
+     {
+      "resolution_code": "NCPP-Not at Curb / On Private Property",
+      "n": 2310,
+      "value": 2310
+     },
+     {
+      "resolution_code": "RWG-Reschedule for White Goods",
+      "n": 1152,
+      "value": 1152
+     }
+    ],
+    "row_count": 5,
+    "truncated": false
    },
    {
     "type": "model_call",
-    "step": 6,
+    "step": 4,
     "stop_reason": "tool_use",
     "usage": {
      "input_tokens": 2,
-     "cache_creation_input_tokens": 360,
-     "cache_read_input_tokens": 13656,
+     "cache_creation_input_tokens": 1698,
+     "cache_read_input_tokens": 11692,
      "output_tokens": 51
     },
-    "cost_usd": 0.00278,
-    "ms": 1168
+    "cost_usd": 0.005928,
+    "ms": 1026
    },
    {
     "type": "tool_call",
-    "step": 6,
-    "id": "toolu_01PU21CTLAbzSiVgFLJfHynT",
+    "step": 4,
+    "id": "toolu_014sURkp7PqEiD7txuQxLxhp",
     "name": "run_sql",
     "input": {
      "sql": "select 1"
@@ -1416,8 +1362,8 @@
    },
    {
     "type": "tool_result",
-    "step": 6,
-    "id": "toolu_01PU21CTLAbzSiVgFLJfHynT",
+    "step": 4,
+    "id": "toolu_014sURkp7PqEiD7txuQxLxhp",
     "name": "run_sql",
     "ok": true,
     "ms": 2,
@@ -1437,202 +1383,195 @@
    },
    {
     "type": "model_call",
-    "step": 7,
+    "step": 5,
     "stop_reason": "tool_use",
     "usage": {
      "input_tokens": 2,
      "cache_creation_input_tokens": 92,
-     "cache_read_input_tokens": 14016,
-     "output_tokens": 153
+     "cache_read_input_tokens": 13390,
+     "output_tokens": 394
     },
-    "cost_usd": 0.003166,
-    "ms": 1478
+    "cost_usd": 0.005513,
+    "ms": 2791
    },
    {
     "type": "tool_call",
-    "step": 7,
-    "id": "toolu_013VMHn6txhg215UbCaGdjSc",
-    "name": "make_chart",
+    "step": 5,
+    "id": "toolu_01X3xDyXgEQj7eSrQbu9J7hY",
+    "name": "query_metric",
     "input": {
-     "query_id": "q3",
-     "spec": {
-      "mark": "bar",
-      "encoding": {
-       "x": {
-        "field": "closure_outcome",
-        "type": "nominal",
-        "sort": "-y"
-       },
-       "y": {
-        "field": "value_pct",
-        "type": "quantitative",
-        "title": "Percent"
-       }
+     "metric": "outcome_mix",
+     "filters": [
+      {
+       "dimension": "unified_category",
+       "values": [
+        "Bulky & dumped item pickups"
+       ]
+      },
+      {
+       "dimension": "is_closed",
+       "values": [
+        "true"
+       ]
+      },
+      {
+       "dimension": "resolution_code",
+       "values": [
+        "QC-Item Not Out"
+       ]
       }
-     }
+     ],
+     "group_by": [
+      "resolution_code"
+     ],
+     "time_grain": "none",
+     "date_range": [
+      "2025-03-01",
+      "2026-07-01"
+     ],
+     "order": "value_desc",
+     "limit": 0,
+     "min_count": 0
     }
    },
    {
     "type": "tool_result",
-    "step": 7,
-    "id": "toolu_013VMHn6txhg215UbCaGdjSc",
-    "name": "make_chart",
+    "step": 5,
+    "id": "toolu_01X3xDyXgEQj7eSrQbu9J7hY",
+    "name": "query_metric",
     "ok": true,
-    "ms": 0
+    "ms": 62,
+    "query_id": "q5",
+    "sql": "with grouped as (\n    select\n        \"resolution_code\" as resolution_code,\n        \"closure_outcome\" as closure_outcome,\n        sum(case when (is_terminal) then 1 else 0 end) as n\n    from fct_current_requests\n    where (\"unified_category\" in (?)) and (\"is_closed\" in (?)) and (\"resolution_code\" in (?)) and (created_month between ? and ?)\n    group by resolution_code, closure_outcome\n),\nvalued as (\n    select *, n / nullif(sum(n) over (partition by resolution_code), 0) as value_\n    from grouped\n)\nselect *\nfrom valued\norder by value_ desc nulls last, resolution_code, closure_outcome",
+    "params": [
+     "Bulky & dumped item pickups",
+     true,
+     "QC-Item Not Out",
+     "2025-03-01",
+     "2026-07-01"
+    ],
+    "columns": [
+     "resolution_code",
+     "closure_outcome",
+     "n",
+     "value"
+    ],
+    "rows": [
+     {
+      "resolution_code": "QC-Item Not Out",
+      "closure_outcome": "not_found",
+      "n": 300512,
+      "value": 1.0
+     }
+    ],
+    "row_count": 1,
+    "truncated": false
    },
    {
     "type": "model_call",
-    "step": 8,
+    "step": 6,
+    "stop_reason": "tool_use",
+    "usage": {
+     "input_tokens": 2,
+     "cache_creation_input_tokens": 643,
+     "cache_read_input_tokens": 13482,
+     "output_tokens": 51
+    },
+    "cost_usd": 0.00347,
+    "ms": 967
+   },
+   {
+    "type": "tool_call",
+    "step": 6,
+    "id": "toolu_01SU56pzY3kNrUqvEHLXgH1J",
+    "name": "run_sql",
+    "input": {
+     "sql": "select 1"
+    }
+   },
+   {
+    "type": "tool_result",
+    "step": 6,
+    "id": "toolu_01SU56pzY3kNrUqvEHLXgH1J",
+    "name": "run_sql",
+    "ok": true,
+    "ms": 0,
+    "duplicate_of": "q4"
+   },
+   {
+    "type": "model_call",
+    "step": 7,
     "stop_reason": "end_turn",
     "usage": {
-     "input_tokens": 4,
-     "cache_creation_input_tokens": 233,
-     "cache_read_input_tokens": 14108,
-     "output_tokens": 621
+     "input_tokens": 2,
+     "cache_creation_input_tokens": 98,
+     "cache_read_input_tokens": 14125,
+     "output_tokens": 611
     },
-    "cost_usd": 0.008211,
-    "ms": 4966
+    "cost_usd": 0.007771,
+    "ms": 4774
    },
    {
     "type": "answer",
     "answer": {
      "answer_type": "answered",
-     "answer_markdown": "In the current system, **24.4%** of closed bulky and dumped item pickups (March 2025 to July 2026 creations) ended with a `not_found` outcome, which is mostly the \"item not out\" code. The code `QC-Item Not Out` alone carries **300,512** closed requests. By comparison, **72.2%** of closed bulky requests were coded as work done. `QC-Item Not Out` is mapped as not fixed, so these requests count as closed without a verified fix. That can be legitimate, since the item may really not have been put out.",
+     "answer_markdown": "In the current system, about **24.4%** of closed bulky and dumped item pickup requests ended with a \"not found\" outcome (March 2025 to July 2026). That was **303,527** closed requests. Nearly all of them carry the code `QC-Item Not Out`, which accounts for **300,512** closed requests. By comparison, **72.2%** were closed with work done. The \"item not out\" closes are the largest single group of bulky closes that don't say the work was done.",
      "key_numbers": [
       {
-       "label": "Closed bulky requests with not_found outcome",
+       "label": "Closed bulky requests ending not_found (share of closed)",
        "value": 24.44,
        "unit": "percent",
        "metric": "outcome_mix",
-       "query_id": "q3"
+       "query_id": "q2"
       },
       {
-       "label": "Closed bulky requests with fixed_work_done outcome",
-       "value": 72.23,
-       "unit": "percent",
+       "label": "Closed bulky requests ending not_found",
+       "value": 303527,
+       "unit": "count",
        "metric": "outcome_mix",
-       "query_id": "q3"
+       "query_id": "q2"
       },
       {
-       "label": "Requests closed with QC-Item Not Out",
+       "label": "Closed with QC-Item Not Out",
        "value": 300512,
        "unit": "count",
        "metric": "closed_unverified",
+       "query_id": "q3"
+      },
+      {
+       "label": "Closed with work done (share of closed)",
+       "value": 72.23,
+       "unit": "percent",
+       "metric": "outcome_mix",
        "query_id": "q2"
       }
      ],
      "evidence_level": "E1",
      "caveats": [
-      "The 24.4% is the whole `not_found` outcome among closed bulky requests. It includes a small number of other not-found codes. I didn't compute a share for `QC-Item Not Out` alone, so I give its count only.",
-      "Only the current system (from 2025-03-28) has resolution codes. The legacy system can't show how often an item wasn't out.",
-      "The chart I tried to attach did not complete, so there is no chart."
+      "Only the current system (since March 2025) has resolution codes, so this can't be measured for the legacy era.",
+      "The 24.4% share is among all closed bulky requests, including a small number of duplicates and information-only closes. The code map treats \"item not out\" as not fixed, though it may be legitimate when no item was put out."
      ],
      "query_ids": [
       "q2",
-      "q3"
+      "q3",
+      "q5"
      ],
      "chart": null,
      "follow_ups": [
-      "How does the share of bulky item pickups closed as not found vary by council district?",
-      "What share of all closed requests are verified fixed, by category?",
-      "How fast are bulky item pickups closed compared with before the relaunch?"
+      "How does the share of bulky pickups closed as item not out vary by council district?",
+      "What share of all bulky item requests were verified fixed?",
+      "How fast are bulky item requests closed compared with before the relaunch?"
      ]
     },
     "queries": {
      "q2": {
       "query_id": "q2",
       "tool": "query_metric",
-      "sql": "with grouped as (\n    select\n        \"resolution_code\" as resolution_code,\n        sum(case when (NOT COALESCE(outcome_group, '') IN ('neutral', 'handed_off')) and (is_closed AND COALESCE(outcome_group, '') <> 'fixed') then 1 else 0 end) as n\n    from fct_current_requests\n    where (\"unified_category\" in (?)) and (created_month between ? and ?)\n    group by resolution_code\n),\nvalued as (\n    select *, n as value_\n    from grouped\n)\nselect *\nfrom valued\norder by value_ desc nulls last, resolution_code\nlimit 8",
+      "sql": "with grouped as (\n    select\n        \"closure_outcome\" as closure_outcome,\n        sum(case when (is_terminal) then n_requests else 0 end) as n\n    from mart_outcomes_monthly\n    where (\"unified_category\" in (?)) and (\"is_closed\" in (?)) and (\"era\" in (?)) and (created_month between ? and ?) and (era = 'current')\n    group by closure_outcome\n),\nvalued as (\n    select *, n / nullif(sum(n) over (), 0) as value_\n    from grouped\n)\nselect *\nfrom valued\norder by value_ desc nulls last, closure_outcome",
       "params": [
        "Bulky & dumped item pickups",
-       "2025-03-01",
-       "2026-07-01"
-      ],
-      "columns": [
-       "resolution_code",
-       "n",
-       "value"
-      ],
-      "rows": [
-       {
-        "resolution_code": "QC-Item Not Out",
-        "n": 300512,
-        "value": 300512
-       },
-       {
-        "resolution_code": "1004-Closed",
-        "n": 14421,
-        "value": 14421
-       },
-       {
-        "resolution_code": "RBI-Reschedule for Bulky Items",
-        "n": 2370,
-        "value": 2370
-       },
-       {
-        "resolution_code": "NCPP-Not at Curb / On Private Property",
-        "n": 2310,
-        "value": 2310
-       },
-       {
-        "resolution_code": "RWG-Reschedule for White Goods",
-        "n": 1152,
-        "value": 1152
-       },
-       {
-        "resolution_code": "REW-Reschedule for E-Waste",
-        "n": 884,
-        "value": 884
-       },
-       {
-        "resolution_code": "NEP-No Encampment Present",
-        "n": 655,
-        "value": 655
-       },
-       {
-        "resolution_code": "CCAN-Cancelled by Customer",
-        "n": 387,
-        "value": 387
-       }
-      ],
-      "row_count": 8,
-      "truncated": false,
-      "request": {
-       "metric": "closed_unverified",
-       "filters": {
-        "unified_category": [
-         "Bulky & dumped item pickups"
-        ],
-        "era": [
-         "current"
-        ]
-       },
-       "group_by": [
-        "resolution_code"
-       ],
-       "time_grain": null,
-       "date_range": [
-        "2025-03-01",
-        "2026-07-01"
-       ],
-       "order": "value_desc",
-       "limit": 8,
-       "min_count": null
-      },
-      "metric": "closed_unverified",
-      "unit": "requests",
-      "evidence": "E1",
-      "source": "fct_current_requests",
-      "coverage": "New system only."
-     },
-     "q3": {
-      "query_id": "q3",
-      "tool": "query_metric",
-      "sql": "with grouped as (\n    select\n        \"closure_outcome\" as closure_outcome,\n        sum(case when (is_terminal) then n_requests else 0 end) as n\n    from mart_outcomes_monthly\n    where (\"unified_category\" in (?)) and (\"era\" in (?)) and (\"is_closed\" in (?)) and (created_month between ? and ?) and (era = 'current')\n    group by closure_outcome\n),\nvalued as (\n    select *, n / nullif(sum(n) over (), 0) as value_\n    from grouped\n)\nselect *\nfrom valued\norder by value_ desc nulls last, closure_outcome",
-      "params": [
-       "Bulky & dumped item pickups",
-       "current",
        true,
+       "current",
        "2025-03-01",
        "2026-07-01"
       ],
@@ -1701,11 +1640,11 @@
         "unified_category": [
          "Bulky & dumped item pickups"
         ],
-        "era": [
-         "current"
-        ],
         "is_closed": [
          "true"
+        ],
+        "era": [
+         "current"
         ]
        },
        "group_by": [
@@ -1725,6 +1664,132 @@
       "evidence": "E1",
       "source": "mart_outcomes_monthly",
       "coverage": null
+     },
+     "q3": {
+      "query_id": "q3",
+      "tool": "query_metric",
+      "sql": "with grouped as (\n    select\n        \"resolution_code\" as resolution_code,\n        sum(case when (NOT COALESCE(outcome_group, '') IN ('neutral', 'handed_off')) and (is_closed AND COALESCE(outcome_group, '') <> 'fixed') then 1 else 0 end) as n\n    from fct_current_requests\n    where (\"unified_category\" in (?)) and (created_month between ? and ?)\n    group by resolution_code\n),\nvalued as (\n    select *, n as value_\n    from grouped\n)\nselect *\nfrom valued\norder by value_ desc nulls last, resolution_code\nlimit 5",
+      "params": [
+       "Bulky & dumped item pickups",
+       "2025-03-01",
+       "2026-07-01"
+      ],
+      "columns": [
+       "resolution_code",
+       "n",
+       "value"
+      ],
+      "rows": [
+       {
+        "resolution_code": "QC-Item Not Out",
+        "n": 300512,
+        "value": 300512
+       },
+       {
+        "resolution_code": "1004-Closed",
+        "n": 14421,
+        "value": 14421
+       },
+       {
+        "resolution_code": "RBI-Reschedule for Bulky Items",
+        "n": 2370,
+        "value": 2370
+       },
+       {
+        "resolution_code": "NCPP-Not at Curb / On Private Property",
+        "n": 2310,
+        "value": 2310
+       },
+       {
+        "resolution_code": "RWG-Reschedule for White Goods",
+        "n": 1152,
+        "value": 1152
+       }
+      ],
+      "row_count": 5,
+      "truncated": false,
+      "request": {
+       "metric": "closed_unverified",
+       "filters": {
+        "unified_category": [
+         "Bulky & dumped item pickups"
+        ]
+       },
+       "group_by": [
+        "resolution_code"
+       ],
+       "time_grain": null,
+       "date_range": [
+        "2025-03-01",
+        "2026-07-01"
+       ],
+       "order": "value_desc",
+       "limit": 5,
+       "min_count": null
+      },
+      "metric": "closed_unverified",
+      "unit": "requests",
+      "evidence": "E1",
+      "source": "fct_current_requests",
+      "coverage": "New system only."
+     },
+     "q5": {
+      "query_id": "q5",
+      "tool": "query_metric",
+      "sql": "with grouped as (\n    select\n        \"resolution_code\" as resolution_code,\n        \"closure_outcome\" as closure_outcome,\n        sum(case when (is_terminal) then 1 else 0 end) as n\n    from fct_current_requests\n    where (\"unified_category\" in (?)) and (\"is_closed\" in (?)) and (\"resolution_code\" in (?)) and (created_month between ? and ?)\n    group by resolution_code, closure_outcome\n),\nvalued as (\n    select *, n / nullif(sum(n) over (partition by resolution_code), 0) as value_\n    from grouped\n)\nselect *\nfrom valued\norder by value_ desc nulls last, resolution_code, closure_outcome",
+      "params": [
+       "Bulky & dumped item pickups",
+       true,
+       "QC-Item Not Out",
+       "2025-03-01",
+       "2026-07-01"
+      ],
+      "columns": [
+       "resolution_code",
+       "closure_outcome",
+       "n",
+       "value"
+      ],
+      "rows": [
+       {
+        "resolution_code": "QC-Item Not Out",
+        "closure_outcome": "not_found",
+        "n": 300512,
+        "value": 1.0
+       }
+      ],
+      "row_count": 1,
+      "truncated": false,
+      "request": {
+       "metric": "outcome_mix",
+       "filters": {
+        "unified_category": [
+         "Bulky & dumped item pickups"
+        ],
+        "is_closed": [
+         "true"
+        ],
+        "resolution_code": [
+         "QC-Item Not Out"
+        ]
+       },
+       "group_by": [
+        "resolution_code"
+       ],
+       "time_grain": null,
+       "date_range": [
+        "2025-03-01",
+        "2026-07-01"
+       ],
+       "order": "value_desc",
+       "limit": null,
+       "min_count": null
+      },
+      "metric": "outcome_mix",
+      "unit": "share",
+      "evidence": "E1",
+      "source": "fct_current_requests",
+      "coverage": "New system only."
      }
     },
     "chart": null,
@@ -1733,17 +1798,17 @@
    {
     "type": "done",
     "outcome": "answered",
-    "steps": 8,
+    "steps": 7,
     "revisions": 0,
     "usage": {
-     "input_tokens": 20,
-     "cache_creation_input_tokens": 4556,
-     "cache_read_input_tokens": 96893,
-     "output_tokens": 2189,
-     "cost_usd": 0.0430093
+     "input_tokens": 16,
+     "cache_creation_input_tokens": 4438,
+     "cache_read_input_tokens": 82748,
+     "output_tokens": 2029,
+     "cost_usd": 0.039691800000000006
     },
-    "cost_usd": 0.043009,
-    "latency_s": 18.94
+    "cost_usd": 0.039692,
+    "latency_s": 17.12
    }
   ],
   "did graffiti requests close faster or slower after the march 2025 relaunch": [
@@ -1763,12 +1828,12 @@
      "output_tokens": 537
     },
     "cost_usd": 0.006599,
-    "ms": 3503
+    "ms": 3827
    },
    {
     "type": "tool_call",
     "step": 1,
-    "id": "toolu_018cc8HXaGHfJBYDSr52qdT1",
+    "id": "toolu_01PntWPb4Ki1L9TGsh5PDJzG",
     "name": "query_metric",
     "input": {
      "metric": "closed_within_7d_rate",
@@ -1799,10 +1864,10 @@
    {
     "type": "tool_result",
     "step": 1,
-    "id": "toolu_018cc8HXaGHfJBYDSr52qdT1",
+    "id": "toolu_01PntWPb4Ki1L9TGsh5PDJzG",
     "name": "query_metric",
     "ok": true,
-    "ms": 7,
+    "ms": 9,
     "query_id": "q1",
     "sql": "with grouped as (\n    select\n        \"period\" as period,\n        sum(case when (NOT FALSE) then n_closed_within_7d else 0 end) as numerator,\n        sum(case when (NOT FALSE) then case when cross_era_comparison <> 'volume_only' then n_requests end else 0 end) as denominator\n    from mart_cutover_periods\n    where (\"unified_category\" in (?))\n    group by period\n)\nselect *, numerator / nullif(denominator, 0) as value_\nfrom grouped\norder by period",
     "params": [
@@ -1834,7 +1899,7 @@
    {
     "type": "tool_call",
     "step": 1,
-    "id": "toolu_018HWf2HafWZjM2KwVoqiR1x",
+    "id": "toolu_01KzrU4qNrGs16X8hWHWUMhC",
     "name": "query_metric",
     "input": {
      "metric": "closed_within_30d_rate",
@@ -1865,7 +1930,7 @@
    {
     "type": "tool_result",
     "step": 1,
-    "id": "toolu_018HWf2HafWZjM2KwVoqiR1x",
+    "id": "toolu_01KzrU4qNrGs16X8hWHWUMhC",
     "name": "query_metric",
     "ok": true,
     "ms": 3,
@@ -1908,12 +1973,12 @@
      "output_tokens": 148
     },
     "cost_usd": 0.005445,
-    "ms": 1992
+    "ms": 1906
    },
    {
     "type": "tool_call",
     "step": 2,
-    "id": "toolu_01TzBGoqoEDMAyfvU755DPJA",
+    "id": "toolu_01MnPSmnB3xzi5gUmPRb5gkm",
     "name": "make_chart",
     "input": {
      "query_id": "q2",
@@ -1937,7 +2002,7 @@
    {
     "type": "tool_result",
     "step": 2,
-    "id": "toolu_01TzBGoqoEDMAyfvU755DPJA",
+    "id": "toolu_01MnPSmnB3xzi5gUmPRb5gkm",
     "name": "make_chart",
     "ok": true,
     "ms": 2,
@@ -1951,15 +2016,15 @@
      "input_tokens": 2,
      "cache_creation_input_tokens": 179,
      "cache_read_input_tokens": 11071,
-     "output_tokens": 141
+     "output_tokens": 148
     },
-    "cost_usd": 0.002969,
-    "ms": 1873
+    "cost_usd": 0.003039,
+    "ms": 1912
    },
    {
     "type": "tool_call",
     "step": 3,
-    "id": "toolu_01TwNb1h7pkVMchPt6sMcT2k",
+    "id": "toolu_01REsFcewsTt6v9nFpbaqpFW",
     "name": "make_chart",
     "input": {
      "query_id": "q2",
@@ -1974,7 +2039,7 @@
        "y": {
         "field": "value_pct",
         "type": "quantitative",
-        "title": "Percent"
+        "title": "Percent closed within 30 days"
        }
       }
      }
@@ -1983,11 +2048,11 @@
    {
     "type": "tool_result",
     "step": 3,
-    "id": "toolu_01TwNb1h7pkVMchPt6sMcT2k",
+    "id": "toolu_01REsFcewsTt6v9nFpbaqpFW",
     "name": "make_chart",
     "ok": true,
-    "ms": 2,
-    "chart_id": "c2"
+    "ms": 0,
+    "duplicate_of": null
    },
    {
     "type": "model_call",
@@ -1995,18 +2060,18 @@
     "stop_reason": "end_turn",
     "usage": {
      "input_tokens": 2,
-     "cache_creation_input_tokens": 172,
+     "cache_creation_input_tokens": 197,
      "cache_read_input_tokens": 11250,
-     "output_tokens": 549
+     "output_tokens": 553
     },
-    "cost_usd": 0.007049,
-    "ms": 4866
+    "cost_usd": 0.007151,
+    "ms": 4940
    },
    {
     "type": "answer",
     "answer": {
      "answer_type": "answered",
-     "answer_markdown": "Resident-reported graffiti requests closed more slowly after the relaunch. The share closed within 7 days was **57.2%** after (Sep 2025 to Aug 2026), against **66.4%** before (Feb 2024 to Feb 2025). The share closed within 30 days was **65.1%** after, against **74.4%** before.",
+     "answer_markdown": "Resident-reported graffiti requests closed **more slowly** after the relaunch. Within 7 days, **57.2%** closed in the after period (Sep 2025 to Aug 2026), against **66.4%** before (Feb 2024 to Feb 2025). Within 30 days, **65.1%** closed after, against **74.4%** before. Both measures count requests that never closed.",
      "key_numbers": [
       {
        "label": "Closed within 7 days, before",
@@ -2040,15 +2105,15 @@
      "evidence_level": "E2",
      "caveats": [
       "Resident-reported graffiti only; crew self-reports are excluded. The Apr-Aug 2025 overlap months are left out.",
-      "These rates count requests that never closed, so they avoid the bias of medians. They show what changed, not why."
+      "This describes what changed and when, not why. The data doesn't show a cause."
      ],
      "query_ids": [
       "q1",
       "q2"
      ],
-     "chart": "c2",
+     "chart": "c1",
      "follow_ups": [
-      "How did the cancellation rate for graffiti change before and after the relaunch?",
+      "How did the cancellation rate for graffiti change after the relaunch?",
       "Did streetlight repair requests close faster or slower after the relaunch?",
       "How did bulky item pickups compare before and after the relaunch?"
      ]
@@ -2176,7 +2241,7 @@
        "y": {
         "field": "value_pct",
         "type": "quantitative",
-        "title": "Percent"
+        "title": "Percent closed within 30 days"
        }
       },
       "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
@@ -2209,13 +2274,13 @@
     "revisions": 0,
     "usage": {
      "input_tokens": 10,
-     "cache_creation_input_tokens": 1637,
+     "cache_creation_input_tokens": 1662,
      "cache_read_input_tokens": 41988,
-     "output_tokens": 1375,
-     "cost_usd": 0.0220613
+     "output_tokens": 1386,
+     "cost_usd": 0.0222338
     },
-    "cost_usd": 0.022061,
-    "latency_s": 12.25
+    "cost_usd": 0.022234,
+    "latency_s": 12.61
    }
   ],
   "which council districts have the biggest gap between closed and fixed": [
@@ -2235,12 +2300,12 @@
      "output_tokens": 241
     },
     "cost_usd": 0.003624,
-    "ms": 1857
+    "ms": 1879
    },
    {
     "type": "tool_call",
     "step": 1,
-    "id": "toolu_01HdJZSVkiqpFxdenovaPe57",
+    "id": "toolu_01L1tC8ZBNdAw5ktV9m1EEEE",
     "name": "query_metric",
     "input": {
      "metric": "closed_fixed_gap_pp",
@@ -2261,10 +2326,10 @@
    {
     "type": "tool_result",
     "step": 1,
-    "id": "toolu_01HdJZSVkiqpFxdenovaPe57",
+    "id": "toolu_01L1tC8ZBNdAw5ktV9m1EEEE",
     "name": "query_metric",
     "ok": true,
-    "ms": 56,
+    "ms": 52,
     "query_id": "q1",
     "sql": "with grouped as (\n    select\n        \"cd\" as cd,\n        sum(case when (NOT COALESCE(outcome_group, '') IN ('neutral', 'handed_off')) then case when is_closed then 1 else 0 end else 0 end) as a_numerator,\n        sum(case when (NOT COALESCE(outcome_group, '') IN ('neutral', 'handed_off')) then 1 else 0 end) as a_denominator,\n        sum(case when (NOT COALESCE(outcome_group, '') IN ('neutral', 'handed_off')) and (outcome_group = 'fixed') then 1 else 0 end) as b_numerator,\n        sum(case when (NOT COALESCE(outcome_group, '') IN ('neutral', 'handed_off')) then 1 else 0 end) as b_denominator\n    from fct_current_requests\n    where (created_month between ? and ?)\n    group by cd\n),\nvalued as (\n    select *, round((a_numerator / nullif(a_denominator, 0) - b_numerator / nullif(b_denominator, 0)) * 100, 4) as value_\n    from grouped\n)\nselect *\nfrom valued\norder by value_ desc nulls last, cd",
     "params": [
@@ -2423,12 +2488,12 @@
      "output_tokens": 153
     },
     "cost_usd": 0.006752,
-    "ms": 2082
+    "ms": 1745
    },
    {
     "type": "tool_call",
     "step": 2,
-    "id": "toolu_01XxK3EfbZqjHEN59kzg5ubF",
+    "id": "toolu_01Gkur7KmLQhAX7NS9FPXatD",
     "name": "make_chart",
     "input": {
      "query_id": "q1",
@@ -2453,10 +2518,10 @@
    {
     "type": "tool_result",
     "step": 2,
-    "id": "toolu_01XxK3EfbZqjHEN59kzg5ubF",
+    "id": "toolu_01Gkur7KmLQhAX7NS9FPXatD",
     "name": "make_chart",
     "ok": true,
-    "ms": 5,
+    "ms": 3,
     "chart_id": "c1"
    },
    {
@@ -2470,12 +2535,12 @@
      "output_tokens": 146
     },
     "cost_usd": 0.003083,
-    "ms": 1542
+    "ms": 2060
    },
    {
     "type": "tool_call",
     "step": 3,
-    "id": "toolu_01WcP9T9NoCpRyW9pSBKjKBM",
+    "id": "toolu_01Bqiwz4MbmQBbdqraKpBrq6",
     "name": "make_chart",
     "input": {
      "query_id": "q1",
@@ -2499,10 +2564,10 @@
    {
     "type": "tool_result",
     "step": 3,
-    "id": "toolu_01WcP9T9NoCpRyW9pSBKjKBM",
+    "id": "toolu_01Bqiwz4MbmQBbdqraKpBrq6",
     "name": "make_chart",
     "ok": true,
-    "ms": 5,
+    "ms": 3,
     "chart_id": "c2"
    },
    {
@@ -2513,48 +2578,48 @@
      "input_tokens": 2,
      "cache_creation_input_tokens": 177,
      "cache_read_input_tokens": 11753,
-     "output_tokens": 718
+     "output_tokens": 719
     },
-    "cost_usd": 0.008802,
-    "ms": 5226
+    "cost_usd": 0.008812,
+    "ms": 5395
    },
    {
     "type": "answer",
     "answer": {
      "answer_type": "answered",
-     "answer_markdown": "Among districts, **CD 13** has the biggest gap at **30.8 pp**, then **CD 6** (**29.3 pp**) and **CD 4** (**29.1 pp**). CD 2 (28.4 pp), CD 3 (28.4 pp) and CD 7 (28.4 pp) follow closely. The smallest gaps are **CD 8** (**19.6 pp**) and **CD 1** (**20.5 pp**). The gap is the share of all requests in the base marked closed without a code saying the work was done. The window is March 2025 to July 2026, current era only. Requests with no district have a 36.0 pp gap, but they are a small group (7,227 requests).",
+     "answer_markdown": "Among council districts, **District 13** has the largest gap between closed and verified fixed at **30.8 points**. It is followed by **District 6 (29.3)**, **District 4 (29.1)** and **District 2 (28.4)**. The smallest gaps are **District 8 (19.6)** and **District 1 (20.5)**. The gap is the share of all requests in the base that were marked closed without a code saying the work was done. The figures cover requests created March 2025 to July 2026. Requests with no district have a gap of **36.0 points**, but that group is small (7,227 requests).",
      "key_numbers": [
       {
-       "label": "CD 13 gap",
+       "label": "District 13 gap",
        "value": 30.8,
        "unit": "percentage_points",
        "metric": "closed_fixed_gap_pp",
        "query_id": "q1"
       },
       {
-       "label": "CD 6 gap",
+       "label": "District 6 gap",
        "value": 29.3,
        "unit": "percentage_points",
        "metric": "closed_fixed_gap_pp",
        "query_id": "q1"
       },
       {
-       "label": "CD 4 gap",
+       "label": "District 4 gap",
        "value": 29.1,
        "unit": "percentage_points",
        "metric": "closed_fixed_gap_pp",
        "query_id": "q1"
       },
       {
-       "label": "CD 1 gap",
-       "value": 20.5,
+       "label": "District 8 gap (smallest)",
+       "value": 19.6,
        "unit": "percentage_points",
        "metric": "closed_fixed_gap_pp",
        "query_id": "q1"
       },
       {
-       "label": "CD 8 gap",
-       "value": 19.6,
+       "label": "No-district gap",
+       "value": 36.0,
        "unit": "percentage_points",
        "metric": "closed_fixed_gap_pp",
        "query_id": "q1"
@@ -2562,17 +2627,18 @@
      ],
      "evidence_level": "E1",
      "caveats": [
-      "Many street-service categories close with a generic code, so a large gap means 'not recorded as fixed', not 'not fixed'.",
-      "Districts differ in their mix of request categories, and this view does not adjust for that. I describe the differences and don't explain them."
+      "Current system only (March 2025 to July 2026). The old system has no resolution codes.",
+      "A gap reflects how requests were coded, not proof that work wasn't done. Many street-services categories close with a generic code, so the mix of categories in a district matters.",
+      "District 1 closes far fewer requests (64.6%) than the others, which is part of why its gap is smaller."
      ],
      "query_ids": [
       "q1"
      ],
      "chart": "c2",
      "follow_ups": [
-      "Which request categories carry the largest gap in Council District 13?",
-      "How has the gap changed month by month across the city?",
-      "Which resolution codes make up most of the closed-but-unverified requests?"
+      "Which request categories carry the biggest gap between closed and fixed?",
+      "Which resolution codes make up the gap in District 13?",
+      "How has the citywide gap between closed and fixed changed month by month?"
      ]
     },
     "queries": {
@@ -2940,11 +3006,11 @@
      "input_tokens": 10,
      "cache_creation_input_tokens": 2145,
      "cache_read_input_tokens": 42982,
-     "output_tokens": 1258,
-     "cost_usd": 0.0222607
+     "output_tokens": 1259,
+     "cost_usd": 0.0222707
     },
-    "cost_usd": 0.022261,
-    "latency_s": 10.78
+    "cost_usd": 0.022271,
+    "latency_s": 11.15
    }
   ],
   "qué porcentaje de las solicitudes cerradas se arreglaron de verdad": [
@@ -2961,15 +3027,15 @@
      "input_tokens": 4,
      "cache_creation_input_tokens": 103,
      "cache_read_input_tokens": 9785,
-     "output_tokens": 253
+     "output_tokens": 718
     },
-    "cost_usd": 0.003774,
-    "ms": 1867
+    "cost_usd": 0.008424,
+    "ms": 3788
    },
    {
     "type": "tool_call",
     "step": 1,
-    "id": "toolu_01TU9FKBv5JxKPgFth3aZRsx",
+    "id": "toolu_012xNRir63mA5HsmuRKAm9qT",
     "name": "query_metric",
     "input": {
      "metric": "verified_fix_rate",
@@ -2995,7 +3061,7 @@
    {
     "type": "tool_result",
     "step": 1,
-    "id": "toolu_01TU9FKBv5JxKPgFth3aZRsx",
+    "id": "toolu_012xNRir63mA5HsmuRKAm9qT",
     "name": "query_metric",
     "ok": true,
     "ms": 8,
@@ -3022,22 +3088,9 @@
     "truncated": false
    },
    {
-    "type": "model_call",
-    "step": 2,
-    "stop_reason": "tool_use",
-    "usage": {
-     "input_tokens": 2,
-     "cache_creation_input_tokens": 442,
-     "cache_read_input_tokens": 9888,
-     "output_tokens": 470
-    },
-    "cost_usd": 0.006798,
-    "ms": 3108
-   },
-   {
     "type": "tool_call",
-    "step": 2,
-    "id": "toolu_012tgKbc9bmnNMFC2wUEZD8e",
+    "step": 1,
+    "id": "toolu_019axAEXmTn7vnsELrwTSBZg",
     "name": "query_metric",
     "input": {
      "metric": "closed_not_fixed_share",
@@ -3055,11 +3108,11 @@
    },
    {
     "type": "tool_result",
-    "step": 2,
-    "id": "toolu_012tgKbc9bmnNMFC2wUEZD8e",
+    "step": 1,
+    "id": "toolu_019axAEXmTn7vnsELrwTSBZg",
     "name": "query_metric",
     "ok": true,
-    "ms": 7,
+    "ms": 5,
     "query_id": "q2",
     "sql": "with grouped as (\n    select\n        sum(case when (NOT COALESCE(outcome_group, '') IN ('neutral', 'handed_off')) and (is_closed AND outcome_group = 'not_fixed') then n_requests else 0 end) as numerator,\n        sum(case when (NOT COALESCE(outcome_group, '') IN ('neutral', 'handed_off')) and (is_closed) then n_requests else 0 end) as denominator\n    from mart_outcomes_monthly\n    where (created_month between ? and ?) and (era = 'current')\n)\nselect *, numerator / nullif(denominator, 0) as value_\nfrom grouped",
     "params": [
@@ -3083,8 +3136,8 @@
    },
    {
     "type": "tool_call",
-    "step": 2,
-    "id": "toolu_01JfKUfJKZTCSZSbfRUUw69j",
+    "step": 1,
+    "id": "toolu_01StMoqXqizJjt6CWij9rWMc",
     "name": "query_metric",
     "input": {
      "metric": "unspecified_closure_share",
@@ -3102,11 +3155,11 @@
    },
    {
     "type": "tool_result",
-    "step": 2,
-    "id": "toolu_01JfKUfJKZTCSZSbfRUUw69j",
+    "step": 1,
+    "id": "toolu_01StMoqXqizJjt6CWij9rWMc",
     "name": "query_metric",
     "ok": true,
-    "ms": 7,
+    "ms": 5,
     "query_id": "q3",
     "sql": "with grouped as (\n    select\n        sum(case when (NOT COALESCE(outcome_group, '') IN ('neutral', 'handed_off')) and (is_closed AND closure_outcome = 'closed_unspecified') then n_requests else 0 end) as numerator,\n        sum(case when (NOT COALESCE(outcome_group, '') IN ('neutral', 'handed_off')) and (is_closed) then n_requests else 0 end) as denominator\n    from mart_outcomes_monthly\n    where (created_month between ? and ?) and (era = 'current')\n)\nselect *, numerator / nullif(denominator, 0) as value_\nfrom grouped",
     "params": [
@@ -3130,25 +3183,85 @@
    },
    {
     "type": "model_call",
+    "step": 2,
+    "stop_reason": "tool_use",
+    "usage": {
+     "input_tokens": 2,
+     "cache_creation_input_tokens": 1328,
+     "cache_read_input_tokens": 9888,
+     "output_tokens": 235
+    },
+    "cost_usd": 0.006663,
+    "ms": 1907
+   },
+   {
+    "type": "tool_call",
+    "step": 2,
+    "id": "toolu_01AetDYdh4LSLE2Xc1n2VbvN",
+    "name": "query_metric",
+    "input": {
+     "metric": "verified_fix_rate",
+     "filters": [],
+     "group_by": [],
+     "time_grain": "none",
+     "date_range": [
+      "2025-03-01",
+      "2026-07-01"
+     ],
+     "order": "dimensions",
+     "limit": 0,
+     "min_count": 0
+    }
+   },
+   {
+    "type": "tool_result",
+    "step": 2,
+    "id": "toolu_01AetDYdh4LSLE2Xc1n2VbvN",
+    "name": "query_metric",
+    "ok": true,
+    "ms": 8,
+    "query_id": "q4",
+    "sql": "with grouped as (\n    select\n        sum(case when (NOT COALESCE(outcome_group, '') IN ('neutral', 'handed_off')) and (outcome_group = 'fixed') then n_requests else 0 end) as numerator,\n        sum(case when (NOT COALESCE(outcome_group, '') IN ('neutral', 'handed_off')) then n_requests else 0 end) as denominator\n    from mart_outcomes_monthly\n    where (created_month between ? and ?) and (era = 'current')\n)\nselect *, numerator / nullif(denominator, 0) as value_\nfrom grouped",
+    "params": [
+     "2025-03-01",
+     "2026-07-01"
+    ],
+    "columns": [
+     "numerator",
+     "denominator",
+     "value"
+    ],
+    "rows": [
+     {
+      "numerator": 1282416,
+      "denominator": 2064328,
+      "value": 0.6212
+     }
+    ],
+    "row_count": 1,
+    "truncated": false
+   },
+   {
+    "type": "model_call",
     "step": 3,
     "stop_reason": "end_turn",
     "usage": {
      "input_tokens": 2,
-     "cache_creation_input_tokens": 868,
-     "cache_read_input_tokens": 10330,
-     "output_tokens": 624
+     "cache_creation_input_tokens": 409,
+     "cache_read_input_tokens": 11216,
+     "output_tokens": 729
     },
-    "cost_usd": 0.009447,
-    "ms": 4786
+    "cost_usd": 0.009438,
+    "ms": 5281
    },
    {
     "type": "answer",
     "answer": {
      "answer_type": "answered",
-     "answer_markdown": "Entre las solicitudes cerradas (marzo de 2025 a julio de 2026, sistema actual), **70.7%** tienen un código de resolución que indica que se hizo el trabajo o que ya estaba resuelto. El resto de las cerradas se divide así: **20.4%** se cerraron con un código de no arreglado (no encontrado, derivado a otra instancia, aplazado o imposible) y **8.9%** se cerraron sin decir cómo.",
+     "answer_markdown": "Entre las solicitudes cerradas de marzo de 2025 a julio de 2026 (sistema actual), **70.7%** tienen un código de resolución que indica que se hizo el trabajo o que ya estaba resuelto. El resto de las cerradas se divide así: **20.3%** se cerró con un código de que el problema no se arregló (no encontrado, derivado, aplazado o no realizable), y **8.9%** se cerró con un código genérico o sin código. En total son 1,813,376 solicitudes cerradas.",
      "key_numbers": [
       {
-       "label": "Cerradas verificadas como arregladas",
+       "label": "Cerradas con arreglo verificado",
        "value": 70.7,
        "unit": "percent",
        "metric": "verified_fix_rate",
@@ -3156,24 +3269,30 @@
       },
       {
        "label": "Cerradas con código de no arreglado",
-       "value": 20.4,
+       "value": 20.3,
        "unit": "percent",
        "metric": "closed_not_fixed_share",
        "query_id": "q2"
       },
       {
-       "label": "Cerradas sin especificar cómo",
+       "label": "Cerradas sin decir cómo",
        "value": 8.9,
        "unit": "percent",
        "metric": "unspecified_closure_share",
        "query_id": "q3"
+      },
+      {
+       "label": "Solicitudes cerradas (base)",
+       "value": 1813376,
+       "unit": "count",
+       "metric": "verified_fix_rate",
+       "query_id": "q1"
       }
      ],
      "evidence_level": "E1",
      "caveats": [
-      "Solo el sistema actual tiene códigos de resolución; los datos del sistema anterior no pueden responder esto.",
-      "Las solicitudes cerradas con código genérico o sin código cuentan como no verificadas: significa 'no registrado como arreglado', no 'no arreglado'.",
-      "Excluye duplicados, solo información y traspasos de entrada (Reported)."
+      "Solo el sistema actual tiene códigos de resolución; los datos anteriores a 2025-03-28 no permiten medir esto.",
+      "Un código genérico significa 'no registrado como arreglado', no necesariamente 'no arreglado'. Las duplicadas, las de solo información y las derivadas en la admisión quedan fuera de la base."
      ],
      "query_ids": [
       "q1",
@@ -3182,9 +3301,9 @@
      ],
      "chart": null,
      "follow_ups": [
-      "¿Qué categorías tienen la menor proporción de solicitudes arregladas?",
-      "¿Cuál es la brecha entre cerradas y arregladas en cada distrito del concejo?",
-      "¿Qué códigos de resolución explican la mayor parte de las cerradas sin verificar?"
+      "¿Qué categorías tienen el mayor porcentaje de solicitudes cerradas sin arreglo verificado?",
+      "¿Cuál es la brecha entre cerradas y arregladas sobre todas las solicitudes?",
+      "¿Qué códigos de resolución explican la mayoría de los cierres sin verificar?"
      ]
     },
     "queries": {
@@ -3327,13 +3446,13 @@
     "revisions": 0,
     "usage": {
      "input_tokens": 8,
-     "cache_creation_input_tokens": 1413,
-     "cache_read_input_tokens": 30003,
-     "output_tokens": 1347,
-     "cost_usd": 0.020018800000000003
+     "cache_creation_input_tokens": 1840,
+     "cache_read_input_tokens": 30889,
+     "output_tokens": 1682,
+     "cost_usd": 0.0245249
     },
-    "cost_usd": 0.020019,
-    "latency_s": 9.79
+    "cost_usd": 0.024525,
+    "latency_s": 11.01
    }
   ]
  }
