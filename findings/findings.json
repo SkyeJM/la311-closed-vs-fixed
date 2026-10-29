@@ -1,7 +1,7 @@
 {
  "version": 1,
- "generated_at": "2026-10-29T20:30:41+00:00",
- "git_commit": "f45047e",
+ "generated_at": "2026-10-29T21:46:16+00:00",
+ "git_commit": "b31ccf9",
  "status": "final",
  "status_note": "Every resolution code in the data is mapped, and the map has been reviewed.",
  "parameters": {
@@ -77,6 +77,173 @@
     "headline_all_months_official_closure"
    ]
   }
+ },
+ "trend": {
+  "months": [
+   {
+    "month": "2025-03-01",
+    "closure_rate": 0.8636,
+    "verified_fix_rate": 0.5885,
+    "gap_pp": 27.5074,
+    "fix_rate_base": 12204,
+    "full_followup": true
+   },
+   {
+    "month": "2025-04-01",
+    "closure_rate": 0.877,
+    "verified_fix_rate": 0.6341,
+    "gap_pp": 24.2852,
+    "fix_rate_base": 126995,
+    "full_followup": true
+   },
+   {
+    "month": "2025-05-01",
+    "closure_rate": 0.8914,
+    "verified_fix_rate": 0.6441,
+    "gap_pp": 24.7244,
+    "fix_rate_base": 124800,
+    "full_followup": true
+   },
+   {
+    "month": "2025-06-01",
+    "closure_rate": 0.8992,
+    "verified_fix_rate": 0.6559,
+    "gap_pp": 24.3324,
+    "fix_rate_base": 124365,
+    "full_followup": true
+   },
+   {
+    "month": "2025-07-01",
+    "closure_rate": 0.806,
+    "verified_fix_rate": 0.5795,
+    "gap_pp": 22.6557,
+    "fix_rate_base": 154041,
+    "full_followup": true
+   },
+   {
+    "month": "2025-08-01",
+    "closure_rate": 0.8549,
+    "verified_fix_rate": 0.6043,
+    "gap_pp": 25.055,
+    "fix_rate_base": 135382,
+    "full_followup": true
+   },
+   {
+    "month": "2025-09-01",
+    "closure_rate": 0.9073,
+    "verified_fix_rate": 0.6223,
+    "gap_pp": 28.5029,
+    "fix_rate_base": 129166,
+    "full_followup": true
+   },
+   {
+    "month": "2025-10-01",
+    "closure_rate": 0.8582,
+    "verified_fix_rate": 0.5921,
+    "gap_pp": 26.6124,
+    "fix_rate_base": 130522,
+    "full_followup": true
+   },
+   {
+    "month": "2025-11-01",
+    "closure_rate": 0.8402,
+    "verified_fix_rate": 0.5859,
+    "gap_pp": 25.4365,
+    "fix_rate_base": 110259,
+    "full_followup": true
+   },
+   {
+    "month": "2025-12-01",
+    "closure_rate": 0.877,
+    "verified_fix_rate": 0.6154,
+    "gap_pp": 26.1626,
+    "fix_rate_base": 126375,
+    "full_followup": true
+   },
+   {
+    "month": "2026-01-01",
+    "closure_rate": 0.8997,
+    "verified_fix_rate": 0.6428,
+    "gap_pp": 25.6944,
+    "fix_rate_base": 135014,
+    "full_followup": true
+   },
+   {
+    "month": "2026-02-01",
+    "closure_rate": 0.897,
+    "verified_fix_rate": 0.6394,
+    "gap_pp": 25.7615,
+    "fix_rate_base": 109582,
+    "full_followup": true
+   },
+   {
+    "month": "2026-03-01",
+    "closure_rate": 0.8701,
+    "verified_fix_rate": 0.6287,
+    "gap_pp": 24.1426,
+    "fix_rate_base": 143489,
+    "full_followup": true
+   },
+   {
+    "month": "2026-04-01",
+    "closure_rate": 0.8914,
+    "verified_fix_rate": 0.6198,
+    "gap_pp": 27.1616,
+    "fix_rate_base": 124308,
+    "full_followup": true
+   },
+   {
+    "month": "2026-05-01",
+    "closure_rate": 0.8887,
+    "verified_fix_rate": 0.619,
+    "gap_pp": 26.9693,
+    "fix_rate_base": 123737,
+    "full_followup": true
+   },
+   {
+    "month": "2026-06-01",
+    "closure_rate": 0.903,
+    "verified_fix_rate": 0.6317,
+    "gap_pp": 27.1255,
+    "fix_rate_base": 126899,
+    "full_followup": true
+   },
+   {
+    "month": "2026-07-01",
+    "closure_rate": 0.9106,
+    "verified_fix_rate": 0.6351,
+    "gap_pp": 27.5541,
+    "fix_rate_base": 127190,
+    "full_followup": true
+   },
+   {
+    "month": "2026-08-01",
+    "closure_rate": 0.9009,
+    "verified_fix_rate": 0.572,
+    "gap_pp": 32.8905,
+    "fix_rate_base": 139782,
+    "full_followup": false
+   },
+   {
+    "month": "2026-09-01",
+    "closure_rate": 0.8618,
+    "verified_fix_rate": 0.5702,
+    "gap_pp": 29.1541,
+    "fix_rate_base": 140742,
+    "full_followup": false
+   },
+   {
+    "month": "2026-10-01",
+    "closure_rate": 0.7757,
+    "verified_fix_rate": 0.5193,
+    "gap_pp": 25.6424,
+    "fix_rate_base": 114303,
+    "full_followup": false
+   }
+  ],
+  "query_ids": [
+   "trend_gap_by_month"
+  ]
  },
  "q1_outcome_mix": {
   "mix": [
@@ -7397,6 +7564,24 @@
     "handed_off",
     "2025-03-01",
     "2026-07-01"
+   ]
+  },
+  "trend_gap_by_month": {
+   "database": "serving",
+   "metric": "closed_fixed_gap_pp",
+   "request": {
+    "time_grain": "month",
+    "date_range": [
+     "2025-03-01",
+     "2026-10-01"
+    ]
+   },
+   "source": "outcomes_monthly",
+   "coverage": "",
+   "sql": "with grouped as (\n    select\n        cast(date_trunc('month', created_month) as date) as period_start,\n        sum(case when (NOT COALESCE(outcome_group, '') IN ('neutral', 'handed_off')) then case when is_closed then n_requests else 0 end else 0 end) as a_numerator,\n        sum(case when (NOT COALESCE(outcome_group, '') IN ('neutral', 'handed_off')) then n_requests else 0 end) as a_denominator,\n        sum(case when (NOT COALESCE(outcome_group, '') IN ('neutral', 'handed_off')) and (outcome_group = 'fixed') then n_requests else 0 end) as b_numerator,\n        sum(case when (NOT COALESCE(outcome_group, '') IN ('neutral', 'handed_off')) then n_requests else 0 end) as b_denominator\n    from mart_outcomes_monthly\n    where (created_month between ? and ?) and (era = 'current')\n    group by period_start\n)\nselect *, round((a_numerator / nullif(a_denominator, 0) - b_numerator / nullif(b_denominator, 0)) * 100, 4) as value_\nfrom grouped\norder by period_start",
+   "params": [
+    "2025-03-01",
+    "2026-10-01"
    ]
   },
   "q1_mix": {

@@ -182,6 +182,33 @@ def headline(rec: Recorder, window: tuple[str, str]) -> dict:
     }
 
 
+def trend(rec: Recorder, window: tuple[str, str], data_end: str) -> dict:
+    """The headline by month filed, for the Story page's chart. Months after the window are
+    kept but flagged: their requests haven't had FOLLOWUP_DAYS to close, so their rates still
+    move."""
+    last = date.fromisoformat(data_end[:10]).replace(day=1).isoformat()
+    rows = rec.metric(
+        "trend_gap_by_month",
+        "closed_fixed_gap_pp",
+        time_grain="month",
+        date_range=(window[0], last),
+    )
+    return {
+        "months": [
+            {
+                "month": r["period_start"],
+                "closure_rate": ratio(r["a_numerator"], r["a_denominator"]),
+                "verified_fix_rate": ratio(r["b_numerator"], r["b_denominator"]),
+                "gap_pp": r["value"],
+                "fix_rate_base": r["a_denominator"],
+                "full_followup": r["period_start"] <= window[1],
+            }
+            for r in rows
+        ],
+        "query_ids": ["trend_gap_by_month"],
+    }
+
+
 def q1_outcome_mix(rec: Recorder, window: tuple[str, str]) -> dict:
     mix = rec.metric("q1_mix", "outcome_mix", filters={"era": "current"}, date_range=window)
     by_category = rec.metric(
@@ -615,6 +642,7 @@ def build(serving: Path = SERVING, warehouse: Path | None = WAREHOUSE) -> dict:
         | {"headline_followup_days": FOLLOWUP_DAYS},
         "data": data,
         "headline": headline(rec, window),
+        "trend": trend(rec, window, data["data_end"]),
         "q1_outcome_mix": q1_outcome_mix(rec, window),
         "q2_where_the_gap_is": q2_where_the_gap_is(rec, window),
         "q3_bulky_items": q3_bulky_items(rec, window),
