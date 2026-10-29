@@ -260,15 +260,15 @@
       "cases": 2
      },
      {
-      "reason_code": "0240-SR-Scheduled",
-      "cases": 1
-     },
-     {
       "reason_code": "0054-Resident Rescheduled",
       "cases": 1
      },
      {
       "reason_code": "0072-Correction Made",
+      "cases": 1
+     },
+     {
+      "reason_code": "0240-SR-Scheduled",
       "cases": 1
      },
      {
@@ -3310,11 +3310,11 @@
       "cases": 1
      },
      {
-      "reason_code": "0005D-Vehicle/Mechanical Breakdown/Traffic Accident",
+      "reason_code": "0007-Inaccessible, safety issue",
       "cases": 1
      },
      {
-      "reason_code": "0007-Inaccessible, safety issue",
+      "reason_code": "0005D-Vehicle/Mechanical Breakdown/Traffic Accident",
       "cases": 1
      }
     ]
@@ -4173,11 +4173,11 @@
      "cases": 66
     },
     {
-     "department": "OCB - Normal Cases",
+     "department": "RAP - Maintenance",
      "cases": 2
     },
     {
-     "department": "RAP - Maintenance",
+     "department": "OCB - Normal Cases",
      "cases": 2
     }
    ],
@@ -4334,11 +4334,11 @@
      "cases": 26
     },
     {
-     "department": "LADOT - ATSAC",
+     "department": "LADOT - Parking Meter Division",
      "cases": 11
     },
     {
-     "department": "LADOT - Parking Meter Division",
+     "department": "LADOT - ATSAC",
      "cases": 11
     },
     {
@@ -4732,12 +4732,12 @@
      "is_service_request": true
     },
     {
-     "request_type": "Tree Obstruction",
+     "request_type": "Land/Mud Slide",
      "cases": 23,
      "is_service_request": true
     },
     {
-     "request_type": "Land/Mud Slide",
+     "request_type": "Tree Obstruction",
      "cases": 23,
      "is_service_request": true
     }
@@ -4774,13 +4774,13 @@
      "cases": 26
     },
     {
-     "department": "BSS - UFD",
-     "request_type": "Tree Obstruction",
+     "department": "BSS - SMD",
+     "request_type": "Land/Mud Slide",
      "cases": 23
     },
     {
-     "department": "BSS - SMD",
-     "request_type": "Land/Mud Slide",
+     "department": "BSS - UFD",
+     "request_type": "Tree Obstruction",
      "cases": 23
     }
    ],
@@ -4962,7 +4962,7 @@
     },
     {
      "department": "BSS - SMD",
-     "request_type": "Street Sweeping",
+     "request_type": "Land/Mud Slide",
      "cases": 1
     },
     {
@@ -4972,7 +4972,7 @@
     },
     {
      "department": "BSS - SMD",
-     "request_type": "Land/Mud Slide",
+     "request_type": "Street Sweeping",
      "cases": 1
     }
    ],
@@ -5355,11 +5355,11 @@
       "cases": 27
      },
      {
-      "reason_code": "RMS-Remove Mud/Soil",
+      "reason_code": "SRS-Mud/Land Slide removal scheduled",
       "cases": 3
      },
      {
-      "reason_code": "SRS-Mud/Land Slide removal scheduled",
+      "reason_code": "RMS-Remove Mud/Soil",
       "cases": 3
      }
     ]
@@ -6101,12 +6101,12 @@
      "is_service_request": true
     },
     {
-     "request_type": "Bus Stop Parking Sign & Markings",
+     "request_type": "Accessible Bus Stop Issues",
      "cases": 2,
      "is_service_request": true
     },
     {
-     "request_type": "Accessible Bus Stop Issues",
+     "request_type": "Bus Stop Parking Sign & Markings",
      "cases": 2,
      "is_service_request": true
     }
@@ -6386,12 +6386,12 @@
      "cases": 3
     },
     {
-     "department": "BSS - SMD",
+     "department": "BSS - UFD",
      "request_type": "Median Island Maintenance",
      "cases": 1
     },
     {
-     "department": "BSS - UFD",
+     "department": "BSS - SMD",
      "request_type": "Median Island Maintenance",
      "cases": 1
     }
@@ -7003,11 +7003,11 @@
      "cases": 55
     },
     {
-     "department": "LADOT - Traffic Signal Field Operations",
+     "department": "LADOT - PMZ",
      "cases": 2
     },
     {
-     "department": "LADOT - PMZ",
+     "department": "LADOT - Traffic Signal Field Operations",
      "cases": 2
     },
     {
@@ -7047,12 +7047,12 @@
      "is_service_request": true
     },
     {
-     "request_type": "LADOT Council & Interagency Support",
+     "request_type": "Bus Stop Parking Sign & Markings",
      "cases": 1,
      "is_service_request": true
     },
     {
-     "request_type": "Bus Stop Parking Sign & Markings",
+     "request_type": "LADOT Council & Interagency Support",
      "cases": 1,
      "is_service_request": true
     }
@@ -7222,13 +7222,13 @@
      "cases": 45
     },
     {
-     "department": "RAP - Construction",
-     "request_type": "Park Amenity and Facilities Repair",
+     "department": "LAAS",
+     "request_type": "Animal Confined",
      "cases": 22
     },
     {
-     "department": "LAAS",
-     "request_type": "Animal Confined",
+     "department": "RAP - Construction",
+     "request_type": "Park Amenity and Facilities Repair",
      "cases": 22
     },
     {
@@ -7357,13 +7357,13 @@
      "cases": 12
     },
     {
-     "department": "LADOT - District Operations",
-     "request_type": "Traffic Sign Issues",
+     "department": "LADOT - PMZ",
+     "request_type": "Parking Issues",
      "cases": 12
     },
     {
-     "department": "LADOT - PMZ",
-     "request_type": "Parking Issues",
+     "department": "LADOT - District Operations",
+     "request_type": "Traffic Sign Issues",
      "cases": 12
     },
     {
@@ -8023,11 +8023,11 @@
       "cases": 4
      },
      {
-      "reason_code": "0222-Ahead of Regular Service",
+      "reason_code": "0211-Locked Property",
       "cases": 2
      },
      {
-      "reason_code": "0211-Locked Property",
+      "reason_code": "0222-Ahead of Regular Service",
       "cases": 2
      }
     ]
@@ -8499,11 +8499,11 @@
       "cases": 84
      },
      {
-      "reason_code": "RSP-Repair Sprinklers / Pipe",
+      "reason_code": "TC-Trim for Clearance",
       "cases": 1
      },
      {
-      "reason_code": "TC-Trim for Clearance",
+      "reason_code": "RSP-Repair Sprinklers / Pipe",
       "cases": 1
      }
     ]
@@ -8812,15 +8812,15 @@
       "cases": 27
      },
      {
+      "reason_code": "NF-Nothing found",
+      "cases": 2
+     },
+     {
       "reason_code": "BKLG-Backlogged",
       "cases": 2
      },
      {
       "reason_code": "RL-Remove Limb",
-      "cases": 2
-     },
-     {
-      "reason_code": "NF-Nothing found",
       "cases": 2
      }
     ]
@@ -8936,12 +8936,12 @@
      "is_service_request": true
     },
     {
-     "request_type": "Illegal Sign Removal, News Rack Issues",
+     "request_type": "Obstructions",
      "cases": 1,
      "is_service_request": true
     },
     {
-     "request_type": "Obstructions",
+     "request_type": "Illegal Sign Removal, News Rack Issues",
      "cases": 1,
      "is_service_request": true
     }
@@ -8969,12 +8969,12 @@
     },
     {
      "department": "BSS - IED",
-     "request_type": "Obstructions",
+     "request_type": "Illegal Sign Removal, News Rack Issues",
      "cases": 1
     },
     {
      "department": "BSS - IED",
-     "request_type": "Illegal Sign Removal, News Rack Issues",
+     "request_type": "Obstructions",
      "cases": 1
     }
    ],
@@ -8998,11 +8998,11 @@
       "cases": 1
      },
      {
-      "reason_code": "RT-Remove Tree",
+      "reason_code": "RL-Remove Limb",
       "cases": 1
      },
      {
-      "reason_code": "RL-Remove Limb",
+      "reason_code": "RT-Remove Tree",
       "cases": 1
      }
     ]
@@ -9500,12 +9500,12 @@
      "is_service_request": true
     },
     {
-     "request_type": "Service Not Complete",
+     "request_type": "Item Pickups",
      "cases": 3,
      "is_service_request": true
     },
     {
-     "request_type": "Item Pickups",
+     "request_type": "Service Not Complete",
      "cases": 3,
      "is_service_request": true
     },
@@ -9528,12 +9528,12 @@
     },
     {
      "department": "LASAN",
-     "request_type": "Item Pickups",
+     "request_type": "Service Not Complete",
      "cases": 3
     },
     {
      "department": "LASAN",
-     "request_type": "Service Not Complete",
+     "request_type": "Item Pickups",
      "cases": 3
     },
     {
@@ -9671,12 +9671,12 @@
      "is_service_request": true
     },
     {
-     "request_type": "Item Pickups",
+     "request_type": "Service Not Complete",
      "cases": 6,
      "is_service_request": true
     },
     {
-     "request_type": "Service Not Complete",
+     "request_type": "Item Pickups",
      "cases": 6,
      "is_service_request": true
     },
@@ -9772,12 +9772,12 @@
     },
     {
      "department": "LASAN",
-     "request_type": "Item Pickups",
+     "request_type": "Service Not Complete",
      "cases": 3
     },
     {
      "department": "LASAN",
-     "request_type": "Service Not Complete",
+     "request_type": "Item Pickups",
      "cases": 3
     }
    ],
@@ -10505,7 +10505,7 @@
      "is_service_request": true
     },
     {
-     "request_type": "Street Tree Violations",
+     "request_type": "Illegal Sign Removal, News Rack Issues",
      "cases": 1,
      "is_service_request": true
     },
@@ -10515,7 +10515,7 @@
      "is_service_request": true
     },
     {
-     "request_type": "Illegal Sign Removal, News Rack Issues",
+     "request_type": "Street Tree Violations",
      "cases": 1,
      "is_service_request": true
     }
@@ -10533,17 +10533,17 @@
     },
     {
      "department": "BSS - IED",
+     "request_type": "Street Tree Violations",
+     "cases": 1
+    },
+    {
+     "department": "BSS - IED",
      "request_type": "Illegal Sign Removal, News Rack Issues",
      "cases": 1
     },
     {
      "department": "BSS - IED",
      "request_type": "Landscape Maintenance",
-     "cases": 1
-    },
-    {
-     "department": "BSS - IED",
-     "request_type": "Street Tree Violations",
      "cases": 1
     }
    ],
@@ -11088,11 +11088,11 @@
     "share_of_cases_with_one": 0.333,
     "top": [
      {
-      "reason_code": "0206-Same Day Collection",
+      "reason_code": "0226-Road/Lot Blocked or No Access",
       "cases": 1
      },
      {
-      "reason_code": "0226-Road/Lot Blocked or No Access",
+      "reason_code": "0206-Same Day Collection",
       "cases": 1
      }
     ]
@@ -11269,12 +11269,12 @@
      "cases": 2
     },
     {
-     "department": "BSS - UFD",
+     "department": "BSS - IED",
      "request_type": "Street Tree Violations",
      "cases": 1
     },
     {
-     "department": "BSS - IED",
+     "department": "BSS - UFD",
      "request_type": "Street Tree Violations",
      "cases": 1
     },
@@ -11564,17 +11564,17 @@
    "contexts": [
     {
      "department": "LASAN",
-     "request_type": "Item Pickups",
-     "cases": 1
-    },
-    {
-     "department": "LASAN",
      "request_type": "Illegal Dumping Item Pickup",
      "cases": 1
     },
     {
      "department": "LASAN - LSD",
      "request_type": "Illegal Dumping Item Pickup",
+     "cases": 1
+    },
+    {
+     "department": "LASAN",
+     "request_type": "Item Pickups",
      "cases": 1
     }
    ],
