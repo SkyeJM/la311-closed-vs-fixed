@@ -543,3 +543,72 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
 - **Chosen:** Sonnet, the brief's default, now backed by the evals. Opus adds no measured accuracy here.
 - **What it costs:** about $0.017 per live question, so the $1.00 daily cap allows roughly 60 live questions a day. The six suggested questions are served from the cache at no cost.
 - **Reversible:** `CLAUDE_MODEL` switches the model without a code change. Haiku is the fallback if traffic outgrows the cap.
+
+## Phase 5: front end and deploy
+
+### 2026-10-29 · Phase 4 sign-off
+- Skye said "go" without changing the defaults: claude-sonnet-5-5 stays the model, and the daily cap stays $1.00. PR #5 merged; this phase is on `phase-5-web-deploy`.
+
+### 2026-10-29 · One Vercel project, two services: Next.js and FastAPI
+- **Shape:** Vercel Services (beta, available on Hobby; docs checked 2026-10-29). `web/` is the Next.js site; `deploy/api/` is the FastAPI service. `vercel.json` routes `/api/*` to FastAPI and everything else to the site, so they share one origin and need no CORS.
+- **Why a separate `deploy/api/` root:** a service bundles only its own root, and Vercel installs whatever dependencies it finds there.
+  - The runtime code stays where it is.
+  - `deploy/api/build.py` copies exactly the runtime set in during the Vercel build.
+  - `deploy/api/requirements.txt` is the main dependency set exported from `uv.lock`. A test fails if it drifts, and another proves the copied set imports and finds its files.
+  - dbt, Typer and tenacity moved to a local-only `pipeline` group (installed by default with `uv sync`), so the API ships without them. `api/suggested.py`'s CLI now uses argparse.
+- **Size:** runtime packages are about 111 MB, plus 78 MB of data, against the 225 MB Hobby function limit measured in Phase 0. Dropping Typer's rich and pygments saved about 15 MB.
+- **First deploy:** Vercel sends a new project's first deploy straight to production. It went live at https://la311-closed-vs-fixed.vercel.app; Skye had approved production deploys.
+
+### 2026-10-29 · The serving data ships as a pinned GitHub Release
+- `make release-data` publishes `data/serving.duckdb` as a release named after the data's last day (`data-2026-10-28`) and writes its URL and SHA-256 to `deploy/api/serving.json`. The Vercel build downloads it and refuses a file whose checksum doesn't match.
+- **Public on purpose:** Skye approved it (2026-10-29). The file holds the aggregated marts and the slim current-era table: no addresses, coordinates, IDs or crew fields (`api/serving.py` checks this on every build). It is derived from the City's CC0 data.
+
+### 2026-10-29 · The site: static story and methodology, live explore and ask
+- **Stack:** Next.js 16.4 App Router, Tailwind 4, Vega-Lite 6 through react-vega 8 (the Vega-Lite version the agent's chart tool validates against), and react-markdown for answers. Model-written text renders as React elements, never as raw HTML.
+- **Numbers come from files the pipeline writes.** `web/scripts/sync-data.mjs` copies the following into `web/src/data/` before every dev run and build:
+  - findings.json, the eval summary and the labeling agreement;
+  - metrics.yml, sources.yml and the outcome seed, converted to JSON.
+
+  Story and methodology are prerendered from those copies, so every number on them traces to a query. Explore and Ask call the API at runtime.
+- **One chart component** (`VegaChart`) for every chart, the agent's included. It provides:
+  - one theme;
+  - an accessible name;
+  - a "Show the data" table;
+  - client-only loading, so the rest of the page doesn't wait for Vega.
+
+  Each story chart links to its metric definition.
+- **A date bug, fixed in that component:** Vega reads a bare date ("2025-03-01") as UTC midnight, which is still February in Los Angeles. Every chart labeled months one early until bare dates were read as local time.
+- **Ask:**
+  - The question box sits at the top and answers stack newest first.
+  - The trace streams live, with collapsible SQL, rows and copy buttons. Each key number opens the query behind it.
+  - Charts, caveats, evidence level, follow-ups and feedback appear under the answer.
+  - A saved answer says it was shown instantly.
+- **Light theme only,** system fonts, and no layout or fonts loaded from third parties.
+
+### 2026-10-29 · Colors: one validated hue per outcome group, not per class
+- **The ask:** the brief asks for one colorblind-safe color per outcome class, and there are eleven classes. The data-viz method this project follows caps categorical hues at eight: past that, colors stop being reliably distinct.
+- **Chosen:** six outcome groups, one hue each, in this stacking order: verified fixed (blue), closed not fixed (orange), closed without saying how (violet), handed off (aqua), cancelled (yellow), duplicate or information only (pink). Classes take their group's color and are always named in text.
+- **Validated** with the dataviz palette validator (light mode) on adjacent pairs: worst colorblind ΔE 9.1 (target 8), worst normal-vision ΔE 19.6 (floor 15). Aqua, yellow and pink sit below 3:1 contrast on the page, so every chart carries a legend and a data table.
+- The first ordering tried put yellow next to orange and failed the normal-vision floor (ΔE 13.7). The validator chose the order.
+
+### 2026-10-29 · Production guardrails on Vercel
+- **Vercel sets the client IP:** it overwrites `x-forwarded-for` (docs checked 2026-10-29), so `TRUST_PROXY_HEADERS=true` there.
+- **Traces:** with `TRACE_DIR=stdout`, traces go to Vercel's runtime logs, because the function's filesystem is read-only.
+- **Firewall:** a WAF rate-limit rule (Hobby allows one per project): 100 requests a minute per IP on `/api`, in front of the app's own 10 live questions an hour per IP.
+- **Production env vars:** `CLAUDE_MODEL`, `DAILY_SPEND_CAP_USD`, `ASK_EFFORT`, `TRUST_PROXY_HEADERS`, `TRACE_DIR` and a random `IP_HASH_SALT` (generated straight into Vercel, never printed).
+- **Live Ask stays off until Skye adds the last two pieces:**
+  - Upstash Redis from the Vercel Marketplace (free), for shared counters;
+  - a dedicated Anthropic Console workspace key with a monthly spend limit.
+
+  The six suggested questions work meanwhile, from the cache.
+
+### 2026-10-29 · Lighthouse
+- **Local production build:** accessibility 100 on all four pages, after three fixes:
+  - inline links are underlined;
+  - navigation links have bigger tap targets;
+  - base styles sit in a CSS layer, so Tailwind utilities win (an unlayered link color had made the "Ask 311" button text invisible).
+- **Live site, Lighthouse's default mobile run:**
+  - accessibility 100 on every page;
+  - performance 94 to 100;
+  - best practices and SEO 100.
+- No horizontal overflow at 390 px wide.
