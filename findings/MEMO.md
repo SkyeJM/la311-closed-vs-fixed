@@ -1,6 +1,6 @@
 # Closed ≠ Fixed: findings memo (v1)
 
-Data through 2026-10-28. Generated from `findings/findings.json` (commit b31ccf9); every number below is in that file with the query that produced it. Descriptive only: no claim here says why a number is what it is.
+Data through 2026-10-28. Generated from `findings/findings.json` (commit 5663cf1); every number below is in that file with the query that produced it. Descriptive only: no claim here says why a number is what it is.
 
 ## Headline
 
