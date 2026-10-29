@@ -122,6 +122,11 @@ SPEC = {
 }
 
 
+def test_a_single_row_gets_no_chart():
+    with pytest.raises(charts.ChartRejected, match="single row"):
+        charts.build(SPEC, ["period", "value_pct"], ROWS[:1])
+
+
 def test_a_chart_gets_the_query_rows_and_validates():
     full = charts.build(SPEC, ["period", "value_pct"], ROWS)
     assert full["data"] == {"values": ROWS}
@@ -304,6 +309,7 @@ def test_the_last_step_turns_tools_off(agent_db):
     settings = Settings(model="claude-haiku-5-5", max_steps=3)
     result = collect(Agent(client, agent_db, settings).run("Anything?"))
     assert [c["tool_choice"]["type"] for c in client.calls] == ["auto", "auto", "none"]
+    assert "Step 1 of 3 used" in client.calls[1]["messages"][-1]["content"][-1]["text"]
     assert "Step limit" in client.calls[2]["messages"][-1]["content"][-1]["text"]
     assert result["answer"] is not None
 

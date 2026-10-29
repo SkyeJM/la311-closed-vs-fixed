@@ -732,10 +732,9 @@ wheels = [
 name = "la311-closed-vs-fixed"
 version = "0.1.0"
 source = { virtual = "." }
+default-groups = ["dev", "pipeline"]
 dependencies = [
     { name = "anthropic" },
-    { name = "dbt-core" },
-    { name = "dbt-duckdb" },
     { name = "duckdb" },
     { name = "fastapi" },
     { name = "httpx" },
@@ -743,8 +742,6 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "pyyaml" },
     { name = "sqlglot" },
-    { name = "tenacity" },
-    { name = "typer" },
 ]
 
 [package.dev-dependencies]
@@ -754,12 +751,16 @@ dev = [
     { name = "ruff" },
     { name = "uvicorn" },
 ]
+pipeline = [
+    { name = "dbt-core" },
+    { name = "dbt-duckdb" },
+    { name = "tenacity" },
+    { name = "typer" },
+]
 
 [package.metadata]
 requires-dist = [
     { name = "anthropic", specifier = ">=2.3.0,<3" },
-    { name = "dbt-core", specifier = ">=1.12.6,<2" },
-    { name = "dbt-duckdb", specifier = ">=1.11.0,<2" },
     { name = "duckdb", specifier = ">=2.0.0" },
     { name = "fastapi", specifier = ">=0.160" },
     { name = "httpx", specifier = ">=0.28.1" },
@@ -767,8 +768,6 @@ requires-dist = [
     { name = "python-dotenv", specifier = ">=1.2.4" },
     { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "sqlglot", specifier = ">=30.25.0,<31" },
-    { name = "tenacity", specifier = ">=9.2.1" },
-    { name = "typer", specifier = ">=0.27.3" },
 ]
 
 [package.metadata.requires-dev]
@@ -777,6 +776,12 @@ dev = [
     { name = "pytest", specifier = ">=9.1.1" },
     { name = "ruff", specifier = ">=0.17.2" },
     { name = "uvicorn", specifier = ">=0.54" },
+]
+pipeline = [
+    { name = "dbt-core", specifier = ">=1.12.6,<2" },
+    { name = "dbt-duckdb", specifier = ">=1.11.0,<2" },
+    { name = "tenacity", specifier = ">=9.2.1" },
+    { name = "typer", specifier = ">=0.27.3" },
 ]
 
 [[package]]

@@ -1,6 +1,7 @@
-# Lint and offline tests on every push to main and every PR. CI never calls a live API: tests
-# use pinned schemas, a full dbt build on synthetic fixtures (tests/conftest.py), and a scripted
-# fake in place of the Anthropic client.
+# Lint and offline tests on every push to main and every PR, for the Python pipeline and the web
+# app. CI never calls a live API: tests use pinned schemas, a full dbt build on synthetic fixtures
+# (tests/conftest.py) and a scripted fake in place of the Anthropic client; the web build reads
+# only committed files (findings.json, the eval summary, metrics.yml).
 # Actions are pinned to commit SHAs (version in the comment) so a moved tag can't change CI.
 name: CI
 
@@ -19,3 +20,20 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run pytest
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1  # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run sync-data && npm run typecheck
+      - run: npm run build

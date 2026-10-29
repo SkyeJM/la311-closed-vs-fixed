@@ -12,7 +12,7 @@ SITE_BUILD := $(CURDIR)/build/docs-site
 
 .PHONY: help setup lint fmt test check discover schema-check pin ingest-sample ingest refresh \
 	profile build docs serving docs-site label label-finalize findings eval serve ask \
-	suggested deploy
+	suggested web release-data deploy-requirements deploy
 
 help: ## List targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-14s %s\n", $$1, $$2}'
@@ -101,5 +101,15 @@ ask: ## Ask the agent one question in the terminal: make ask Q="..." [MODEL=...]
 suggested: ## Rebuild cached answers to the suggested questions (spends credit; default model)
 	$(PY) -m api.suggested $(if $(MODEL),--model $(MODEL))
 
-deploy:
-	@echo "'make $@' arrives in Phase 5 (brief section 8)." && exit 1
+web: ## Run the site locally (needs `make serve` in another terminal for /api)
+	cd web && npm run dev
+
+release-data: serving ## Publish data/serving.duckdb as a GitHub Release and pin it for deploys
+	$(PY) scripts/release_data.py
+
+deploy-requirements: ## Re-export the API's runtime requirements from uv.lock
+	$(UV) export --frozen --no-default-groups --no-hashes --no-emit-project \
+		--format requirements-txt > deploy/api/requirements.txt
+
+deploy: ## Deploy to Vercel: a preview, or production with PROD=1
+	vercel deploy $(if $(PROD),--prod)

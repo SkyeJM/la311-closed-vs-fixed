@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+/* Light theme only: the charts' palette is validated against this surface
+   (dataviz validator, light mode). */
+:root {
+  color-scheme: light;
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --ink: #0b0b0b;
+  --ink-2: #52514e;
+  --ink-muted: #5f5e5a;
+  --rule: #e1e0d9;
+  --baseline: #c3c2b7;
+  --border: rgba(11, 11, 11, 0.1);
+  --link: #1c5cab;
+  --focus: #1c5cab;
+
+  /* Outcome groups: one hue each, in this order everywhere (stacks, legends, tables).
+     Validated adjacent-pair CVD and normal-vision separation; aqua, yellow and pink sit below
+     3:1 on the surface, so every chart carries a legend and a table view. */
+  --fixed: #2a78d6;
+  --not-fixed: #eb6834;
+  --unspecified: #6250d6;
+  --handed-off: #1baf7a;
+  --cancelled: #eda100;
+  --neutral: #e87ba4;
+}
+
+@theme inline {
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-muted: var(--ink-muted);
+  --color-rule: var(--rule);
+  --color-link: var(--link);
+  --color-fixed: var(--fixed);
+  --color-not-fixed: var(--not-fixed);
+  --color-unspecified: var(--unspecified);
+  --color-handed-off: var(--handed-off);
+  --color-cancelled: var(--cancelled);
+  --color-neutral: var(--neutral);
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+@layer base {
+  html {
+    background: var(--page);
+  }
+
+  body {
+    background: var(--page);
+    color: var(--ink);
+    font-family: var(--font-sans);
+  }
+
+  a {
+    color: var(--link);
+    text-decoration-line: underline;
+    text-underline-offset: 2px;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Answer markdown from the Ask agent. */
+  .prose-answer p {
+    margin: 0.5rem 0;
+  }
+  .prose-answer ul,
+  .prose-answer ol {
+    margin: 0.5rem 0 0.5rem 1.25rem;
+    list-style: disc;
+  }
+  .prose-answer code {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    background: var(--rule);
+    padding: 0 0.25rem;
+    border-radius: 3px;
+  }
+}

@@ -70,6 +70,8 @@ def build(spec: dict, columns: list[str], rows: list[dict]) -> dict:
             )
     if len(rows) > MAX_ROWS:
         raise ChartRejected(f"a chart takes at most {MAX_ROWS} rows; aggregate the query first")
+    if len(rows) < 2:
+        raise ChartRejected("a single row isn't worth a chart; answer without one")
 
     full = copy.deepcopy(spec)
     full["$schema"] = SCHEMA_URL

@@ -31,6 +31,7 @@ def test_every_section_is_present(result):
     for section in [
         "data",
         "headline",
+        "trend",
         "q1_outcome_mix",
         "q2_where_the_gap_is",
         "q3_bulky_items",

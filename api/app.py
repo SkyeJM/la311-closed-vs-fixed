@@ -44,7 +44,7 @@ app = FastAPI(
 
 @functools.cache
 def guard() -> guards.Guards:
-    store = guards.MemoryStore()
+    store = guards.store_from_env()
     return guards.Guards(store, guards.Policy.from_env(store))
 
 
@@ -100,7 +100,11 @@ def metric_query(body: MetricRequest) -> dict:
     payload, is_error = box.run("query_metric", request)
     if is_error:
         raise HTTPException(status_code=400, detail=payload["error"])
-    return box.queries[payload["query_id"]].to_json()
+    record = box.queries[payload["query_id"]].to_json()
+    spec = metrics.catalog().metrics[body.metric]
+    # The same readable extras the agent sees: value_pct for shares, component rates for gaps.
+    record["rows"] = [tools.ToolBox._annotate(dict(row), spec) for row in record["rows"]]
+    return record
 
 
 @app.get("/api/findings")
@@ -119,6 +123,47 @@ def codes() -> dict:
         "from dim_resolution_code order by n_service_cases desc nulls last, resolution_code",
     )
     return {"codes": [dict(zip(columns, row, strict=True)) for row in rows]}
+
+
+@app.get("/api/reference")
+def reference() -> dict:
+    """Filter options and the crosswalk, for the explore and methodology pages."""
+    cur = db.shared().cursor()
+
+    def rows(sql: str) -> list[dict]:
+        columns, values, _ = db.execute(cur, sql)
+        return [dict(zip(columns, row, strict=True)) for row in values]
+
+    return {
+        "categories": rows(
+            "select unified_category as name, arg_max(main_department, n_requests) as department,"
+            " bool_or(is_crosswalked) as crosswalked, any_value(cross_era_comparison) as"
+            " comparison, sum(n_requests) as requests from dim_request_category"
+            " where era = 'current' and is_service_request group by 1 order by 5 desc, 1"
+        ),
+        "departments": rows(
+            "select department as name, sum(n_requests) as requests from mart_outcomes_monthly"
+            " where era = 'current' and department is not null group by 1"
+            " having sum(n_requests) >= 500 order by 2 desc"
+        ),
+        "council_districts": rows(
+            "select geo_code as code, geo_name as name from dim_geography"
+            " where geo_level = 'council_district' order by 1"
+        ),
+        "neighborhood_councils": rows(
+            "select geo_code as code, geo_name as name from dim_geography"
+            " where geo_level = 'neighborhood_council' and n_requests_current > 0 order by 2"
+        ),
+        "crosswalk": rows(
+            "select era, request_type, unified_category, is_crosswalked, cross_era_comparison,"
+            " comparability_note, is_service_request, non_service_reason, n_requests"
+            " from dim_request_category order by unified_category, era desc, request_type"
+        ),
+        "months": rows(
+            "select min(created_month) as first, max(created_month) as last"
+            " from mart_outcomes_monthly where era = 'current'"
+        )[0],
+    }
 
 
 @app.get("/api/suggested")
@@ -165,7 +210,10 @@ def ask_gate(body: AskRequest, request: Request) -> Gate:
         g.check()
     except BudgetExceeded as e:
         raise HTTPException(status_code=503, detail=str(e)) from e
-    allowed, wait = g.take_question(gate.ip_hash)
+    try:
+        allowed, wait = g.take_question(gate.ip_hash)
+    except guards.StoreUnavailable as e:
+        raise HTTPException(status_code=503, detail="Ask is paused: its counters are down.") from e
     if not allowed:
         raise HTTPException(
             status_code=429,

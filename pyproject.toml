@@ -5,8 +5,6 @@ description = "Closed ≠ Fixed: how often a Closed MyLA311 service request was 
 requires-python = ">=3.12"
 dependencies = [
     "anthropic>=2.3.0,<3",
-    "dbt-core>=1.12.6,<2",
-    "dbt-duckdb>=1.11.0,<2",
     "duckdb>=2.0.0",
     "fastapi>=0.160",
     "httpx>=0.28.1",
@@ -14,11 +12,17 @@ dependencies = [
     "python-dotenv>=1.2.4",
     "pyyaml>=6.0.3",
     "sqlglot>=30.25.0,<31",
-    "tenacity>=9.2.1",
-    "typer>=0.27.3",
 ]
 
 [dependency-groups]
+# Local only: the warehouse build and the command-line tools. The deployed API installs the main
+# dependencies alone (deploy/api/requirements.txt, exported from uv.lock).
+pipeline = [
+    "dbt-core>=1.12.6,<2",
+    "dbt-duckdb>=1.11.0,<2",
+    "tenacity>=9.2.1",
+    "typer>=0.27.3",
+]
 dev = [
     "pre-commit>=4.7.0",
     "pytest>=9.1.1",
@@ -28,6 +32,7 @@ dev = [
 
 [tool.uv]
 package = false  # an app, not a library: run modules with `uv run python -m <pkg>`
+default-groups = ["dev", "pipeline"]
 
 [tool.ruff]
 line-length = 100

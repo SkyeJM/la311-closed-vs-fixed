@@ -195,14 +195,20 @@ class Agent:
                             **({"is_error": True} if is_error else {}),
                         }
                     )
+                # A running count after every tool turn: in evals the model sometimes re-ran
+                # queries it already had, one per step, until the cap.
                 if step == s.max_steps - 1:
-                    results.append(
-                        {
-                            "type": "text",
-                            "text": "Step limit: tools are off for your next turn. Answer now "
-                            "with the results you have, and say what you couldn't check.",
-                        }
+                    notice = (
+                        "Step limit: tools are off for your next turn. Answer now with the "
+                        "results you have, and say what you couldn't check."
                     )
+                else:
+                    notice = (
+                        f"Step {step} of {s.max_steps} used. Every result above stays "
+                        "available, so don't repeat a call; answer as soon as you have what you "
+                        "need."
+                    )
+                results.append({"type": "text", "text": notice})
                 messages.append({"role": "user", "content": results})
                 continue
 
@@ -290,6 +296,8 @@ def _result_event(step, block, payload, is_error, toolbox, began) -> dict:
         }
     elif "chart_id" in payload:
         event |= {"chart_id": payload["chart_id"]}
+    elif "duplicate_of" in payload:
+        event |= {"duplicate_of": payload["duplicate_of"]}
     return event
 
 

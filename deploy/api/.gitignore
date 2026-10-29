@@ -1,0 +1,7 @@
+# Copied in from the repo root by build.py at deploy time; the originals are the source.
+/api/
+/ai/
+/findings/
+/metrics.yml
+/dbt/
+/data/

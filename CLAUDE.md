@@ -8,7 +8,7 @@ Full brief (local only, gitignored): `docs/BRIEF.md`. Decisions: `docs/DECISIONS
 `docs/DATA_NOTES.md`.
 
 ## How we work
-- **Phase gates (brief §8).** Finish one phase, stop with a checkpoint (what was built, key numbers, surprises, decisions needed), and wait for "go". Current phase: **4, API, agent and evals**.
+- **Phase gates (brief §8).** Finish one phase, stop with a checkpoint (what was built, key numbers, surprises, decisions needed), and wait for "go". Current phase: **5, front end and deploy**. Live at https://la311-closed-vs-fixed.vercel.app.
 - **Log as you go.** Every non-obvious choice goes in `docs/DECISIONS.md` (date, options, why). Every data quirk goes in `docs/DATA_NOTES.md`, with its source query.
 - **No invented numbers.** Prose numbers come from `findings/findings.json` (`make findings`), which stores each number with its query; `findings/MEMO.md` is rendered from it.
 - **Check current docs** for fast-moving tools: Anthropic SDK, dbt-duckdb, DuckDB (now **2.x**), Socrata, hosts.
@@ -24,6 +24,7 @@ Full brief (local only, gitignored): `docs/BRIEF.md`. Decisions: `docs/DECISIONS
 - `make build` (dbt build on the full data → `data/warehouse.duckdb`, ~25 s) · `make serving` (→ `data/serving.duckdb`) · `make docs` · `make docs-site` (public docs from fixtures → `site/`)
 - `make findings` (rebuilds serving, then → `findings/findings.json` + `MEMO.md`) · `make label` (Claude labels new resolution codes → `ai/labels/review.csv`; needs the key in `.env`, spend-capped) · `make label-finalize` (reviewed sheet → `dbt/seeds/resolution_code_map.csv`)
 - `make serve` (API at http://127.0.0.1:8000/api/docs) · `make ask Q="..." [MODEL=...]` (one question in the terminal) · `make eval MODEL=...` (golden set → `evals/results/`, then `SUMMARY.md`) · `make suggested` (cached answers for the suggested questions). These three spend API credit: pilot with `python -m evals.run --limit 3` first.
+- `make web` (the site on :3000; run `make serve` too) · `make deploy [PROD=1]` (Vercel) · `make release-data` (publish serving.duckdb as a GitHub Release and pin it in `deploy/api/serving.json`) · `make deploy-requirements` (after changing runtime dependencies)
 - CLI: `uv run python -m ingest --help`. dbt directly: `cd dbt && uv run dbt ...` (defaults point at `../data`)
 
 ## Conventions
@@ -45,6 +46,14 @@ Full brief (local only, gitignored): `docs/BRIEF.md`. Decisions: `docs/DECISIONS
   - The system prompt is generated from metrics.yml and the data, and must never contain data numbers (a test checks this).
   - Answers are checked in code: every number must come from a tool result.
   - Set effort with `ASK_EFFORT`, never `CLAUDE_EFFORT`: Claude Code sets that one in its own shell.
+- **Site** (`web/`, Next.js 16):
+  - Its numbers come only from `web/src/data/`, which `scripts/sync-data.mjs` copies from findings.json, the eval summary and the definitions. Never type a number into page copy.
+  - Every chart goes through `VegaChart`.
+  - Colors are the six outcome-group hues in `src/lib/outcomes.ts`, validated; don't add or reorder them without re-running the dataviz validator.
+- **Deploy:**
+  - `vercel.json` services: `web/`, plus `deploy/api/` for FastAPI.
+  - The API's build copies its runtime files from the repo (`deploy/api/build.py`) and downloads the pinned data.
+  - Runtime dependencies are the main group only: put build or CLI tools in the `pipeline` group, then run `make deploy-requirements`.
 - **Evals:** `evals/golden.yaml` stores how to compute each expected number, never the number. After a judge or scoring change, `python -m evals.rescore <run.json>` re-grades a saved run without new agent calls.
 - **Makefile** must work with GNU Make 3.81.
 - **DuckDB 2.x:** implicit aliases that are keywords fail (`... AS month` works, `... month` doesn't),
