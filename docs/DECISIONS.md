@@ -381,3 +381,27 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
 - **Anthropic key:** added to `.env`, but the first labeling call came back "Your credit balance is too low to access the Anthropic API". The account has no prepaid API credits yet. Nothing was spent.
   - The labeler now stops at the first account-level refusal (authentication, permission or credit) instead of logging every call as a failure and writing an empty proposal.
   - Buying credits is Skye's decision. API usage is prepaid, and credits are non-refundable and expire a year after purchase.
+
+### 2026-10-28 · The reviewed resolution-code map; new codes now fail the build
+- **Labeling run:**
+  - 171 codes and 361 calls, with no failures, for $0.19 (the dry run estimated $1.60). The cached system prompt (7,338 tokens) made the second Haiku call per code cheap.
+  - Haiku's two runs agreed on 156 codes. 19 went to Sonnet: 15 where the runs disagreed, 3 low-confidence, 1 where the context overrides differed. On 8 of those, Sonnet chose a class neither Haiku run had.
+  - Numbers: `ai/labels/run_summary.json`, also in `findings.json → ai_labeling.labeling_run`.
+- **Review** (Skye, "go with your recommendations"). I (Claude Code) flagged the rows needing judgment and proposed changes, and Skye approved them all:
+  - **The one disagreement with the brief:** NAT-No Action Taken stays *cancelled* (the AI's label; the brief guessed *unable*). The code gives no reason, and every case has status Cancelled.
+  - **Consistency between related codes:**
+    - INO-Item Not Out → *not_found* (as QC-Item Not Out).
+    - A-Request Completed → *fixed_work_done*.
+    - CNACV → *unable* (as its twin CNABD).
+    - NAR-No Action Recommended (LADOT reviews that decline a request) → *unable*, while NAR-No Action Required stays *not_found*.
+  - **A rule for enforcement steps:** "complaint accepted", "notice issued" and "criminal filing" codes are *closed_unspecified*. The department acted, but nothing shows the problem stopped. Codes that name the outcome ("complied", driver disciplined) stay *fixed_work_done*.
+  - **One split by request type:** NCPP-Not at Curb / On Private Property is *not_found* for pickups and missed collections (like "item not out"). A reviewer-written row makes it *referred_out_of_scope* for Dead Animal Removal, where private property is the owner's job.
+- **Result:** `dbt/seeds/resolution_code_map.csv` has 176 rows (171 codes plus 5 context overrides).
+  - By label_source: 166 ai_accepted, 9 ai_overridden, 1 human.
+  - AI–human agreement: 94.7% of codes and 99.7% of service cases (`ai/labels/agreement.json`).
+  - The AI matched 52 of the brief's 53 first guesses. That isn't independent, because the brief's examples shaped the class definitions.
+- **Caveat for the interview story:** the overrides were proposed by the coding assistant and approved by Skye. The agreement figure measures the labeling models (Haiku/Sonnet) against that reviewed map.
+- **`code_map_final: true`:** an unmapped code now fails `make build`.
+  - The synthetic fixtures still plant one, build with the flag off, and a test checks that turning it on fails the build on that code.
+  - New codes go through `make label` (spend-capped) → review → `make label-finalize`.
+- **Effect on findings:** findings v1 is now `final`. The headline gap is 25.7 points on the reviewed map, against 30.0 on the provisional one, mostly because "RC-Request Completed" (streetlights) and the scooter codes are now credited as fixed.

@@ -146,7 +146,9 @@ Every quirk found in the MyLA311 open data, with where it came from.
 - **There are more codes than the brief estimated:** 149 distinct in 2025 Cases, 160 in 2026, 171 combined (the brief said about 120). Per-code stats are in `docs/profile/resolution_codes.csv`. Still 171 on 2026-10-28.
 - **Five cases contradict themselves:** status Cancelled with code "WC-Work Completed" (Bus Stop Furniture; warehouse). They count as verified fixed but not closed, so the gap rate and the `closed_unverified` count differ by those five.
 - **Reason codes are a fixed vocabulary** (130 values, at most 51 characters; warehouse), not free text, so they're safe to send to the labeling model as context.
-- **Some high-volume codes weren't in the brief's examples**, e.g. "RC-Request Completed" (39,136 streetlight cases) and "VMRB-Vehicle moved for rebalancing" (16,921 scooter cases). Until they're labeled, those categories show near-zero fix rates (findings status `provisional`).
+- **Some high-volume codes weren't in the brief's examples**, e.g. "RC-Request Completed" (39,136 streetlight cases) and "VMRB-Vehicle moved for rebalancing" (16,921 scooter cases). Both are labeled *fixed_work_done* in the reviewed map.
+- **Street-services bureaus close most cases with a generic code.** Among terminal requests, "closed without saying how" is 99% of Street Sweeping, 76% of Obstructions and 68% of Landscape Maintenance, so those categories show fix rates near zero. That's a property of the record, not evidence the work wasn't done (findings `q1_outcome_mix.mix_by_category`).
+- **Enforcement codes record a step, not an outcome.** "Complaint accepted" (animal services), "Notice of Violation" and "Criminal Filing" say the department acted, not that the problem stopped. The reviewed map labels them *closed_unspecified* (decision 2026-10-28).
 - **Prefix collisions include:**
   - C: C-Closed, C-Report has been received, C-Report has been referred out.
   - DUP, RC, CAN, COM, INC, IP, NAR, UA

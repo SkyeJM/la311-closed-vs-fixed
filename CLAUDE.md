@@ -36,7 +36,7 @@ Full brief (local only, gitignored): `docs/BRIEF.md`. Decisions: `docs/DECISIONS
   - DuckDB-only SQL goes in `macros/portability.sql` or at the raw-source edge; marts stay Snowflake-portable.
   - Marts store additive counts; rates come from `metrics.yml` (Phase 3).
 - **Metrics:** every rate is defined once in `metrics.yml` and compiled by `api/metrics.py` (structured filters, bound parameters). Findings, the UI and the agent all go through it; never hand-write a rate's SQL elsewhere.
-- **Code labels:** the AI proposes, a person reviews. `resolution_code_map.csv` changes only through `make label-finalize`, which records `label_source`.
+- **Code labels:** the AI proposes, a person reviews. `resolution_code_map.csv` changes only through `make label-finalize`, which records `label_source`. `code_map_final` is true, so a new code fails `make build`: run `make label` (spend-capped), review `ai/labels/review.csv`, then `make label-finalize`.
 - **Serving:** `api/serving.py` is the allowlist. Never add address, coordinate, ZIP, ID or crew columns (the build fails if you try).
 - **Makefile** must work with GNU Make 3.81.
 - **DuckDB 2.x:** implicit aliases that are keywords fail (`... AS month` works, `... month` doesn't),
