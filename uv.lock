@@ -742,8 +742,6 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "pyyaml" },
     { name = "sqlglot" },
-    { name = "tenacity" },
-    { name = "typer" },
 ]
 
 [package.dev-dependencies]
@@ -756,6 +754,8 @@ dev = [
 pipeline = [
     { name = "dbt-core" },
     { name = "dbt-duckdb" },
+    { name = "tenacity" },
+    { name = "typer" },
 ]
 
 [package.metadata]
@@ -768,8 +768,6 @@ requires-dist = [
     { name = "python-dotenv", specifier = ">=1.2.4" },
     { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "sqlglot", specifier = ">=30.25.0,<31" },
-    { name = "tenacity", specifier = ">=9.2.1" },
-    { name = "typer", specifier = ">=0.27.3" },
 ]
 
 [package.metadata.requires-dev]
@@ -782,6 +780,8 @@ dev = [
 pipeline = [
     { name = "dbt-core", specifier = ">=1.12.6,<2" },
     { name = "dbt-duckdb", specifier = ">=1.11.0,<2" },
+    { name = "tenacity", specifier = ">=9.2.1" },
+    { name = "typer", specifier = ">=0.27.3" },
 ]
 
 [[package]]

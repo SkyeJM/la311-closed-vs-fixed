@@ -9,12 +9,11 @@ run live, under the guards, until `make suggested` rebuilds it.
 
 from __future__ import annotations
 
+import argparse
 import functools
 import json
 from datetime import UTC, datetime
 from pathlib import Path
-
-import typer
 
 ROOT = Path(__file__).resolve().parents[1]
 CACHE = Path(__file__).with_name("suggested_answers.json")
@@ -26,8 +25,6 @@ SUGGESTED = [
     "Which council districts have the biggest gap between closed and fixed?",
     "¿Qué porcentaje de las solicitudes cerradas se arreglaron de verdad?",
 ]
-
-app = typer.Typer(add_completion=False)
 
 
 def normalize(question: str) -> str:
@@ -47,11 +44,8 @@ def cached(question: str, data_end: str) -> list[dict] | None:
     return cache["answers"].get(normalize(question))
 
 
-@app.command("build")
-def build_cache(
-    model: str = typer.Option("claude-sonnet-5-5", help="Use the deployed default model."),
-    max_usd: float = typer.Option(1.0, help="Stop if the whole run would cost more."),
-) -> None:
+def build_cache(model: str, max_usd: float) -> None:
+    """Run the agent on every suggested question and store the event streams."""
     import anthropic
     from dotenv import load_dotenv
 
@@ -70,7 +64,7 @@ def build_cache(
             raise SystemExit(f"no clean answer for {question!r}: {result['error']}")
         answers[normalize(question)] = result["events"]
         total += result["done"]["cost_usd"]
-        typer.echo(f"{question} -> {result['done']['outcome']} (${result['done']['cost_usd']:.4f})")
+        print(f"{question} -> {result['done']['outcome']} (${result['done']['cost_usd']:.4f})")
     CACHE.write_text(
         json.dumps(
             {
@@ -86,8 +80,13 @@ def build_cache(
         )
         + "\n"
     )
-    typer.echo(f"{CACHE.relative_to(ROOT)}: {len(answers)} answers, ${total:.4f}")
+    print(f"{CACHE.relative_to(ROOT)}: {len(answers)} answers, ${total:.4f}")
 
 
 if __name__ == "__main__":
-    app()
+    # argparse, not Typer: this module ships with the API, which carries no CLI dependencies.
+    parser = argparse.ArgumentParser(description="Rebuild the cached suggested answers.")
+    parser.add_argument("--model", default="claude-sonnet-5-5", help="the deployed default")
+    parser.add_argument("--max-usd", type=float, default=1.0, help="stop past this spend")
+    args = parser.parse_args()
+    build_cache(args.model, args.max_usd)

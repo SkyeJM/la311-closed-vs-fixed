@@ -1,0 +1,30 @@
+# What `vercel deploy` must never upload: secrets, raw data and local build output. The web
+# build reads findings/, evals/results/summary.json, ai/labels/, metrics.yml and sources.yml;
+# the API build copies its runtime set from the repo and downloads the data (deploy/api/build.py).
+.env
+.env.*
+.venv
+.git
+data
+logs
+build
+site
+spikes
+docs/BRIEF.md
+dbt/target
+dbt/logs
+dbt/dbt_packages
+ai/labels/runs
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+**/.DS_Store
+web/node_modules
+web/.next
+web/src/data
+deploy/api/api
+deploy/api/ai
+deploy/api/findings
+deploy/api/data
+deploy/api/dbt
+deploy/api/metrics.yml

@@ -55,14 +55,15 @@ def sha256(path: Path) -> str:
 
 
 def fetch_data(local: bool) -> None:
-    pin = json.loads((HERE / "serving.json").read_text())
     dest = HERE / "data" / "serving.duckdb"
     dest.parent.mkdir(exist_ok=True)
-    if local:
+    if local:  # a local check of the assembled service, on whatever data/ holds now
         shutil.copy2(REPO / "data" / "serving.duckdb", dest)
-    else:
-        with urllib.request.urlopen(pin["url"], timeout=120) as response, dest.open("wb") as f:
-            shutil.copyfileobj(response, f, length=1 << 20)
+        print(f"serving.duckdb: {dest.stat().st_size / 1e6:.1f} MB copied from data/ (unpinned)")
+        return
+    pin = json.loads((HERE / "serving.json").read_text())
+    with urllib.request.urlopen(pin["url"], timeout=120) as response, dest.open("wb") as f:
+        shutil.copyfileobj(response, f, length=1 << 20)
     actual = sha256(dest)
     if actual != pin["sha256"]:
         dest.unlink()
