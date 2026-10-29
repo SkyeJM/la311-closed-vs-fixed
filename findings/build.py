@@ -585,16 +585,18 @@ def build(serving: Path = SERVING, warehouse: Path | None = WAREHOUSE) -> dict:
     params = yaml.safe_load(DBT_PROJECT.read_text())["vars"]
     data = data_section(rec)
     window = window_for(data["data_end"])
+    # Final only when the reviewed map is switched on and the data has no unmapped code.
+    final = params["code_map_final"] and not data["code_map"]["unmapped_code_service_cases"]
     result = {
         "version": 1,
         "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "git_commit": git_commit(),
-        "status": "final" if params["code_map_final"] else "provisional",
+        "status": "final" if final else "provisional",
         "status_note": (
-            "Resolution codes are fully mapped and reviewed."
-            if params["code_map_final"]
-            else "The resolution-code map is still the brief's first guesses: unmapped codes "
-            "count as closed without evidence of a fix until the Phase 3 review."
+            "Every resolution code in the data is mapped, and the map has been reviewed."
+            if final
+            else "Some resolution codes aren't mapped yet: they count as closed without "
+            "evidence of a fix until they're labeled and reviewed."
         ),
         "parameters": {
             k: params[k]

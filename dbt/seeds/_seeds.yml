@@ -115,10 +115,11 @@ seeds:
 
   - name: resolution_code_map
     description: >
-      Resolution code -> closure_outcome. PROVISIONAL in Phase 2: it holds only the brief's
-      first-guess examples (label_source = brief_first_guess). Phase 3 replaces it with the
-      AI-labeled, human-reviewed map. Optional department and request_type columns override the
-      code-level row for one context; the most specific matching row wins.
+      Resolution code -> closure_outcome, labeled by Claude and reviewed by Skye in Phase 3
+      (ai/label_codes.py; agreement in ai/labels/agreement.json). label_source says whether the
+      reviewer kept the AI's label (ai_accepted), changed it (ai_overridden) or wrote it without one
+      (human). Optional department and request_type columns override the code-level row for one
+      context; the most specific matching row wins. Change it only through `make label-finalize`.
     config:
       column_types: {resolution_code: varchar, department: varchar, request_type: varchar, closure_outcome: varchar, label_source: varchar, rationale: varchar}
     data_tests:
@@ -139,4 +140,4 @@ seeds:
         data_tests:
           - accepted_values:
               arguments:
-                values: [brief_first_guess, ai_accepted, ai_overridden, human]
+                values: [ai_accepted, ai_overridden, human]

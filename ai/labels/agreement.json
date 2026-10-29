@@ -1,0 +1,131 @@
+{
+ "codes": 171,
+ "context_override_rows": 5,
+ "ai_labeled_codes": 171,
+ "human_only_codes": 0,
+ "ai_human_agreement": {
+  "share_of_codes": 0.9474,
+  "share_of_service_cases": 0.9973,
+  "by_final_class": {
+   "already_resolved": {
+    "codes": 3,
+    "ai_agreed": 3
+   },
+   "cancelled": {
+    "codes": 14,
+    "ai_agreed": 14
+   },
+   "closed_unspecified": {
+    "codes": 14,
+    "ai_agreed": 10
+   },
+   "deferred": {
+    "codes": 7,
+    "ai_agreed": 7
+   },
+   "duplicate": {
+    "codes": 12,
+    "ai_agreed": 12
+   },
+   "fixed_work_done": {
+    "codes": 43,
+    "ai_agreed": 42
+   },
+   "info_only": {
+    "codes": 11,
+    "ai_agreed": 11
+   },
+   "not_found": {
+    "codes": 16,
+    "ai_agreed": 14
+   },
+   "referred_out_of_scope": {
+    "codes": 24,
+    "ai_agreed": 24
+   },
+   "unable": {
+    "codes": 27,
+    "ai_agreed": 25
+   }
+  },
+  "overrides": [
+   {
+    "resolution_code": "FCABD-1st Complaint Accepted - Barking Dog",
+    "ai": "fixed_work_done",
+    "final": "closed_unspecified"
+   },
+   {
+    "resolution_code": "NOV-Notice of Violation",
+    "ai": "fixed_work_done",
+    "final": "closed_unspecified"
+   },
+   {
+    "resolution_code": "NTC-Issued cleaning notice to property owner",
+    "ai": "fixed_work_done",
+    "final": "closed_unspecified"
+   },
+   {
+    "resolution_code": "NCPP-Not at Curb / On Private Property",
+    "ai": "referred_out_of_scope",
+    "final": "not_found"
+   },
+   {
+    "resolution_code": "NAR-No Action Recommended",
+    "ai": "not_found",
+    "final": "unable"
+   },
+   {
+    "resolution_code": "CNACV-Complaint not Accepted - Animal Complaints/Violations",
+    "ai": "referred_out_of_scope",
+    "final": "unable"
+   },
+   {
+    "resolution_code": "INO-Item Not Out",
+    "ai": "unable",
+    "final": "not_found"
+   },
+   {
+    "resolution_code": "CF-Criminal Filing",
+    "ai": "fixed_work_done",
+    "final": "closed_unspecified"
+   },
+   {
+    "resolution_code": "A-Request Completed",
+    "ai": "closed_unspecified",
+    "final": "fixed_work_done"
+   }
+  ]
+ },
+ "brief_first_guesses": {
+  "codes_compared": 53,
+  "ai_matched_guess": 52,
+  "final_matched_guess": 52
+ },
+ "labeling_run": {
+  "run_at": "2026-10-29T00:23:29+00:00",
+  "models": {
+   "label": "claude-haiku-5-5",
+   "escalation": "claude-sonnet-5-5"
+  },
+  "codes": 171,
+  "calls": 361,
+  "failed_calls": 0,
+  "first_pass_runs_agreed": 156,
+  "escalations": {
+   "runs disagreed": 15,
+   "low confidence": 3,
+   "context overrides disagreed": 1
+  },
+  "escalation_chose_a_new_class": 8,
+  "unlabeled_codes": [],
+  "cost_usd": 0.1893,
+  "max_usd": 3.0,
+  "tokens": {
+   "input_tokens": 233114,
+   "cache_creation_input_tokens": 7338,
+   "cache_read_input_tokens": 2641680,
+   "output_tokens": 118278
+  },
+  "seconds": 233.7
+ }
+}

@@ -16,7 +16,14 @@ ROOT = Path(__file__).resolve().parents[1]
 
 @pytest.fixture(scope="session")
 def dbt_build(tmp_path_factory):
-    """(read-only warehouse connection, dbt build log, temp dir) for the synthetic fixtures."""
+    """(read-only warehouse connection, dbt build log, temp dir, final-map check) for the
+    synthetic fixtures.
+
+    The fixtures plant an unmapped resolution code, so they build with code_map_final false.
+    The final-map check then reruns the mapping test as the real project does (true), which
+    must fail on that code: the brief's alerting. It runs before the read-only connection
+    opens, because dbt needs the database file to itself.
+    """
     tmp = tmp_path_factory.mktemp("dbt")
     build(tmp / "raw")
     env = os.environ | {
@@ -25,13 +32,20 @@ def dbt_build(tmp_path_factory):
     }
     dbt = str(Path(sys.executable).parent / "dbt")
     paths = ["--target-path", str(tmp / "target"), "--log-path", str(tmp / "logs")]
+
+    def run_dbt(*args):
+        return subprocess.run(
+            [dbt, *args, *paths], cwd=ROOT / "dbt", env=env, capture_output=True, text=True
+        )
+
     subprocess.run([dbt, "deps", "--quiet"], cwd=ROOT / "dbt", env=env, check=True)
-    run = subprocess.run(
-        [dbt, "build", *paths], cwd=ROOT / "dbt", env=env, capture_output=True, text=True
-    )
+    run = run_dbt("build", "--vars", "{code_map_final: false}")
     assert run.returncode == 0, run.stdout[-4000:]
+    final_map = run_dbt(
+        "test", "--select", "assert_all_resolution_codes_mapped", "--vars", "{code_map_final: true}"
+    )
     con = duckdb.connect(str(tmp / "warehouse.duckdb"), read_only=True)
-    yield con, run.stdout, tmp
+    yield con, run.stdout, tmp, final_map
     con.close()
 
 

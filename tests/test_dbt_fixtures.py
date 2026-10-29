@@ -39,6 +39,12 @@ def test_build_is_green_with_only_the_expected_warnings(dbt_build):
         assert re.search(rf"WARN \d+ {test}", log)
 
 
+def test_a_new_code_fails_the_build_once_the_map_is_final(dbt_build):
+    final_map = dbt_build[3]
+    assert final_map.returncode == 1
+    assert re.search(r"FAIL 1 assert_all_resolution_codes_mapped", final_map.stdout)
+
+
 def test_staging_reconciles_and_keeps_the_latest_version(con):
     assert con.execute(
         "SELECT count(*) FROM staging.stg_current__cases WHERE source_dataset_id = '73a2-6ar5'"

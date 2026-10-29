@@ -34,10 +34,11 @@ vars:
   instant_close_minutes: 1  # the closed-at-intake spike is all under 10 s; 1 min = legacy precision
   rereport_radius_m: 50
   rereport_window_days: 30
-  # false while resolution_code_map.csv holds only the brief's first guesses: unmapped codes warn.
-  # Phase 3 sets it to true with the reviewed map, and from then on an unmapped code fails the
-  # build (the brief's alerting for new codes).
-  code_map_final: false
+  # true since the Phase 3 review (2026-10-28): every observed code is in resolution_code_map.csv,
+  # so a new code fails the build (the brief's alerting). Label it with `make label`, review
+  # ai/labels/review.csv, then `make label-finalize`. The synthetic fixtures plant an unmapped code
+  # and build with this set to false (tests/conftest.py checks that true fails on it).
+  code_map_final: true
 
 models:
   la311:

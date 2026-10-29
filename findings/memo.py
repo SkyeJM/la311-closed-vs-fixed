@@ -110,8 +110,7 @@ def render(f: dict) -> str:
         lines += [
             f"> **Provisional.** {f['status_note']} "
             f"{num(f['data']['code_map']['unmapped_code_service_cases'])} service requests carry "
-            "one of those codes, so category-level fix rates below are not yet meaningful where "
-            "they dominate (streetlights, scooters, street services).",
+            "such a code, so fix rates are understated wherever those codes are common.",
             "",
         ]
     lines += [

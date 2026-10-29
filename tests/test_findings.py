@@ -39,7 +39,7 @@ def test_every_section_is_present(result):
         "e2_parameters",
     ]:
         assert section in result, section
-    assert result["status"] == "provisional"  # the fixtures run with code_map_final: false
+    assert result["status"] == "provisional"  # the fixtures plant an unmapped code
 
 
 def test_every_cited_query_was_recorded_with_its_sql(result):

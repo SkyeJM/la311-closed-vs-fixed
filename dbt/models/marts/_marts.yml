@@ -139,7 +139,7 @@ models:
   - name: dim_resolution_code
     description: >
       One row per resolution code seen in the new system, with its code-level mapping and how
-      it is used. PROVISIONAL mapping in Phase 2 (brief first guesses only).
+      it is used. Labels come from the reviewed resolution_code_map.
     columns:
       - name: resolution_code
         data_tests: [unique, not_null]
