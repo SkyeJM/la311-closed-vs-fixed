@@ -99,7 +99,7 @@ ask: ## Ask the agent one question in the terminal: make ask Q="..." [MODEL=...]
 	$(PY) -m ai.agent "$(Q)" $(if $(MODEL),--model $(MODEL)) --trace
 
 suggested: ## Rebuild cached answers to the suggested questions (spends credit; default model)
-	$(PY) -m api.suggested build $(if $(MODEL),--model $(MODEL))
+	$(PY) -m api.suggested $(if $(MODEL),--model $(MODEL))
 
 deploy:
 	@echo "'make $@' arrives in Phase 5 (brief section 8)." && exit 1

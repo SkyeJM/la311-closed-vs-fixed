@@ -405,3 +405,141 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
   - The synthetic fixtures still plant one, build with the flag off, and a test checks that turning it on fails the build on that code.
   - New codes go through `make label` (spend-capped) → review → `make label-finalize`.
 - **Effect on findings:** findings v1 is now `final`. The headline gap is 25.7 points on the reviewed map, against 30.0 on the provisional one, mostly because "RC-Request Completed" (streetlights) and the scooter codes are now credited as fixed.
+
+## Phase 4: API, agent and evals
+
+### 2026-10-29 · Phase 3 sign-off
+- Skye said "go" and added $10 of API credit for the Phase 4 evals (about $14.80 in the account at the start of the phase). PR #4 merged; this phase is on `phase-4-api-agent`.
+
+### 2026-10-29 · A manual tool loop, not the SDK's tool runner
+- **Options:** the SDK's beta tool runner, which runs tools and loops for you, or a manual loop over `messages.create` (brief section 6A asks for the choice to be logged).
+- **Chosen: manual** (`ai/agent/loop.py`), because every step has to do things the runner hides:
+  - stream each tool call and result to the UI as it happens (`/api/ask` is SSE);
+  - check the daily spend cap before each model call and the step cap after it;
+  - switch tools off on the last allowed step, so the loop always ends in an answer;
+  - check the answer before accepting it, and send it back once with the problems.
+- **Cost of the choice:** about 150 lines of loop code, tested offline with a scripted client.
+
+### 2026-10-29 · The answer contract is a structured output, not a submit_answer tool
+- **Options:** a final `submit_answer` tool, or JSON output with `output_config.format`. Both are allowed by the brief.
+- **Why structured output:**
+  - Claude Opus 5.5 and Sonnet 5.5 reject forced tool use (`tool_choice` any or tool returns a 400; docs checked 2026-10-29). A submit tool couldn't be forced, and a model that ended with plain text would need a retry.
+  - With `output_config.format`, the model's final message always parses. Tool calls stay free during the loop, and strict tool schemas keep their inputs valid.
+- **One field added to the brief's shape:** `answer_type` (answered, partial, declined). Declines and partial answers are then explicit, and the evals can check them without parsing prose. `evidence_level` also takes "none" for volumes, definitions and declines.
+
+### 2026-10-29 · "Never state a number that didn't come from a tool" is checked in code
+- **Runtime:** before an answer is accepted, `ai/agent/answer.py` checks:
+  - every cited query_id exists;
+  - every key number is in the rows of the query it cites (a percent must be on the 0-100 scale);
+  - every number in the prose matches some tool value at the precision it was written with (`ai/agent/numbers.py`), allowing for a percentage, hours shown as days, or a thousands or millions multiplier.
+- Years, small bare counts and numbers in the question or the prompt's definitions (50 m, 30 days) are exempt.
+- An answer that fails goes back to the model once with the list of problems. If it still fails, it is delivered with the problems attached for the UI to flag, and the evals count it as a failure.
+- **Why both the runtime check and the evals:** the brief asks the evals to check this programmatically. Checking at runtime as well means a public answer can't quietly carry an invented number.
+
+### 2026-10-29 · Tools: governed first, SQL as a guarded escape hatch
+- **`query_metric`** compiles metrics.yml through `api/metrics.py`.
+  - Filters arrive as a list of {dimension, values}. Strict tool schemas require `additionalProperties: false`, which rules out a free-form dict.
+  - Values are typed per column and checked against the column's real values. An unknown value returns the closest valid ones ("graffiti" → Graffiti).
+  - Results add `value_pct` for shares and both component rates for differences (the gap query gives closed %, fixed % and the gap at once), so the model never has to compute them.
+- **`run_sql`** takes one SELECT checked on sqlglot's parse tree (`ai/agent/sqlguard.py`). It may read only the aggregate tables `api/serving.py` marks `sql_tool`.
+  - Table functions (`read_csv`, `query()`, which could otherwise get around the allowlist, `glob` ...) and the row-level fact table are rejected. The fact table is reachable only through governed metrics, which always aggregate (brief section 10: no row-level output).
+  - What runs is sqlglot's rendering of the tree it checked.
+  - Underneath, the connection is read-only with file access off and the configuration locked (`api/db.py`, in the order the Phase 0 spike found). Each query has a 10-second interrupt and a 100-row cap for the model.
+- **`make_chart`** takes a Vega-Lite spec without data. The API attaches the cited query's rows, rejects specs that bring their own data, URLs or links, and validates the result against the Vega-Lite 6.5 JSON schema (vendored, gzipped; react-vega 8 renders Vega-Lite 6). A chart can show only numbers a tool returned.
+- **`list_metrics`, `describe_table`, `explain_resolution_code`** read the catalog, the dbt docs carried into serving, and the reviewed code map with its rationale and label source.
+
+### 2026-10-29 · The system prompt is generated, and holds no data numbers
+- `ai/agent/prompt.py` fills `ai/agent/prompts/system.md` from metrics.yml, the outcome seed and the served data: dates, crosswalk, cutover periods and category list. It follows a refresh without hand edits.
+- It holds definitions and rules but no counts or rates, so the model can quote a number only from a tool. A test enforces this.
+- About 4,300 tokens, plus about 1,500 for the tools, cached together. Every question after the first reads them at a tenth of the input price or less.
+- **Default dates:** when the user gives none, current-era rates use the findings window (requests filed Mar 2025 through the last month with 60 days of follow-up), and before-and-after questions use the cutover periods. Answers then agree with the published findings.
+
+### 2026-10-29 · One question at a time; follow-ups are standalone questions
+- **Options:** a chat with history, or independent questions.
+- **Chosen: independent questions.** The brief's `follow_ups` become clickable standalone questions ("in plain words, understandable without this conversation").
+- **Why:**
+  - Every answer can be evaluated, cached and traced on its own.
+  - A public endpoint takes no client-supplied history, which would be both a cost lever and a prompt-injection surface.
+- **Trade-off:** "what about district 7?" doesn't resolve against an earlier answer. The UI can offer the agent's own follow-ups instead.
+
+### 2026-10-29 · Effort medium for every model, set through ASK_EFFORT
+- Default effort differs by model: medium for Opus 5.5 and Haiku 5.5, high for Sonnet 5.5. The docs recommend medium for agentic and latency-sensitive work. The evals compare all three models at medium, so only the model changes.
+- **Not CLAUDE_EFFORT:** Claude Code sets that variable in its own shell (to max). The first smoke test inherited it, and Haiku thought for about 30 s per step until it hit the token limit. The project variable is `ASK_EFFORT`.
+- **Other caps:** 8 steps per question (tools off on the 8th), 8,000 output tokens per step, $0.75 per question, and 600 characters per question.
+
+### 2026-10-29 · Guardrails for the public /api/ask
+- **What refuses a question, in order, before the stream opens** (plain HTTP errors):
+  1. Cached answers to the suggested questions are served first, at no cost.
+  2. The kill switch (`ASK_ENABLED=false`) returns 503.
+  3. A spent daily cap (`DAILY_SPEND_CAP_USD`, also checked before every model call) returns 503.
+  4. The per-IP limit (10 live questions an hour) returns 429 with Retry-After.
+- **Privacy:**
+  - IPs are hashed with HMAC and a secret salt, and never stored.
+  - Traces are JSONL, one line per question: tool calls with SQL, the answer check, tokens, cost and latency.
+  - Emails, phone numbers and street addresses typed into a question are masked before logging.
+- **Counters** live behind a small store interface. The in-memory store is right for one local process. On Vercel, Ask stays off until a shared store (Upstash Redis via the Marketplace, Phase 5) and `IP_HASH_SALT` are configured, so a deploy can't silently run with per-instance limits.
+- **Backstops:** a Vercel WAF rate-limit rule and the Anthropic Console workspace spend limit (Phase 5, Skye's settings).
+- **The key stays server-side:** only the Python API reads it, and no endpoint returns configuration.
+
+### 2026-10-29 · Evals: expected numbers computed at run time, a cheap judge for the rest
+- **Golden set:** `evals/golden.yaml` has 43 questions: 31 numeric, 6 must-qualify, 6 must-decline, 5 in Spanish.
+  - Each numeric entry says how to compute its answer: a governed metric request, or SQL for one share no metric defines. `evals/expected.py` computes it from serving.duckdb when the eval runs, so the set stays right after a refresh.
+  - The brief's example ("pothole fix rates in 2018 vs 2026") is in: the legacy data has no pothole category and no resolution codes.
+- **Checks** (`evals/score.py`):
+  - numbers within a tolerance: 0.15 points absolute for percents and points, 0.5% relative for counts, 3% for durations, or the precision the answer wrote, whichever is looser;
+  - the governed metric used;
+  - evidence level and answer type;
+  - no unsupported numbers;
+  - required caveats and no causal claims, graded by a judge;
+  - the question's language.
+- **The judge:** `claude-haiku-5-5` with structured output. It quotes its evidence so Skye can spot-check.
+  - In development it marked one English answer as "not English", so language is now a deterministic stopword count.
+  - It also failed one caveat on a parenthetical detail, so its prompt now grades substance, not wording.
+  - `evals/rescore.py` re-grades a saved run, so judge fixes don't cost new agent runs.
+- **Runs:** `make eval MODEL=...` writes `evals/results/{date}_{model}.json` and `.md`. `evals/report.py` builds `SUMMARY.md` and `summary.json` (for the methodology page) from the latest full run per model.
+
+### 2026-10-29 · Metric date ranges are whole months, and never shift on quarterly marts
+- **Bug found while adding ranking:** `date_range` was applied to whichever source the compiler picked. On the quarterly district mart, Mar 2025 to Jul 2026 silently became Apr 2025 to Sep 2026.
+- **Effect:** findings v1 was unaffected, because Q2 already forced the monthly fact table. The agent would have been affected, since it can't choose a source.
+- **Fix:** a date range is now (first month, last month) as month starts. A source answers it only when the range starts and ends on its own grain; otherwise the compiler falls through to a finer source. Tests cover both paths.
+- **Also added:** ranking options (`order`, `limit`, `min_count`), so "which district has the largest gap" needs no hand-written SQL.
+
+### 2026-10-29 · Eval results: two rounds, and what round 1 changed
+- **Round 1** (agent at d986648; files `evals/results/*_round1.*`):
+  - **Numeric:** all three models answered 31 of 31 numeric questions correctly.
+  - **All checks:** Haiku 42/43 (answered a Spanish question in English); Sonnet 42/43; Opus 40/43.
+  - **Sonnet's miss:** it re-ran one identical query six times until the step cap, then wrote a number it computed itself. The runtime check caught it, but no step was left for a revision.
+  - **Opus's misses:**
+    - A judge false positive: "counting these would raise the rate" describes the metric, not a cause.
+    - One real speculation about why graffiti closures slowed.
+    - An evidence label (E1, from `outcome_mix`) that the golden entry hadn't allowed.
+- **Changes after round 1:**
+  - A repeated identical tool call now points back to its first result instead of running again.
+  - The judge separates explaining an observed change, which is causal, from describing how a metric is computed, which isn't.
+  - The encampment entry accepts E1.
+  - The pilots had already led to two prompt rules: compute uncatalogued shares in run_sql, and never speculate about causes.
+- **Round 2 (final; agent and harness at e5471ca)**, 43 questions per model, effort medium (`evals/results/SUMMARY.md`):
+
+  | model | numeric | all checks | Spanish | cost per question | latency p50 / p90 |
+  |---|---|---|---|---|---|
+  | claude-haiku-5-5 | 30/31 (97%) | 41/43 (95%) | 4/5 | $0.0011 | 6.8 s / 13.4 s |
+  | claude-sonnet-5-5 | 31/31 (100%) | 43/43 (100%) | 5/5 | $0.0165 | 8.8 s / 15.8 s |
+  | claude-opus-5-5 | 31/31 (100%) | 43/43 (100%) | 5/5 | $0.0365 | 12.3 s / 19.3 s |
+
+  - Haiku's two misses are real:
+    - It again answered the same Spanish question in English.
+    - It quietly narrowed "graffiti requests" to resident reports, though it said so in the answer.
+  - The judge itself cost $0.003 per 43-question run.
+- **Caveats on these numbers:**
+  - 43 questions is a small set, so a single miss moves a rate by 2 to 3 points.
+  - The golden set was written by the same assistant that wrote the agent's prompt. Both follow the brief, but the questions aren't independent of the prompt's vocabulary. Skye's spot-checks of the judge and a few hand-written questions in Phase 5 would strengthen this.
+- **Spend:** Phase 4 used about $5.40 of API credit by token count: smoke tests, pilots, a Haiku development run, two full rounds on three models, the judge and the suggested-answer cache.
+
+### 2026-10-29 · Default model: keep claude-sonnet-5-5
+- **Options:**
+  - Haiku: 15 times cheaper and the fastest, but 41/43, missing the brief's explicit Spanish requirement.
+  - Sonnet: 43/43.
+  - Opus: 43/43 at 2.2 times Sonnet's cost and about 40% slower.
+- **Chosen:** Sonnet, the brief's default, now backed by the evals. Opus adds no measured accuracy here.
+- **What it costs:** about $0.017 per live question, so the $1.00 daily cap allows roughly 60 live questions a day. The six suggested questions are served from the cache at no cost.
+- **Reversible:** `CLAUDE_MODEL` switches the model without a code change. Haiku is the fallback if traffic outgrows the cap.

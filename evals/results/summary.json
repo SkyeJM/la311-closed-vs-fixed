@@ -1,0 +1,100 @@
+{
+ "models": [
+  {
+   "model": "claude-haiku-5-5",
+   "effort": "medium",
+   "date": "2026-10-29",
+   "file": "2026-10-29_claude-haiku-5-5.json",
+   "questions": 43,
+   "numeric_accuracy": 0.967741935483871,
+   "pass_rate": 0.9534883720930233,
+   "checks": {
+    "numeric": 0.967741935483871,
+    "governed_metric": 1.0,
+    "evidence": 1.0,
+    "answer_type": 1.0,
+    "numbers_supported": 1.0,
+    "rubric": 1.0,
+    "no_causal_claim": 1.0,
+    "language": 0.9767441860465116
+   },
+   "by_kind": {
+    "numeric": 0.9354838709677419,
+    "qualify": 1.0,
+    "decline": 1.0
+   },
+   "spanish": 0.8,
+   "latency_s": {
+    "mean": 7.29,
+    "p50": 6.84,
+    "p90": 13.39
+   },
+   "cost_per_question_usd": 0.00111,
+   "cost_total_usd": 0.0476
+  },
+  {
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "date": "2026-10-29",
+   "file": "2026-10-29_claude-sonnet-5-5.json",
+   "questions": 43,
+   "numeric_accuracy": 1.0,
+   "pass_rate": 1.0,
+   "checks": {
+    "numeric": 1.0,
+    "governed_metric": 1.0,
+    "evidence": 1.0,
+    "answer_type": 1.0,
+    "numbers_supported": 1.0,
+    "rubric": 1.0,
+    "no_causal_claim": 1.0,
+    "language": 1.0
+   },
+   "by_kind": {
+    "numeric": 1.0,
+    "qualify": 1.0,
+    "decline": 1.0
+   },
+   "spanish": 1.0,
+   "latency_s": {
+    "mean": 9.26,
+    "p50": 8.83,
+    "p90": 15.76
+   },
+   "cost_per_question_usd": 0.0165,
+   "cost_total_usd": 0.7093
+  },
+  {
+   "model": "claude-opus-5-5",
+   "effort": "medium",
+   "date": "2026-10-29",
+   "file": "2026-10-29_claude-opus-5-5.json",
+   "questions": 43,
+   "numeric_accuracy": 1.0,
+   "pass_rate": 1.0,
+   "checks": {
+    "numeric": 1.0,
+    "governed_metric": 1.0,
+    "evidence": 1.0,
+    "answer_type": 1.0,
+    "numbers_supported": 1.0,
+    "rubric": 1.0,
+    "no_causal_claim": 1.0,
+    "language": 1.0
+   },
+   "by_kind": {
+    "numeric": 1.0,
+    "qualify": 1.0,
+    "decline": 1.0
+   },
+   "spanish": 1.0,
+   "latency_s": {
+    "mean": 12.74,
+    "p50": 12.26,
+    "p90": 19.33
+   },
+   "cost_per_question_usd": 0.03645,
+   "cost_total_usd": 1.5674
+  }
+ ]
+}

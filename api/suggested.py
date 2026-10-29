@@ -1,6 +1,6 @@
 """Suggested questions for /ask, with cached answers so showing them costs nothing.
 
-    uv run python -m api.suggested build --model claude-sonnet-5-5   # spends API credit
+    uv run python -m api.suggested --model claude-sonnet-5-5   # spends API credit
 
 The cache (api/suggested_answers.json, committed) keeps each answer's full event stream and the
 data_end it was made from. When serving.duckdb is newer, the cache is stale: those questions
