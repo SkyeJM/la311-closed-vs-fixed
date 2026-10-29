@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import os
+import threading
 import time
 from collections.abc import Iterator
 from dataclasses import asdict, dataclass
@@ -60,13 +61,16 @@ class Budget:
     def __init__(self, limit_usd: float | None = None):
         self.limit_usd = limit_usd
         self.spent_usd = 0.0
+        self._lock = threading.Lock()  # evals share one budget across threads
 
     def check(self) -> None:
-        if self.limit_usd is not None and self.spent_usd >= self.limit_usd:
-            raise BudgetExceeded(f"spend limit of ${self.limit_usd:.2f} reached")
+        with self._lock:
+            if self.limit_usd is not None and self.spent_usd >= self.limit_usd:
+                raise BudgetExceeded(f"spend limit of ${self.limit_usd:.2f} reached")
 
     def add(self, usd: float) -> None:
-        self.spent_usd += usd
+        with self._lock:
+            self.spent_usd += usd
 
 
 @dataclass

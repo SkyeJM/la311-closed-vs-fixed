@@ -88,6 +88,10 @@ label-finalize: ## Reviewed ai/labels/review.csv -> dbt/seeds/resolution_code_ma
 findings: serving ## Q1-Q5 numbers + E2 evidence -> findings/findings.json and findings/MEMO.md
 	$(PY) -m findings
 
+eval: ## Golden-set eval for one model: make eval MODEL=claude-haiku-5-5 (spends credit)
+	$(PY) -m evals.run --model $(or $(MODEL),claude-sonnet-5-5) $(if $(MAX_USD),--max-usd $(MAX_USD))
+	$(PY) -m evals.report
+
 serve: ## Run the API locally with reload: http://127.0.0.1:8000/api/docs
 	$(UV) run uvicorn api.app:app --reload
 
