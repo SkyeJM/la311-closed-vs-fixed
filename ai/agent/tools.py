@@ -268,14 +268,28 @@ class ToolBox:
             self.dim_types.setdefault(column, kind)
         self.queries: dict[str, QueryRecord] = {}
         self.charts: dict[str, dict] = {}
+        self._done: dict[str, dict] = {}
 
     # Each handler returns the payload the model sees, or raises ToolError.
     def run(self, name: str, args: dict) -> tuple[dict, bool]:
+        # A repeated identical call returns a pointer to the first result instead of running
+        # again: in evals one model re-ran the same query six times until the step cap.
+        key = name + json.dumps(args, sort_keys=True, default=str)
+        if key in self._done:
+            earlier = self._done[key].get("query_id")
+            return {
+                "duplicate_of": earlier,
+                "note": "You already made this exact call"
+                + (f" ({earlier})" if earlier else "")
+                + "; its result is above. Use it, or answer now.",
+            }, False
         handler = getattr(self, f"_tool_{name}", None)
         if handler is None:
             return {"error": f"unknown tool {name}"}, True
         try:
-            return handler(**args), False
+            payload = handler(**args)
+            self._done[key] = payload
+            return payload, False
         except TypeError as e:
             return {"error": f"bad arguments for {name}: {e}"}, True
         except (ToolError, metrics.MetricError, sqlguard.SqlRejected, charts.ChartRejected) as e:

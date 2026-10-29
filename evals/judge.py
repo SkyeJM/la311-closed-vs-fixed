@@ -19,9 +19,11 @@ For each rubric item, decide whether the answer conveys its substance, in any wo
 language. A vague hint doesn't count, but exact wording isn't needed, and details in
 parentheses are examples, not requirements. Quote the words that meet the item (empty if none).
 
-causal_claim: true if the answer says or implies that something (the relaunch, a department, a
-policy, staffing) caused, led to, improved or worsened a number. Describing what changed and
-when is not causal. Saying data can't show causes is not causal."""
+causal_claim: true if the answer attributes an observed change or difference to a cause: the
+relaunch, a department, a policy, staffing, or another measure ("X fell because Y rose"), even
+hedged with "may" or "might". Describing what changed and when is not causal, and neither is
+saying the data can't show causes. A general statement of how a metric is defined or computed
+("counting these would raise the rate") is not causal unless it explains an observed change."""
 
 SCHEMA = {
     "type": "object",

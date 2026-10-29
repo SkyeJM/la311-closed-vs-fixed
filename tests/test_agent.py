@@ -215,6 +215,15 @@ def test_run_sql_reads_aggregates_only(agent_db):
 
 
 @pytest.mark.dbt
+def test_a_repeated_call_points_back_instead_of_running_again(agent_db):
+    box = tools.ToolBox(agent_db)
+    first, _ = box.run("query_metric", metric_call("closure_rate"))
+    again, error = box.run("query_metric", metric_call("closure_rate"))
+    assert not error and again["duplicate_of"] == first["query_id"]
+    assert list(box.queries) == ["q1"]
+
+
+@pytest.mark.dbt
 def test_describe_explain_and_chart(agent_db):
     box = tools.ToolBox(agent_db)
     described, error = box.run("describe_table", {"table": "mart_cutover_periods"})

@@ -375,7 +375,7 @@ questions:
     lang: en
     kind: qualify
     question: Are homeless encampment requests closed faster now than before the relaunch?
-    evidence: [none, E2]
+    evidence: [none, E1, E2]
     answer_type: [partial, declined, answered]
     metrics: []
     caveats:
