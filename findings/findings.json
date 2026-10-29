@@ -1,9 +1,9 @@
 {
  "version": 1,
- "generated_at": "2026-10-28T18:28:42+00:00",
- "git_commit": "6169ba5",
- "status": "provisional",
- "status_note": "The resolution-code map is still the brief's first guesses: unmapped codes count as closed without evidence of a fix until the Phase 3 review.",
+ "generated_at": "2026-10-29T01:01:53+00:00",
+ "git_commit": "a09f55d",
+ "status": "final",
+ "status_note": "Every resolution code in the data is mapped, and the map has been reviewed.",
  "parameters": {
   "cutover_date": "2025-03-28",
   "instant_close_minutes": 1,
@@ -27,11 +27,11 @@
   },
   "code_map": {
    "codes": 171,
-   "mapped_codes": 53,
-   "unmapped_code_service_cases": 118900,
+   "mapped_codes": 171,
+   "unmapped_code_service_cases": null,
    "label_sources": {
-    "unmapped": 118,
-    "brief_first_guess": 53
+    "ai_accepted": 162,
+    "ai_overridden": 9
    }
   },
   "query_ids": [
@@ -46,12 +46,12 @@
    "from_month": "2025-03-01",
    "to_month": "2026-07-01"
   },
-  "fix_rate_base": 2068046,
-  "closed": 1817003,
-  "verified_fixed": 1196665,
-  "closure_rate": 0.8786,
-  "verified_fix_rate": 0.5786,
-  "gap_pp": 29.9963,
+  "fix_rate_base": 2064328,
+  "closed": 1813376,
+  "verified_fixed": 1282416,
+  "closure_rate": 0.8784,
+  "verified_fix_rate": 0.6212,
+  "gap_pp": 25.7207,
   "official_closure_rate": 0.8155,
   "official_closure_base": 2341787,
   "query_ids": [
@@ -61,15 +61,15 @@
   ],
   "excluded_from_base": {
    "handed_off": 156910,
-   "neutral": 116831
+   "neutral": 120549
   },
   "all_months": {
-   "fix_rate_base": 2463542,
-   "closed": 2153518,
-   "verified_fixed": 1406892,
-   "closure_rate": 0.8742,
-   "verified_fix_rate": 0.5711,
-   "gap_pp": 30.307,
+   "fix_rate_base": 2459155,
+   "closed": 2149261,
+   "verified_fixed": 1501984,
+   "closure_rate": 0.874,
+   "verified_fix_rate": 0.6108,
+   "gap_pp": 26.3211,
    "official_closure_rate": 0.8113,
    "official_closure_base": 2796957,
    "query_ids": [
@@ -82,18 +82,18 @@
   "mix": [
    {
     "closure_outcome": "fixed_work_done",
-    "requests": 1183805,
-    "share": 0.5419
+    "requests": 1269086,
+    "share": 0.581
    },
    {
     "closure_outcome": "not_found",
-    "requests": 321679,
-    "share": 0.1473
+    "requests": 328746,
+    "share": 0.1505
    },
    {
     "closure_outcome": "closed_unspecified",
-    "requests": 160447,
-    "share": 0.0734
+    "requests": 161277,
+    "share": 0.0738
    },
    {
     "closure_outcome": "handed_off",
@@ -101,123 +101,123 @@
     "share": 0.0718
    },
    {
-    "closure_outcome": null,
-    "requests": 106955,
-    "share": 0.049
-   },
-   {
     "closure_outcome": "duplicate",
-    "requests": 98577,
-    "share": 0.0451
+    "requests": 98752,
+    "share": 0.0452
    },
    {
     "closure_outcome": "cancelled",
-    "requests": 84536,
-    "share": 0.0387
+    "requests": 88039,
+    "share": 0.0403
    },
    {
     "closure_outcome": "info_only",
-    "requests": 18254,
-    "share": 0.0084
+    "requests": 21797,
+    "share": 0.01
    },
    {
     "closure_outcome": "referred_out_of_scope",
-    "requests": 16371,
-    "share": 0.0075
+    "requests": 19670,
+    "share": 0.009
    },
    {
     "closure_outcome": "deferred",
-    "requests": 13056,
-    "share": 0.006
+    "requests": 15123,
+    "share": 0.0069
    },
    {
     "closure_outcome": "already_resolved",
-    "requests": 12860,
-    "share": 0.0059
+    "requests": 13330,
+    "share": 0.0061
    },
    {
     "closure_outcome": "unable",
-    "requests": 10999,
-    "share": 0.005
+    "requests": 11719,
+    "share": 0.0054
+   },
+   {
+    "closure_outcome": null,
+    "requests": 0,
+    "share": 0.0
    }
   ],
   "by_category": [
    {
     "unified_category": "Bulky & dumped item pickups",
-    "fix_rate_base": 1257894,
+    "fix_rate_base": 1257891,
     "closure_rate": 0.974,
-    "verified_fix_rate": 0.7165,
-    "gap_pp": 25.7503
+    "verified_fix_rate": 0.7166,
+    "gap_pp": 25.74
    },
    {
     "unified_category": "Graffiti",
-    "fix_rate_base": 225461,
-    "closure_rate": 0.5428,
-    "verified_fix_rate": 0.4657,
-    "gap_pp": 7.7113
+    "fix_rate_base": 225328,
+    "closure_rate": 0.5429,
+    "verified_fix_rate": 0.4697,
+    "gap_pp": 7.3151
    },
    {
     "unified_category": "Service Not Complete",
     "fix_rate_base": 166285,
     "closure_rate": 0.7212,
-    "verified_fix_rate": 0.6431,
-    "gap_pp": 7.8119
+    "verified_fix_rate": 0.6459,
+    "gap_pp": 7.5286
    },
    {
     "unified_category": "Street Pavement Issues",
-    "fix_rate_base": 63043,
+    "fix_rate_base": 63040,
     "closure_rate": 0.9226,
-    "verified_fix_rate": 0.538,
-    "gap_pp": 38.4611
+    "verified_fix_rate": 0.6286,
+    "gap_pp": 29.4004
    },
    {
     "unified_category": "Streetlight repair",
     "fix_rate_base": 57832,
     "closure_rate": 0.6671,
-    "verified_fix_rate": 0.0,
-    "gap_pp": 66.7053
+    "verified_fix_rate": 0.6618,
+    "gap_pp": 0.5257
    },
    {
     "unified_category": "Dead animal",
     "fix_rate_base": 46285,
     "closure_rate": 0.9727,
-    "verified_fix_rate": 0.6787,
-    "gap_pp": 29.4048
+    "verified_fix_rate": 0.6789,
+    "gap_pp": 29.3853
    },
    {
     "unified_category": "Dockless Mobility Enforcement",
-    "fix_rate_base": 29571,
-    "closure_rate": 0.9822,
-    "verified_fix_rate": 0.0,
-    "gap_pp": 98.2178
+    "fix_rate_base": 29408,
+    "closure_rate": 0.9821,
+    "verified_fix_rate": 0.8589,
+    "gap_pp": 12.3198
    },
    {
     "unified_category": "Landscape Maintenance",
     "fix_rate_base": 26639,
     "closure_rate": 0.9516,
-    "verified_fix_rate": 0.0,
-    "gap_pp": 95.1537
+    "verified_fix_rate": 0.2151,
+    "gap_pp": 73.6514
    },
    {
     "unified_category": "Obstructions",
     "fix_rate_base": 24431,
     "closure_rate": 0.932,
-    "verified_fix_rate": 0.0,
-    "gap_pp": 93.2013
+    "verified_fix_rate": 0.0002,
+    "gap_pp": 93.1849
    },
    {
     "unified_category": "Tree Emergency",
     "fix_rate_base": 15894,
     "closure_rate": 0.9308,
-    "verified_fix_rate": 0.3732,
-    "gap_pp": 55.7569
+    "verified_fix_rate": 0.3774,
+    "gap_pp": 55.3353
    },
    {
     "unified_category": "Traffic Safety",
     "fix_rate_base": 12510,
     "closure_rate": 0.5392,
-    "verified_fix_rate": 0.0131,
-    "gap_pp": 52.6139
+    "verified_fix_rate": 0.0528,
+    "gap_pp": 48.6411
    },
    {
     "unified_category": "Street Sweeping",
@@ -230,71 +230,71 @@
     "unified_category": "Parking Issues",
     "fix_rate_base": 11128,
     "closure_rate": 0.8016,
-    "verified_fix_rate": 0.0027,
-    "gap_pp": 79.8886
+    "verified_fix_rate": 0.0669,
+    "gap_pp": 73.4633
    },
    {
     "unified_category": "Tree Obstruction",
     "fix_rate_base": 9633,
     "closure_rate": 0.6955,
-    "verified_fix_rate": 0.011,
-    "gap_pp": 68.4522
+    "verified_fix_rate": 0.1845,
+    "gap_pp": 51.1056
    },
    {
     "unified_category": "General Street Inspection",
     "fix_rate_base": 9551,
     "closure_rate": 0.9711,
-    "verified_fix_rate": 0.015,
-    "gap_pp": 95.613
+    "verified_fix_rate": 0.0193,
+    "gap_pp": 95.1838
    },
    {
     "unified_category": "Street Tree Inspection",
     "fix_rate_base": 9402,
     "closure_rate": 0.7357,
-    "verified_fix_rate": 0.0561,
-    "gap_pp": 67.9643
+    "verified_fix_rate": 0.0686,
+    "gap_pp": 66.7092
    },
    {
     "unified_category": "Illegal Auto Repair or Construction, and Leaf Blower Violations",
     "fix_rate_base": 8143,
     "closure_rate": 0.9535,
-    "verified_fix_rate": 0.0,
-    "gap_pp": 95.3457
+    "verified_fix_rate": 0.0004,
+    "gap_pp": 95.3089
    },
    {
     "unified_category": "Illegal Sign Removal, News Rack Issues",
     "fix_rate_base": 7968,
     "closure_rate": 0.8877,
-    "verified_fix_rate": 0.0,
-    "gap_pp": 88.7676
+    "verified_fix_rate": 0.0003,
+    "gap_pp": 88.7425
    },
    {
     "unified_category": "Traffic Sign Issues",
     "fix_rate_base": 7424,
     "closure_rate": 0.6146,
-    "verified_fix_rate": 0.0186,
-    "gap_pp": 59.604
+    "verified_fix_rate": 0.0428,
+    "gap_pp": 57.1794
    },
    {
     "unified_category": "Curb Issues",
     "fix_rate_base": 7300,
     "closure_rate": 0.4505,
-    "verified_fix_rate": 0.0145,
-    "gap_pp": 43.6027
-   },
-   {
-    "unified_category": "Public Street Receptacles",
-    "fix_rate_base": 6842,
-    "closure_rate": 0.8699,
-    "verified_fix_rate": 0.5859,
-    "gap_pp": 28.3981
+    "verified_fix_rate": 0.0259,
+    "gap_pp": 42.4658
    },
    {
     "unified_category": "Barricade Removal",
     "fix_rate_base": 6024,
     "closure_rate": 0.9924,
-    "verified_fix_rate": 0.0003,
-    "gap_pp": 99.2032
+    "verified_fix_rate": 0.7349,
+    "gap_pp": 25.747
+   },
+   {
+    "unified_category": "Public Street Receptacles",
+    "fix_rate_base": 5587,
+    "closure_rate": 0.8407,
+    "verified_fix_rate": 0.7176,
+    "gap_pp": 12.3143
    },
    {
     "unified_category": "Watershed Protection Division (WPD) Enforcement",
@@ -307,15 +307,8 @@
     "unified_category": "Traffic Signal Issues",
     "fix_rate_base": 4556,
     "closure_rate": 0.7818,
-    "verified_fix_rate": 0.0178,
-    "gap_pp": 76.4047
-   },
-   {
-    "unified_category": "Animal Complaint/Violation",
-    "fix_rate_base": 4285,
-    "closure_rate": 0.796,
-    "verified_fix_rate": 0.0,
-    "gap_pp": 79.6033
+    "verified_fix_rate": 0.074,
+    "gap_pp": 70.7858
    },
    {
     "unified_category": "Flooding",
@@ -325,13 +318,6 @@
     "gap_pp": 82.6303
    },
    {
-    "unified_category": "Animal Loose",
-    "fix_rate_base": 3954,
-    "closure_rate": 0.8364,
-    "verified_fix_rate": 0.0,
-    "gap_pp": 83.6368
-   },
-   {
     "unified_category": "Bus Stop Furniture",
     "fix_rate_base": 3370,
     "closure_rate": 0.9306,
@@ -339,11 +325,25 @@
     "gap_pp": 12.9377
    },
    {
+    "unified_category": "Animal Complaint/Violation",
+    "fix_rate_base": 3241,
+    "closure_rate": 0.7303,
+    "verified_fix_rate": 0.0015,
+    "gap_pp": 72.8787
+   },
+   {
+    "unified_category": "Animal Loose",
+    "fix_rate_base": 3179,
+    "closure_rate": 0.7965,
+    "verified_fix_rate": 0.0079,
+    "gap_pp": 78.8613
+   },
+   {
     "unified_category": "Sidewalk Repair Access Request Program",
-    "fix_rate_base": 2603,
-    "closure_rate": 0.3335,
+    "fix_rate_base": 2586,
+    "closure_rate": 0.3357,
     "verified_fix_rate": 0.0,
-    "gap_pp": 33.3461
+    "gap_pp": 33.5654
    },
    {
     "unified_category": "Park Cleanliness, Trash and Ground Maintenance",
@@ -356,22 +356,22 @@
     "unified_category": "Street Tree Violations",
     "fix_rate_base": 1853,
     "closure_rate": 0.6778,
-    "verified_fix_rate": 0.0086,
-    "gap_pp": 66.9185
-   },
-   {
-    "unified_category": "Animal Confined",
-    "fix_rate_base": 1712,
-    "closure_rate": 0.8183,
-    "verified_fix_rate": 0.0,
-    "gap_pp": 81.8341
+    "verified_fix_rate": 0.0324,
+    "gap_pp": 64.544
    },
    {
     "unified_category": "Bees or Beehive",
     "fix_rate_base": 1430,
     "closure_rate": 0.7699,
-    "verified_fix_rate": 0.0042,
-    "gap_pp": 76.5734
+    "verified_fix_rate": 0.0049,
+    "gap_pp": 76.5035
+   },
+   {
+    "unified_category": "Animal Confined",
+    "fix_rate_base": 1390,
+    "closure_rate": 0.7763,
+    "verified_fix_rate": 0.0151,
+    "gap_pp": 76.1151
    },
    {
     "unified_category": "Park Amenity and Facilities Repair",
@@ -384,8 +384,8 @@
     "unified_category": "Streetlight ADA Repair Services",
     "fix_rate_base": 1346,
     "closure_rate": 0.3611,
-    "verified_fix_rate": 0.0,
-    "gap_pp": 36.107
+    "verified_fix_rate": 0.1575,
+    "gap_pp": 20.3566
    },
    {
     "unified_category": "Nuisance Barking Dogs",
@@ -398,36 +398,36 @@
     "unified_category": "LADOT Council & Interagency Support",
     "fix_rate_base": 1034,
     "closure_rate": 0.7079,
-    "verified_fix_rate": 0.0039,
-    "gap_pp": 70.4062
+    "verified_fix_rate": 0.3075,
+    "gap_pp": 40.0387
    },
    {
     "unified_category": "Streetlight Non-Repair Services",
     "fix_rate_base": 1001,
     "closure_rate": 0.3936,
-    "verified_fix_rate": 0.0,
-    "gap_pp": 39.3606
+    "verified_fix_rate": 0.3566,
+    "gap_pp": 3.6963
    },
    {
     "unified_category": "Sewer or Sidewalk Rebates",
     "fix_rate_base": 753,
     "closure_rate": 0.0996,
-    "verified_fix_rate": 0.0,
-    "gap_pp": 9.9602
+    "verified_fix_rate": 0.0744,
+    "gap_pp": 2.5232
    },
    {
     "unified_category": "Median Island Maintenance",
     "fix_rate_base": 750,
     "closure_rate": 0.596,
-    "verified_fix_rate": 0.0,
-    "gap_pp": 59.6
+    "verified_fix_rate": 0.004,
+    "gap_pp": 59.2
    },
    {
     "unified_category": "Land/Mud Slide",
     "fix_rate_base": 710,
     "closure_rate": 0.962,
-    "verified_fix_rate": 0.0014,
-    "gap_pp": 96.0563
+    "verified_fix_rate": 0.2423,
+    "gap_pp": 71.9718
    },
    {
     "unified_category": "Illegal Discharge of Water",
@@ -440,94 +440,94 @@
     "unified_category": "Parking Meter Maintenance",
     "fix_rate_base": 621,
     "closure_rate": 0.0548,
-    "verified_fix_rate": 0.0,
-    "gap_pp": 5.475
+    "verified_fix_rate": 0.0016,
+    "gap_pp": 5.314
    }
   ],
   "by_department": [
    {
     "department": "LASAN",
-    "fix_rate_base": 1288898,
+    "fix_rate_base": 1288876,
     "closure_rate": 0.9748,
-    "verified_fix_rate": 0.7335,
-    "gap_pp": 24.1317
+    "verified_fix_rate": 0.7336,
+    "gap_pp": 24.1206
    },
    {
     "department": "OCB - Normal Cases",
-    "fix_rate_base": 213426,
-    "closure_rate": 0.5637,
-    "verified_fix_rate": 0.4833,
-    "gap_pp": 8.0393
+    "fix_rate_base": 213333,
+    "closure_rate": 0.5638,
+    "verified_fix_rate": 0.4874,
+    "gap_pp": 7.6439
    },
    {
     "department": "LASAN - LSD",
-    "fix_rate_base": 122883,
-    "closure_rate": 0.9696,
-    "verified_fix_rate": 0.6545,
-    "gap_pp": 31.5096
+    "fix_rate_base": 121652,
+    "closure_rate": 0.9693,
+    "verified_fix_rate": 0.6612,
+    "gap_pp": 30.8067
    },
    {
     "department": "BSS - SMD",
-    "fix_rate_base": 100423,
+    "fix_rate_base": 100420,
     "closure_rate": 0.951,
-    "verified_fix_rate": 0.3388,
-    "gap_pp": 61.2171
+    "verified_fix_rate": 0.4984,
+    "gap_pp": 45.2569
    },
    {
     "department": "recycLA",
     "fix_rate_base": 62355,
     "closure_rate": 0.292,
-    "verified_fix_rate": 0.2632,
-    "gap_pp": 2.8835
+    "verified_fix_rate": 0.2707,
+    "gap_pp": 2.1313
    },
    {
     "department": "BSL",
     "fix_rate_base": 60079,
     "closure_rate": 0.6539,
-    "verified_fix_rate": 0.0,
-    "gap_pp": 65.3906
+    "verified_fix_rate": 0.6465,
+    "gap_pp": 0.739
    },
    {
     "department": "BSS - IED",
     "fix_rate_base": 56127,
     "closure_rate": 0.9296,
-    "verified_fix_rate": 0.0,
-    "gap_pp": 92.9553
+    "verified_fix_rate": 0.0003,
+    "gap_pp": 92.9214
    },
    {
     "department": "LADOT - District Operations",
     "fix_rate_base": 40030,
     "closure_rate": 0.6026,
-    "verified_fix_rate": 0.0125,
-    "gap_pp": 59.0082
+    "verified_fix_rate": 0.0594,
+    "gap_pp": 54.3243
    },
    {
     "department": "BSS - UFD",
     "fix_rate_base": 38663,
     "closure_rate": 0.8006,
-    "verified_fix_rate": 0.1704,
-    "gap_pp": 63.0189
+    "verified_fix_rate": 0.2195,
+    "gap_pp": 58.1021
    },
    {
     "department": "LADOT - Dockless Mobility Enforcement",
-    "fix_rate_base": 29572,
-    "closure_rate": 0.9821,
-    "verified_fix_rate": 0.0,
-    "gap_pp": 98.2111
+    "fix_rate_base": 29409,
+    "closure_rate": 0.982,
+    "verified_fix_rate": 0.8589,
+    "gap_pp": 12.316
    },
    {
     "department": "LAAS",
-    "fix_rate_base": 11242,
-    "closure_rate": 0.7836,
-    "verified_fix_rate": 0.0,
-    "gap_pp": 78.3579
+    "fix_rate_base": 9101,
+    "closure_rate": 0.7327,
+    "verified_fix_rate": 0.0056,
+    "gap_pp": 72.7063
    },
    {
     "department": "OCB - Special Cases",
-    "fix_rate_base": 7777,
-    "closure_rate": 0.0237,
-    "verified_fix_rate": 0.0082,
-    "gap_pp": 1.543
+    "fix_rate_base": 7736,
+    "closure_rate": 0.0187,
+    "verified_fix_rate": 0.0102,
+    "gap_pp": 0.8532
    },
    {
     "department": "BSS - UTA",
@@ -552,10 +552,10 @@
    },
    {
     "department": "BOE",
-    "fix_rate_base": 3243,
-    "closure_rate": 0.2698,
+    "fix_rate_base": 3226,
+    "closure_rate": 0.2712,
     "verified_fix_rate": 0.0,
-    "gap_pp": 26.9812
+    "gap_pp": 27.1234
    },
    {
     "department": "LASAN - Conveyance",
@@ -575,8 +575,8 @@
     "department": "LADOT - ATSAC",
     "fix_rate_base": 2356,
     "closure_rate": 0.7695,
-    "verified_fix_rate": 0.0263,
-    "gap_pp": 74.3209
+    "verified_fix_rate": 0.1087,
+    "gap_pp": 66.0866
    },
    {
     "department": "LADOT",
@@ -589,8 +589,8 @@
     "department": "LADOT - Parking Meter Division",
     "fix_rate_base": 1012,
     "closure_rate": 0.0672,
-    "verified_fix_rate": 0.0,
-    "gap_pp": 6.7194
+    "verified_fix_rate": 0.001,
+    "gap_pp": 6.6206
    },
    {
     "department": "DPW",
@@ -610,8 +610,8 @@
     "department": "LADOT - PMZ",
     "fix_rate_base": 671,
     "closure_rate": 0.5469,
-    "verified_fix_rate": 0.0134,
-    "gap_pp": 53.3532
+    "verified_fix_rate": 0.0224,
+    "gap_pp": 52.459
    },
    {
     "department": "Department of Water and Power",
@@ -624,8 +624,8 @@
     "department": "LADOT - Paint/Sign Field Operations",
     "fix_rate_base": 541,
     "closure_rate": 0.7043,
-    "verified_fix_rate": 0.0018,
-    "gap_pp": 70.2403
+    "verified_fix_rate": 0.0074,
+    "gap_pp": 69.6858
    }
   ],
   "mix_by_category": [
@@ -647,7 +647,7 @@
    {
     "unified_category": "Bulky & dumped item pickups",
     "closure_outcome": "deferred",
-    "share": 0.0019
+    "share": 0.0035
    },
    {
     "unified_category": "Bulky & dumped item pickups",
@@ -657,7 +657,7 @@
    {
     "unified_category": "Bulky & dumped item pickups",
     "closure_outcome": "fixed_work_done",
-    "share": 0.7139
+    "share": 0.714
    },
    {
     "unified_category": "Bulky & dumped item pickups",
@@ -667,17 +667,22 @@
    {
     "unified_category": "Bulky & dumped item pickups",
     "closure_outcome": "not_found",
-    "share": 0.2397
+    "share": 0.2416
    },
    {
     "unified_category": "Bulky & dumped item pickups",
     "closure_outcome": "referred_out_of_scope",
-    "share": 0.0003
+    "share": 0.0005
+   },
+   {
+    "unified_category": "Bulky & dumped item pickups",
+    "closure_outcome": "unable",
+    "share": 0.0002
    },
    {
     "unified_category": "Bulky & dumped item pickups",
     "closure_outcome": null,
-    "share": 0.0041
+    "share": 0.0
    },
    {
     "unified_category": "Dead animal",
@@ -692,7 +697,7 @@
    {
     "unified_category": "Dead animal",
     "closure_outcome": "closed_unspecified",
-    "share": 0.0308
+    "share": 0.0309
    },
    {
     "unified_category": "Dead animal",
@@ -707,7 +712,7 @@
    {
     "unified_category": "Dead animal",
     "closure_outcome": "fixed_work_done",
-    "share": 0.6766
+    "share": 0.6768
    },
    {
     "unified_category": "Dead animal",
@@ -717,17 +722,27 @@
    {
     "unified_category": "Dead animal",
     "closure_outcome": "not_found",
-    "share": 0.2403
+    "share": 0.2404
    },
    {
     "unified_category": "Dead animal",
     "closure_outcome": "referred_out_of_scope",
-    "share": 0.0007
+    "share": 0.0253
+   },
+   {
+    "unified_category": "Dead animal",
+    "closure_outcome": "unable",
+    "share": 0.0003
    },
    {
     "unified_category": "Dead animal",
     "closure_outcome": null,
-    "share": 0.0253
+    "share": 0.0
+   },
+   {
+    "unified_category": "Dockless Mobility Enforcement",
+    "closure_outcome": "cancelled",
+    "share": 0.0001
    },
    {
     "unified_category": "Dockless Mobility Enforcement",
@@ -736,28 +751,43 @@
    },
    {
     "unified_category": "Dockless Mobility Enforcement",
+    "closure_outcome": "duplicate",
+    "share": 0.0005
+   },
+   {
+    "unified_category": "Dockless Mobility Enforcement",
+    "closure_outcome": "fixed_work_done",
+    "share": 0.8622
+   },
+   {
+    "unified_category": "Dockless Mobility Enforcement",
     "closure_outcome": "handed_off",
     "share": 0.0028
    },
    {
     "unified_category": "Dockless Mobility Enforcement",
+    "closure_outcome": "info_only",
+    "share": 0.005
+   },
+   {
+    "unified_category": "Dockless Mobility Enforcement",
     "closure_outcome": "not_found",
-    "share": 0.0813
+    "share": 0.1233
    },
    {
     "unified_category": "Dockless Mobility Enforcement",
     "closure_outcome": "referred_out_of_scope",
-    "share": 0.0001
+    "share": 0.006
    },
    {
     "unified_category": "Dockless Mobility Enforcement",
     "closure_outcome": null,
-    "share": 0.9156
+    "share": 0.0
    },
    {
     "unified_category": "Graffiti",
     "closure_outcome": "cancelled",
-    "share": 0.1057
+    "share": 0.1185
    },
    {
     "unified_category": "Graffiti",
@@ -767,12 +797,12 @@
    {
     "unified_category": "Graffiti",
     "closure_outcome": "duplicate",
-    "share": 0.3347
+    "share": 0.3353
    },
    {
     "unified_category": "Graffiti",
     "closure_outcome": "fixed_work_done",
-    "share": 0.4599
+    "share": 0.4636
    },
    {
     "unified_category": "Graffiti",
@@ -787,12 +817,12 @@
    {
     "unified_category": "Graffiti",
     "closure_outcome": "unable",
-    "share": 0.0222
+    "share": 0.0094
    },
    {
     "unified_category": "Graffiti",
     "closure_outcome": null,
-    "share": 0.0043
+    "share": 0.0
    },
    {
     "unified_category": "Landscape Maintenance",
@@ -812,12 +842,17 @@
    {
     "unified_category": "Landscape Maintenance",
     "closure_outcome": "fixed_work_done",
-    "share": 0.0
+    "share": 0.2127
    },
    {
     "unified_category": "Landscape Maintenance",
     "closure_outcome": "info_only",
     "share": 0.0039
+   },
+   {
+    "unified_category": "Landscape Maintenance",
+    "closure_outcome": "not_found",
+    "share": 0.0089
    },
    {
     "unified_category": "Landscape Maintenance",
@@ -827,7 +862,7 @@
    {
     "unified_category": "Landscape Maintenance",
     "closure_outcome": null,
-    "share": 0.2216
+    "share": 0.0
    },
    {
     "unified_category": "Obstructions",
@@ -837,7 +872,7 @@
    {
     "unified_category": "Obstructions",
     "closure_outcome": "closed_unspecified",
-    "share": 0.7609
+    "share": 0.7613
    },
    {
     "unified_category": "Obstructions",
@@ -846,8 +881,18 @@
    },
    {
     "unified_category": "Obstructions",
+    "closure_outcome": "fixed_work_done",
+    "share": 0.0002
+   },
+   {
+    "unified_category": "Obstructions",
     "closure_outcome": "info_only",
     "share": 0.0356
+   },
+   {
+    "unified_category": "Obstructions",
+    "closure_outcome": "not_found",
+    "share": 0.0004
    },
    {
     "unified_category": "Obstructions",
@@ -857,22 +902,22 @@
    {
     "unified_category": "Obstructions",
     "closure_outcome": null,
-    "share": 0.0009
+    "share": 0.0
    },
    {
     "unified_category": "Service Not Complete",
     "closure_outcome": "already_resolved",
-    "share": 0.0455
+    "share": 0.0483
    },
    {
     "unified_category": "Service Not Complete",
     "closure_outcome": "cancelled",
-    "share": 0.2609
+    "share": 0.261
    },
    {
     "unified_category": "Service Not Complete",
     "closure_outcome": "closed_unspecified",
-    "share": 0.0263
+    "share": 0.0264
    },
    {
     "unified_category": "Service Not Complete",
@@ -897,17 +942,22 @@
    {
     "unified_category": "Service Not Complete",
     "closure_outcome": "not_found",
-    "share": 0.037
+    "share": 0.0449
    },
    {
     "unified_category": "Service Not Complete",
     "closure_outcome": "referred_out_of_scope",
-    "share": 0.0017
+    "share": 0.0105
+   },
+   {
+    "unified_category": "Service Not Complete",
+    "closure_outcome": "unable",
+    "share": 0.0023
    },
    {
     "unified_category": "Service Not Complete",
     "closure_outcome": null,
-    "share": 0.0219
+    "share": 0.0
    },
    {
     "unified_category": "Street Pavement Issues",
@@ -927,7 +977,7 @@
    {
     "unified_category": "Street Pavement Issues",
     "closure_outcome": "deferred",
-    "share": 0.0087
+    "share": 0.0088
    },
    {
     "unified_category": "Street Pavement Issues",
@@ -937,7 +987,7 @@
    {
     "unified_category": "Street Pavement Issues",
     "closure_outcome": "fixed_work_done",
-    "share": 0.5412
+    "share": 0.6325
    },
    {
     "unified_category": "Street Pavement Issues",
@@ -952,7 +1002,7 @@
    {
     "unified_category": "Street Pavement Issues",
     "closure_outcome": "not_found",
-    "share": 0.0018
+    "share": 0.0224
    },
    {
     "unified_category": "Street Pavement Issues",
@@ -962,12 +1012,12 @@
    {
     "unified_category": "Street Pavement Issues",
     "closure_outcome": "unable",
-    "share": 0.0005
+    "share": 0.0023
    },
    {
     "unified_category": "Street Pavement Issues",
     "closure_outcome": null,
-    "share": 0.1137
+    "share": 0.0
    },
    {
     "unified_category": "Street Sweeping",
@@ -981,8 +1031,13 @@
    },
    {
     "unified_category": "Street Sweeping",
-    "closure_outcome": null,
+    "closure_outcome": "not_found",
     "share": 0.0009
+   },
+   {
+    "unified_category": "Street Sweeping",
+    "closure_outcome": null,
+    "share": 0.0
    },
    {
     "unified_category": "Streetlight repair",
@@ -996,13 +1051,18 @@
    },
    {
     "unified_category": "Streetlight repair",
+    "closure_outcome": "fixed_work_done",
+    "share": 0.9881
+   },
+   {
+    "unified_category": "Streetlight repair",
     "closure_outcome": "referred_out_of_scope",
     "share": 0.0038
    },
    {
     "unified_category": "Streetlight repair",
     "closure_outcome": null,
-    "share": 0.9881
+    "share": 0.0
    },
    {
     "unified_category": "Traffic Safety",
@@ -1026,6 +1086,11 @@
    },
    {
     "unified_category": "Traffic Safety",
+    "closure_outcome": "fixed_work_done",
+    "share": 0.0491
+   },
+   {
+    "unified_category": "Traffic Safety",
     "closure_outcome": "info_only",
     "share": 0.305
    },
@@ -1042,12 +1107,12 @@
    {
     "unified_category": "Traffic Safety",
     "closure_outcome": "unable",
-    "share": 0.0492
+    "share": 0.1003
    },
    {
     "unified_category": "Traffic Safety",
     "closure_outcome": null,
-    "share": 0.1002
+    "share": 0.0
    },
    {
     "unified_category": "Tree Emergency",
@@ -1067,12 +1132,17 @@
    {
     "unified_category": "Tree Emergency",
     "closure_outcome": "fixed_work_done",
-    "share": 0.3744
+    "share": 0.3786
    },
    {
     "unified_category": "Tree Emergency",
     "closure_outcome": "info_only",
     "share": 0.0036
+   },
+   {
+    "unified_category": "Tree Emergency",
+    "closure_outcome": "not_found",
+    "share": 0.0028
    },
    {
     "unified_category": "Tree Emergency",
@@ -1082,7 +1152,7 @@
    {
     "unified_category": "Tree Emergency",
     "closure_outcome": null,
-    "share": 0.0071
+    "share": 0.0
    }
   ],
   "min_base": 500,
@@ -1096,44 +1166,12 @@
  "q2_where_the_gap_is": {
   "largest_gap_rate": [
    {
-    "unified_category": "Barricade Removal",
-    "department": "BSS - SMD",
-    "cd": 15,
-    "fix_rate_base": 770,
-    "closed_unverified": 770,
-    "gap_pp": 100.0
-   },
-   {
-    "unified_category": "Barricade Removal",
-    "department": "BSS - SMD",
-    "cd": 14,
-    "fix_rate_base": 2504,
-    "closed_unverified": 2498,
-    "gap_pp": 99.7604
-   },
-   {
-    "unified_category": "General Street Inspection",
-    "department": "BSS - SMD",
-    "cd": 12,
-    "fix_rate_base": 711,
-    "closed_unverified": 705,
-    "gap_pp": 99.1561
-   },
-   {
     "unified_category": "Obstructions",
     "department": "BSS - IED",
     "cd": 7,
     "fix_rate_base": 1297,
     "closed_unverified": 1286,
     "gap_pp": 99.1519
-   },
-   {
-    "unified_category": "Animal Loose",
-    "department": "LAAS",
-    "cd": 8,
-    "fix_rate_base": 556,
-    "closed_unverified": 551,
-    "gap_pp": 99.1007
    },
    {
     "unified_category": "Street Sweeping",
@@ -1160,44 +1198,12 @@
     "gap_pp": 99.0007
    },
    {
-    "unified_category": "Dockless Mobility Enforcement",
-    "department": "LADOT - Dockless Mobility Enforcement",
-    "cd": 4,
-    "fix_rate_base": 1896,
-    "closed_unverified": 1876,
-    "gap_pp": 98.9451
-   },
-   {
-    "unified_category": "Dockless Mobility Enforcement",
-    "department": "LADOT - Dockless Mobility Enforcement",
-    "cd": 14,
-    "fix_rate_base": 9746,
-    "closed_unverified": 9643,
-    "gap_pp": 98.9432
-   },
-   {
-    "unified_category": "Dockless Mobility Enforcement",
-    "department": "LADOT - Dockless Mobility Enforcement",
-    "cd": 13,
-    "fix_rate_base": 4053,
-    "closed_unverified": 4006,
-    "gap_pp": 98.8404
-   },
-   {
-    "unified_category": "Dockless Mobility Enforcement",
-    "department": "LADOT - Dockless Mobility Enforcement",
-    "cd": 10,
-    "fix_rate_base": 2031,
-    "closed_unverified": 2007,
-    "gap_pp": 98.8183
-   },
-   {
-    "unified_category": "Landscape Maintenance",
+    "unified_category": "General Street Inspection",
     "department": "BSS - SMD",
-    "cd": 11,
-    "fix_rate_base": 538,
-    "closed_unverified": 530,
-    "gap_pp": 98.513
+    "cd": 12,
+    "fix_rate_base": 711,
+    "closed_unverified": 703,
+    "gap_pp": 98.8748
    },
    {
     "unified_category": "Street Sweeping",
@@ -1214,6 +1220,70 @@
     "fix_rate_base": 1105,
     "closed_unverified": 1088,
     "gap_pp": 98.4615
+   },
+   {
+    "unified_category": "Animal Complaint/Violation",
+    "department": "LAAS",
+    "cd": 8,
+    "fix_rate_base": 501,
+    "closed_unverified": 493,
+    "gap_pp": 98.4032
+   },
+   {
+    "unified_category": "Illegal Auto Repair or Construction, and Leaf Blower Violations",
+    "department": "BSS - IED",
+    "cd": 2,
+    "fix_rate_base": 611,
+    "closed_unverified": 601,
+    "gap_pp": 98.3633
+   },
+   {
+    "unified_category": "Street Sweeping",
+    "department": "BSS - SMD",
+    "cd": 14,
+    "fix_rate_base": 545,
+    "closed_unverified": 536,
+    "gap_pp": 98.3486
+   },
+   {
+    "unified_category": "Obstructions",
+    "department": "BSS - IED",
+    "cd": 15,
+    "fix_rate_base": 871,
+    "closed_unverified": 852,
+    "gap_pp": 97.8186
+   },
+   {
+    "unified_category": "Animal Loose",
+    "department": "LAAS",
+    "cd": 8,
+    "fix_rate_base": 548,
+    "closed_unverified": 536,
+    "gap_pp": 97.8102
+   },
+   {
+    "unified_category": "Obstructions",
+    "department": "BSS - IED",
+    "cd": 9,
+    "fix_rate_base": 1358,
+    "closed_unverified": 1327,
+    "gap_pp": 97.7172
+   },
+   {
+    "unified_category": "General Street Inspection",
+    "department": "BSS - SMD",
+    "cd": 3,
+    "fix_rate_base": 638,
+    "closed_unverified": 623,
+    "gap_pp": 97.6489
+   },
+   {
+    "unified_category": "Street Sweeping",
+    "department": "BSS - SMD",
+    "cd": 11,
+    "fix_rate_base": 539,
+    "closed_unverified": 526,
+    "gap_pp": 97.5881
    }
   ],
   "largest_gap_count": [
@@ -1222,40 +1292,40 @@
     "department": "LASAN",
     "cd": 2,
     "fix_rate_base": 83801,
-    "closed_unverified": 26570,
-    "gap_pp": 31.7061
+    "closed_unverified": 26560,
+    "gap_pp": 31.6941
    },
    {
     "unified_category": "Bulky & dumped item pickups",
     "department": "LASAN",
     "cd": 6,
     "fix_rate_base": 73758,
-    "closed_unverified": 24559,
-    "gap_pp": 33.2967
+    "closed_unverified": 24550,
+    "gap_pp": 33.2845
    },
    {
     "unified_category": "Bulky & dumped item pickups",
     "department": "LASAN",
     "cd": 13,
     "fix_rate_base": 82196,
-    "closed_unverified": 23851,
-    "gap_pp": 29.0172
+    "closed_unverified": 23846,
+    "gap_pp": 29.0111
    },
    {
     "unified_category": "Bulky & dumped item pickups",
     "department": "LASAN",
     "cd": 4,
-    "fix_rate_base": 83111,
-    "closed_unverified": 22406,
-    "gap_pp": 26.9591
+    "fix_rate_base": 83110,
+    "closed_unverified": 22400,
+    "gap_pp": 26.9522
    },
    {
     "unified_category": "Bulky & dumped item pickups",
     "department": "LASAN",
     "cd": 7,
-    "fix_rate_base": 73643,
-    "closed_unverified": 21488,
-    "gap_pp": 29.1786
+    "fix_rate_base": 73642,
+    "closed_unverified": 21471,
+    "gap_pp": 29.1559
    },
    {
     "unified_category": "Bulky & dumped item pickups",
@@ -1270,152 +1340,152 @@
     "department": "LASAN",
     "cd": 10,
     "fix_rate_base": 88252,
-    "closed_unverified": 18856,
-    "gap_pp": 21.3661
+    "closed_unverified": 18848,
+    "gap_pp": 21.357
    },
    {
     "unified_category": "Bulky & dumped item pickups",
     "department": "LASAN",
     "cd": 14,
     "fix_rate_base": 61380,
-    "closed_unverified": 18128,
-    "gap_pp": 29.5341
+    "closed_unverified": 18121,
+    "gap_pp": 29.5226
    },
    {
     "unified_category": "Bulky & dumped item pickups",
     "department": "LASAN",
     "cd": 3,
     "fix_rate_base": 68874,
-    "closed_unverified": 17386,
-    "gap_pp": 25.2432
+    "closed_unverified": 17384,
+    "gap_pp": 25.2403
    },
    {
     "unified_category": "Bulky & dumped item pickups",
     "department": "LASAN",
     "cd": 15,
     "fix_rate_base": 73534,
-    "closed_unverified": 17161,
-    "gap_pp": 23.3375
+    "closed_unverified": 17150,
+    "gap_pp": 23.3225
    },
    {
     "unified_category": "Bulky & dumped item pickups",
     "department": "LASAN",
     "cd": 8,
     "fix_rate_base": 100619,
-    "closed_unverified": 16610,
-    "gap_pp": 16.5078
+    "closed_unverified": 16602,
+    "gap_pp": 16.4999
    },
    {
     "unified_category": "Bulky & dumped item pickups",
     "department": "LASAN",
     "cd": 1,
     "fix_rate_base": 54932,
-    "closed_unverified": 15888,
-    "gap_pp": 28.923
+    "closed_unverified": 15886,
+    "gap_pp": 28.9194
    },
    {
     "unified_category": "Bulky & dumped item pickups",
     "department": "LASAN",
     "cd": 11,
     "fix_rate_base": 74003,
-    "closed_unverified": 15724,
-    "gap_pp": 21.2478
+    "closed_unverified": 15707,
+    "gap_pp": 21.2248
    },
    {
     "unified_category": "Bulky & dumped item pickups",
     "department": "LASAN",
     "cd": 5,
     "fix_rate_base": 71510,
-    "closed_unverified": 15232,
-    "gap_pp": 21.3005
+    "closed_unverified": 15221,
+    "gap_pp": 21.2851
    },
    {
     "unified_category": "Bulky & dumped item pickups",
     "department": "LASAN",
     "cd": 9,
     "fix_rate_base": 59417,
-    "closed_unverified": 11027,
-    "gap_pp": 18.5587
+    "closed_unverified": 11025,
+    "gap_pp": 18.5553
    }
   ],
-  "combinations_compared": 291,
-  "closed_unverified_total": 620343,
+  "combinations_compared": 288,
+  "closed_unverified_total": 530965,
   "top_codes": [
    {
     "resolution_code": "QC-Item Not Out",
     "closure_outcome": "not_found",
     "closed_unverified": 317748,
-    "share_of_gap": 0.5122
+    "share_of_gap": 0.5984
    },
    {
     "resolution_code": "C-Closed",
     "closure_outcome": "closed_unspecified",
     "closed_unverified": 105644,
-    "share_of_gap": 0.1703
+    "share_of_gap": 0.199
    },
    {
     "resolution_code": "1004-Closed",
     "closure_outcome": "closed_unspecified",
     "closed_unverified": 52198,
-    "share_of_gap": 0.0841
-   },
-   {
-    "resolution_code": "RC-Request Completed",
-    "closure_outcome": null,
-    "closed_unverified": 38273,
-    "share_of_gap": 0.0617
+    "share_of_gap": 0.0983
    },
    {
     "resolution_code": "1003-Referral to External Department",
     "closure_outcome": "referred_out_of_scope",
     "closed_unverified": 14957,
-    "share_of_gap": 0.0241
-   },
-   {
-    "resolution_code": "VMRB-Vehicle moved for rebalancing",
-    "closure_outcome": null,
-    "closed_unverified": 12840,
-    "share_of_gap": 0.0207
-   },
-   {
-    "resolution_code": "VM-Vehicle moved to appropriate parking location",
-    "closure_outcome": null,
-    "closed_unverified": 8634,
-    "share_of_gap": 0.0139
+    "share_of_gap": 0.0282
    },
    {
     "resolution_code": "IWO-Issued Work Orders to Resolve",
     "closure_outcome": "deferred",
     "closed_unverified": 6042,
-    "share_of_gap": 0.0097
-   },
-   {
-    "resolution_code": "SARC-Sar completed - Cold",
-    "closure_outcome": null,
-    "closed_unverified": 5668,
-    "share_of_gap": 0.0091
-   },
-   {
-    "resolution_code": "PFR-Palm Fronds Removed",
-    "closure_outcome": null,
-    "closed_unverified": 5282,
-    "share_of_gap": 0.0085
+    "share_of_gap": 0.0114
    },
    {
     "resolution_code": "MNT-Maintenance to Be Performed",
     "closure_outcome": "deferred",
     "closed_unverified": 4624,
+    "share_of_gap": 0.0087
+   },
+   {
+    "resolution_code": "UTM-Unable to Make",
+    "closure_outcome": "unable",
+    "closed_unverified": 3994,
     "share_of_gap": 0.0075
    },
    {
-    "resolution_code": "BR-Barricades removed",
-    "closure_outcome": null,
-    "closed_unverified": 4422,
-    "share_of_gap": 0.0071
+    "resolution_code": "NCPP-Not at Curb / On Private Property",
+    "closure_outcome": "not_found",
+    "closed_unverified": 2999,
+    "share_of_gap": 0.0056
+   },
+   {
+    "resolution_code": "RBI-Reschedule for Bulky Items",
+    "closure_outcome": "deferred",
+    "closed_unverified": 2390,
+    "share_of_gap": 0.0045
+   },
+   {
+    "resolution_code": "VNL-Vehicle Not at Location",
+    "closure_outcome": "not_found",
+    "closed_unverified": 2383,
+    "share_of_gap": 0.0045
+   },
+   {
+    "resolution_code": "NAR-No Action Recommended",
+    "closure_outcome": "unable",
+    "closed_unverified": 1932,
+    "share_of_gap": 0.0036
+   },
+   {
+    "resolution_code": "UPS-Unable to Provide Desired Service",
+    "closure_outcome": "unable",
+    "closed_unverified": 1743,
+    "share_of_gap": 0.0033
    }
   ],
-  "top_5_codes_share": 0.8525,
-  "codes_in_gap": 114,
+  "top_5_codes_share": 0.9353,
+  "codes_in_gap": 72,
   "min_base": 500,
   "query_ids": [
    "q2_gap_by_category_department_cd",
@@ -1730,18 +1800,18 @@
     },
     "rereport_30d_rate": {
      "before": 0.6267,
-     "after": 0.5653,
-     "change": -0.0614
+     "after": 0.5652,
+     "change": -0.0615
     },
     "prior_report_30d_rate": {
      "before": 0.6698,
-     "after": 0.586,
-     "change": -0.0838
+     "after": 0.5859,
+     "change": -0.0839
     },
     "rereport_excess_pp": {
      "before": -4.3112,
-     "after": -2.0754,
-     "change": 2.2358
+     "after": -2.0719,
+     "change": 2.2393
     },
     "median_hours_to_close": {
      "before": 40.7869,
@@ -5052,83 +5122,83 @@
    "closed_fixed_gap_pp": [
     {
      "period_start": "2025-03-01",
-     "value": 32.2494
+     "value": 27.5074
     },
     {
      "period_start": "2025-04-01",
-     "value": 28.677
+     "value": 24.2852
     },
     {
      "period_start": "2025-05-01",
-     "value": 29.0735
+     "value": 24.7244
     },
     {
      "period_start": "2025-06-01",
-     "value": 28.4162
+     "value": 24.3324
     },
     {
      "period_start": "2025-07-01",
-     "value": 26.3012
+     "value": 22.6557
     },
     {
      "period_start": "2025-08-01",
-     "value": 29.4667
+     "value": 25.055
     },
     {
      "period_start": "2025-09-01",
-     "value": 32.7929
+     "value": 28.5029
     },
     {
      "period_start": "2025-10-01",
-     "value": 31.4045
+     "value": 26.6124
     },
     {
      "period_start": "2025-11-01",
-     "value": 29.8884
+     "value": 25.4365
     },
     {
      "period_start": "2025-12-01",
-     "value": 30.7524
+     "value": 26.1626
     },
     {
      "period_start": "2026-01-01",
-     "value": 30.6594
+     "value": 25.6944
     },
     {
      "period_start": "2026-02-01",
-     "value": 30.4569
+     "value": 25.7615
     },
     {
      "period_start": "2026-03-01",
-     "value": 30.8909
+     "value": 24.1426
     },
     {
      "period_start": "2026-04-01",
-     "value": 30.6901
+     "value": 27.1616
     },
     {
      "period_start": "2026-05-01",
-     "value": 30.2042
+     "value": 26.9693
     },
     {
      "period_start": "2026-06-01",
-     "value": 30.0486
+     "value": 27.1255
     },
     {
      "period_start": "2026-07-01",
-     "value": 30.5983
+     "value": 27.5541
     },
     {
      "period_start": "2026-08-01",
-     "value": 35.4334
+     "value": 32.8905
     },
     {
      "period_start": "2026-09-01",
-     "value": 31.5905
+     "value": 29.1541
     },
     {
      "period_start": "2026-10-01",
-     "value": 28.0682
+     "value": 25.6424
     }
    ]
   },
@@ -5154,68 +5224,62 @@
     {
      "is_instant_close": false,
      "closure_outcome": "already_resolved",
-     "requests": 12859,
-     "share": 0.0068
+     "requests": 13329,
+     "share": 0.007
     },
     {
      "is_instant_close": false,
      "closure_outcome": "cancelled",
-     "requests": 581,
+     "requests": 582,
      "share": 0.0003
     },
     {
      "is_instant_close": false,
      "closure_outcome": "closed_unspecified",
-     "requests": 154382,
-     "share": 0.0811
+     "requests": 155212,
+     "share": 0.0816
     },
     {
      "is_instant_close": false,
      "closure_outcome": "deferred",
-     "requests": 12951,
-     "share": 0.0068
+     "requests": 15018,
+     "share": 0.0079
     },
     {
      "is_instant_close": false,
      "closure_outcome": "duplicate",
-     "requests": 74801,
-     "share": 0.0393
+     "requests": 74885,
+     "share": 0.0394
     },
     {
      "is_instant_close": false,
      "closure_outcome": "fixed_work_done",
-     "requests": 1183090,
-     "share": 0.6219
+     "requests": 1268251,
+     "share": 0.6666
     },
     {
      "is_instant_close": false,
      "closure_outcome": "info_only",
-     "requests": 17775,
-     "share": 0.0093
+     "requests": 21317,
+     "share": 0.0112
     },
     {
      "is_instant_close": false,
      "closure_outcome": "not_found",
-     "requests": 320878,
-     "share": 0.1687
+     "requests": 327907,
+     "share": 0.1724
     },
     {
      "is_instant_close": false,
      "closure_outcome": "referred_out_of_scope",
-     "requests": 15669,
-     "share": 0.0082
+     "requests": 17198,
+     "share": 0.009
     },
     {
      "is_instant_close": false,
      "closure_outcome": "unable",
-     "requests": 5739,
-     "share": 0.003
-    },
-    {
-     "is_instant_close": false,
-     "closure_outcome": null,
-     "requests": 103721,
-     "share": 0.0545
+     "requests": 8747,
+     "share": 0.0046
     },
     {
      "is_instant_close": true,
@@ -5250,14 +5314,20 @@
     {
      "is_instant_close": true,
      "closure_outcome": "fixed_work_done",
-     "requests": 437,
-     "share": 0.5011
+     "requests": 557,
+     "share": 0.6388
     },
     {
      "is_instant_close": true,
      "closure_outcome": "info_only",
-     "requests": 41,
-     "share": 0.047
+     "requests": 42,
+     "share": 0.0482
+    },
+    {
+     "is_instant_close": true,
+     "closure_outcome": "not_found",
+     "requests": 35,
+     "share": 0.0401
     },
     {
      "is_instant_close": true,
@@ -5268,100 +5338,106 @@
     {
      "is_instant_close": true,
      "closure_outcome": "unable",
-     "requests": 1,
-     "share": 0.0011
-    },
-    {
-     "is_instant_close": true,
-     "closure_outcome": null,
-     "requests": 158,
-     "share": 0.1812
+     "requests": 3,
+     "share": 0.0034
     }
    ],
    "verified_fix_rate": {
-    "false": 0.6608,
-    "true": 0.5283
+    "false": 0.7095,
+    "true": 0.6739
    }
   },
   "time_to_close": [
    {
     "time_to_close": "1: under 1 minute",
-    "closed": 818,
-    "fixed_share": 0.5293,
-    "not_fixed_share": 0.2274,
-    "unspecified_share": 0.0391
+    "closed": 817,
+    "fixed_share": 0.6756,
+    "not_fixed_share": 0.2729,
+    "unspecified_share": 0.0392
    },
    {
     "time_to_close": "2: 1 minute to 1 hour",
-    "closed": 39499,
-    "fixed_share": 0.1637,
-    "not_fixed_share": 0.1103,
-    "unspecified_share": 0.1718
+    "closed": 39299,
+    "fixed_share": 0.6702,
+    "not_fixed_share": 0.1475,
+    "unspecified_share": 0.1747
    },
    {
     "time_to_close": "3: 1 hour to 1 day",
-    "closed": 484513,
-    "fixed_share": 0.7262,
-    "not_fixed_share": 0.1664,
-    "unspecified_share": 0.0731
+    "closed": 482750,
+    "fixed_share": 0.7514,
+    "not_fixed_share": 0.174,
+    "unspecified_share": 0.0741
    },
    {
     "time_to_close": "4: 1 to 7 days",
-    "closed": 942450,
-    "fixed_share": 0.7101,
-    "not_fixed_share": 0.211,
-    "unspecified_share": 0.0634
+    "closed": 941323,
+    "fixed_share": 0.7195,
+    "not_fixed_share": 0.2167,
+    "unspecified_share": 0.0638
    },
    {
     "time_to_close": "5: 7 to 30 days",
-    "closed": 226982,
-    "fixed_share": 0.5493,
-    "not_fixed_share": 0.2471,
-    "unspecified_share": 0.1422
+    "closed": 226671,
+    "fixed_share": 0.6015,
+    "not_fixed_share": 0.2558,
+    "unspecified_share": 0.1427
    },
    {
     "time_to_close": "6: over 30 days",
-    "closed": 116437,
-    "fixed_share": 0.3751,
-    "not_fixed_share": 0.1313,
-    "unspecified_share": 0.1731
+    "closed": 116212,
+    "fixed_share": 0.6792,
+    "not_fixed_share": 0.1471,
+    "unspecified_share": 0.1736
    }
   ],
   "rereports_by_outcome": {
    "Animal Complaint/Violation": {
     "not_fixed": {
-     "eligible": 1130,
-     "rereport_30d_rate": 0.1115,
-     "prior_report_30d_rate": 0.1779
+     "eligible": 1136,
+     "rereport_30d_rate": 0.1109,
+     "prior_report_30d_rate": 0.1769
     },
     "unknown": {
-     "eligible": 668,
-     "rereport_30d_rate": 0.1362,
-     "prior_report_30d_rate": 0.271
+     "eligible": 1078,
+     "rereport_30d_rate": 0.1512,
+     "prior_report_30d_rate": 0.2495
+    }
+   },
+   "Barricade Removal": {
+    "fixed": {
+     "eligible": 4132,
+     "rereport_30d_rate": 0.1699,
+     "prior_report_30d_rate": 0.2219
+    },
+    "unknown": {
+     "eligible": 1271,
+     "rereport_30d_rate": 0.0928,
+     "prior_report_30d_rate": 0.1133
     }
    },
    "Bulky & dumped item pickups": {
     "fixed": {
-     "eligible": 901161,
+     "eligible": 901289,
      "rereport_30d_rate": 0.6547,
      "prior_report_30d_rate": 0.7071
     },
     "not_fixed": {
-     "eligible": 303897,
-     "rereport_30d_rate": 0.6789,
-     "prior_report_30d_rate": 0.7134
+     "eligible": 308784,
+     "rereport_30d_rate": 0.6799,
+     "prior_report_30d_rate": 0.7132
     },
     "unknown": {
-     "eligible": 14433,
-     "rereport_30d_rate": 0.662,
-     "prior_report_30d_rate": 0.6988
+     "eligible": 14448,
+     "rereport_30d_rate": 0.6622,
+     "prior_report_30d_rate": 0.699
     }
    },
    "Curb Issues": {
     "not_fixed": {
-     "eligible": 1991,
-     "rereport_30d_rate": 0.0849,
-     "prior_report_30d_rate": 0.1326
+     "eligible": 2203,
+     "rereport_30d_rate": 0.0803,
+     "prior_report_30d_rate": 0.1289
     },
     "unknown": {
      "eligible": 542,
@@ -5371,19 +5447,31 @@
    },
    "Dead animal": {
     "fixed": {
-     "eligible": 31342,
+     "eligible": 31351,
      "rereport_30d_rate": 0.1236,
      "prior_report_30d_rate": 0.2646
     },
     "not_fixed": {
-     "eligible": 11039,
-     "rereport_30d_rate": 0.2236,
-     "prior_report_30d_rate": 0.1955
+     "eligible": 12186,
+     "rereport_30d_rate": 0.2348,
+     "prior_report_30d_rate": 0.1943
     },
     "unknown": {
-     "eligible": 1406,
-     "rereport_30d_rate": 0.229,
-     "prior_report_30d_rate": 0.2553
+     "eligible": 1408,
+     "rereport_30d_rate": 0.2287,
+     "prior_report_30d_rate": 0.255
+    }
+   },
+   "Dockless Mobility Enforcement": {
+    "fixed": {
+     "eligible": 24190,
+     "rereport_30d_rate": 0.5569,
+     "prior_report_30d_rate": 0.685
+    },
+    "not_fixed": {
+     "eligible": 3381,
+     "rereport_30d_rate": 0.5839,
+     "prior_report_30d_rate": 0.6856
     }
    },
    "Flooding": {
@@ -5393,16 +5481,16 @@
      "prior_report_30d_rate": 0.1244
     },
     "unknown": {
-     "eligible": 2539,
+     "eligible": 2741,
      "rereport_30d_rate": 0.0894,
-     "prior_report_30d_rate": 0.1635
+     "prior_report_30d_rate": 0.1576
     }
    },
    "General Street Inspection": {
     "not_fixed": {
-     "eligible": 2522,
-     "rereport_30d_rate": 0.1638,
-     "prior_report_30d_rate": 0.184
+     "eligible": 2929,
+     "rereport_30d_rate": 0.153,
+     "prior_report_30d_rate": 0.1775
     },
     "unknown": {
      "eligible": 5637,
@@ -5412,9 +5500,9 @@
    },
    "Graffiti": {
     "fixed": {
-     "eligible": 104090,
-     "rereport_30d_rate": 0.5207,
-     "prior_report_30d_rate": 0.6023
+     "eligible": 104931,
+     "rereport_30d_rate": 0.5209,
+     "prior_report_30d_rate": 0.6024
     },
     "unknown": {
      "eligible": 10294,
@@ -5423,10 +5511,15 @@
     }
    },
    "Landscape Maintenance": {
+    "fixed": {
+     "eligible": 5580,
+     "rereport_30d_rate": 0.2437,
+     "prior_report_30d_rate": 0.3776
+    },
     "not_fixed": {
-     "eligible": 1131,
-     "rereport_30d_rate": 0.1459,
-     "prior_report_30d_rate": 0.168
+     "eligible": 1353,
+     "rereport_30d_rate": 0.1471,
+     "prior_report_30d_rate": 0.1973
     },
     "unknown": {
      "eligible": 17022,
@@ -5436,21 +5529,26 @@
    },
    "Obstructions": {
     "not_fixed": {
-     "eligible": 4157,
-     "rereport_30d_rate": 0.2584,
-     "prior_report_30d_rate": 0.3233
+     "eligible": 4166,
+     "rereport_30d_rate": 0.2583,
+     "prior_report_30d_rate": 0.3231
     },
     "unknown": {
-     "eligible": 17503,
-     "rereport_30d_rate": 0.2503,
-     "prior_report_30d_rate": 0.3049
+     "eligible": 17513,
+     "rereport_30d_rate": 0.2504,
+     "prior_report_30d_rate": 0.3051
     }
    },
    "Parking Issues": {
+    "fixed": {
+     "eligible": 732,
+     "rereport_30d_rate": 0.1844,
+     "prior_report_30d_rate": 0.2309
+    },
     "not_fixed": {
-     "eligible": 1418,
-     "rereport_30d_rate": 0.1213,
-     "prior_report_30d_rate": 0.1678
+     "eligible": 1837,
+     "rereport_30d_rate": 0.1208,
+     "prior_report_30d_rate": 0.1786
     },
     "unknown": {
      "eligible": 5896,
@@ -5460,31 +5558,31 @@
    },
    "Service Not Complete": {
     "fixed": {
-     "eligible": 101347,
-     "rereport_30d_rate": 0.2637,
-     "prior_report_30d_rate": 0.4009
+     "eligible": 101812,
+     "rereport_30d_rate": 0.2643,
+     "prior_report_30d_rate": 0.4014
     },
     "not_fixed": {
-     "eligible": 5727,
-     "rereport_30d_rate": 0.2782,
-     "prior_report_30d_rate": 0.4236
+     "eligible": 7487,
+     "rereport_30d_rate": 0.2834,
+     "prior_report_30d_rate": 0.4318
     },
     "unknown": {
-     "eligible": 4044,
-     "rereport_30d_rate": 0.3657,
-     "prior_report_30d_rate": 0.4557
+     "eligible": 4056,
+     "rereport_30d_rate": 0.3654,
+     "prior_report_30d_rate": 0.4559
     }
    },
    "Street Pavement Issues": {
     "fixed": {
-     "eligible": 31696,
-     "rereport_30d_rate": 0.1611,
-     "prior_report_30d_rate": 0.3183
+     "eligible": 37125,
+     "rereport_30d_rate": 0.173,
+     "prior_report_30d_rate": 0.3367
     },
     "not_fixed": {
-     "eligible": 3356,
-     "rereport_30d_rate": 0.253,
-     "prior_report_30d_rate": 0.3015
+     "eligible": 4671,
+     "rereport_30d_rate": 0.2389,
+     "prior_report_30d_rate": 0.2944
     },
     "unknown": {
      "eligible": 12283,
@@ -5492,11 +5590,28 @@
      "prior_report_30d_rate": 0.3098
     }
    },
+   "Street Tree Inspection": {
+    "fixed": {
+     "eligible": 590,
+     "rereport_30d_rate": 0.061,
+     "prior_report_30d_rate": 0.0797
+    },
+    "unknown": {
+     "eligible": 5970,
+     "rereport_30d_rate": 0.0591,
+     "prior_report_30d_rate": 0.103
+    }
+   },
    "Traffic Safety": {
+    "fixed": {
+     "eligible": 597,
+     "rereport_30d_rate": 0.0905,
+     "prior_report_30d_rate": 0.1122
+    },
     "not_fixed": {
-     "eligible": 2416,
-     "rereport_30d_rate": 0.0969,
-     "prior_report_30d_rate": 0.1436
+     "eligible": 2853,
+     "rereport_30d_rate": 0.0974,
+     "prior_report_30d_rate": 0.1448
     },
     "unknown": {
      "eligible": 2664,
@@ -5506,14 +5621,26 @@
    },
    "Tree Emergency": {
     "fixed": {
-     "eligible": 5923,
-     "rereport_30d_rate": 0.0782,
-     "prior_report_30d_rate": 0.1287
+     "eligible": 5990,
+     "rereport_30d_rate": 0.0778,
+     "prior_report_30d_rate": 0.128
     },
     "unknown": {
      "eligible": 8449,
      "rereport_30d_rate": 0.0981,
      "prior_report_30d_rate": 0.2038
+    }
+   },
+   "Tree Obstruction": {
+    "fixed": {
+     "eligible": 1757,
+     "rereport_30d_rate": 0.0467,
+     "prior_report_30d_rate": 0.0803
+    },
+    "unknown": {
+     "eligible": 4710,
+     "rereport_30d_rate": 0.0603,
+     "prior_report_30d_rate": 0.1117
     }
    },
    "Watershed Protection Division (WPD) Enforcement": {
@@ -5544,51 +5671,51 @@
     {
      "time_to_close": "1: under 10 seconds",
      "closed": 147,
-     "fixed_share": 0.0408,
+     "fixed_share": 0.2789,
      "neutral_share": 0.1156,
      "unspecified_share": 0.0068
     },
     {
      "time_to_close": "2: 10 to 59 seconds",
      "closed": 943,
-     "fixed_share": 0.6426,
-     "neutral_share": 0.0276,
+     "fixed_share": 0.7359,
+     "neutral_share": 0.0286,
      "unspecified_share": 0.0467
     },
     {
      "time_to_close": "3: 1 to 2 minutes",
      "closed": 524,
-     "fixed_share": 0.3626,
-     "neutral_share": 0.063,
+     "fixed_share": 0.4637,
+     "neutral_share": 0.0668,
      "unspecified_share": 0.187
     },
     {
      "time_to_close": "4: 2 to 5 minutes",
      "closed": 1049,
-     "fixed_share": 0.1649,
-     "neutral_share": 0.0753,
-     "unspecified_share": 0.1459
+     "fixed_share": 0.327,
+     "neutral_share": 0.0887,
+     "unspecified_share": 0.1478
     },
     {
      "time_to_close": "5: 5 to 10 minutes",
      "closed": 5352,
-     "fixed_share": 0.0807,
-     "neutral_share": 0.4333,
-     "unspecified_share": 0.1284
+     "fixed_share": 0.2678,
+     "neutral_share": 0.4395,
+     "unspecified_share": 0.1308
     },
     {
      "time_to_close": "6: 10 to 60 minutes",
      "closed": 66412,
-     "fixed_share": 0.1045,
-     "neutral_share": 0.3595,
-     "unspecified_share": 0.1044
+     "fixed_share": 0.4462,
+     "neutral_share": 0.3621,
+     "unspecified_share": 0.1055
     },
     {
      "time_to_close": "7: an hour or more",
      "closed": 2165442,
-     "fixed_share": 0.6457,
-     "neutral_share": 0.0413,
-     "unspecified_share": 0.0788
+     "fixed_share": 0.6785,
+     "neutral_share": 0.0432,
+     "unspecified_share": 0.0792
     }
    ],
    "legacy_timestamp_precision": [
@@ -6119,8 +6246,8 @@
      "radius_m": 25,
      "window_days": 7,
      "after_close": 0.2027,
-     "before_filing": 0.254,
-     "excess_pp": -5.13
+     "before_filing": 0.2537,
+     "excess_pp": -5.1
     },
     {
      "era": "current",
@@ -6129,8 +6256,8 @@
      "radius_m": 25,
      "window_days": 14,
      "after_close": 0.3086,
-     "before_filing": 0.3382,
-     "excess_pp": -2.96
+     "before_filing": 0.338,
+     "excess_pp": -2.94
     },
     {
      "era": "current",
@@ -6138,8 +6265,8 @@
      "sampled_requests": 3740,
      "radius_m": 25,
      "window_days": 30,
-     "after_close": 0.4575,
-     "before_filing": 0.4741,
+     "after_close": 0.4572,
+     "before_filing": 0.4738,
      "excess_pp": -1.66
     },
     {
@@ -6149,8 +6276,8 @@
      "radius_m": 25,
      "window_days": 60,
      "after_close": 0.6048,
-     "before_filing": 0.604,
-     "excess_pp": 0.08
+     "before_filing": 0.6037,
+     "excess_pp": 0.11
     },
     {
      "era": "current",
@@ -6159,8 +6286,8 @@
      "radius_m": 50,
      "window_days": 7,
      "after_close": 0.2644,
-     "before_filing": 0.3329,
-     "excess_pp": -6.85
+     "before_filing": 0.3324,
+     "excess_pp": -6.8
     },
     {
      "era": "current",
@@ -6169,8 +6296,8 @@
      "radius_m": 50,
      "window_days": 14,
      "after_close": 0.3922,
-     "before_filing": 0.4385,
-     "excess_pp": -4.63
+     "before_filing": 0.438,
+     "excess_pp": -4.58
     },
     {
      "era": "current",
@@ -6178,9 +6305,9 @@
      "sampled_requests": 3740,
      "radius_m": 50,
      "window_days": 30,
-     "after_close": 0.562,
-     "before_filing": 0.5874,
-     "excess_pp": -2.54
+     "after_close": 0.5618,
+     "before_filing": 0.5869,
+     "excess_pp": -2.51
     },
     {
      "era": "current",
@@ -6189,8 +6316,8 @@
      "radius_m": 50,
      "window_days": 60,
      "after_close": 0.7107,
-     "before_filing": 0.7195,
-     "excess_pp": -0.88
+     "before_filing": 0.719,
+     "excess_pp": -0.83
     },
     {
      "era": "current",
@@ -6199,8 +6326,8 @@
      "radius_m": 100,
      "window_days": 7,
      "after_close": 0.4821,
-     "before_filing": 0.5559,
-     "excess_pp": -7.38
+     "before_filing": 0.5553,
+     "excess_pp": -7.32
     },
     {
      "era": "current",
@@ -6209,8 +6336,8 @@
      "radius_m": 100,
      "window_days": 14,
      "after_close": 0.6422,
-     "before_filing": 0.7,
-     "excess_pp": -5.78
+     "before_filing": 0.6995,
+     "excess_pp": -5.73
     },
     {
      "era": "current",
@@ -6218,8 +6345,8 @@
      "sampled_requests": 3740,
      "radius_m": 100,
      "window_days": 30,
-     "after_close": 0.7832,
-     "before_filing": 0.8187,
+     "after_close": 0.7829,
+     "before_filing": 0.8184,
      "excess_pp": -3.55
     },
     {
@@ -6229,8 +6356,8 @@
      "radius_m": 100,
      "window_days": 60,
      "after_close": 0.8837,
-     "before_filing": 0.8952,
-     "excess_pp": -1.15
+     "before_filing": 0.8949,
+     "excess_pp": -1.12
     },
     {
      "era": "legacy",
@@ -7002,6 +7129,137 @@
    "query_ids": [
     "e2_rereport_sensitivity"
    ]
+  }
+ },
+ "ai_labeling": {
+  "codes": 171,
+  "context_override_rows": 5,
+  "ai_labeled_codes": 171,
+  "human_only_codes": 0,
+  "ai_human_agreement": {
+   "share_of_codes": 0.9474,
+   "share_of_service_cases": 0.9973,
+   "by_final_class": {
+    "already_resolved": {
+     "codes": 3,
+     "ai_agreed": 3
+    },
+    "cancelled": {
+     "codes": 14,
+     "ai_agreed": 14
+    },
+    "closed_unspecified": {
+     "codes": 14,
+     "ai_agreed": 10
+    },
+    "deferred": {
+     "codes": 7,
+     "ai_agreed": 7
+    },
+    "duplicate": {
+     "codes": 12,
+     "ai_agreed": 12
+    },
+    "fixed_work_done": {
+     "codes": 43,
+     "ai_agreed": 42
+    },
+    "info_only": {
+     "codes": 11,
+     "ai_agreed": 11
+    },
+    "not_found": {
+     "codes": 16,
+     "ai_agreed": 14
+    },
+    "referred_out_of_scope": {
+     "codes": 24,
+     "ai_agreed": 24
+    },
+    "unable": {
+     "codes": 27,
+     "ai_agreed": 25
+    }
+   },
+   "overrides": [
+    {
+     "resolution_code": "FCABD-1st Complaint Accepted - Barking Dog",
+     "ai": "fixed_work_done",
+     "final": "closed_unspecified"
+    },
+    {
+     "resolution_code": "NOV-Notice of Violation",
+     "ai": "fixed_work_done",
+     "final": "closed_unspecified"
+    },
+    {
+     "resolution_code": "NTC-Issued cleaning notice to property owner",
+     "ai": "fixed_work_done",
+     "final": "closed_unspecified"
+    },
+    {
+     "resolution_code": "NCPP-Not at Curb / On Private Property",
+     "ai": "referred_out_of_scope",
+     "final": "not_found"
+    },
+    {
+     "resolution_code": "NAR-No Action Recommended",
+     "ai": "not_found",
+     "final": "unable"
+    },
+    {
+     "resolution_code": "CNACV-Complaint not Accepted - Animal Complaints/Violations",
+     "ai": "referred_out_of_scope",
+     "final": "unable"
+    },
+    {
+     "resolution_code": "INO-Item Not Out",
+     "ai": "unable",
+     "final": "not_found"
+    },
+    {
+     "resolution_code": "CF-Criminal Filing",
+     "ai": "fixed_work_done",
+     "final": "closed_unspecified"
+    },
+    {
+     "resolution_code": "A-Request Completed",
+     "ai": "closed_unspecified",
+     "final": "fixed_work_done"
+    }
+   ]
+  },
+  "brief_first_guesses": {
+   "codes_compared": 53,
+   "ai_matched_guess": 52,
+   "final_matched_guess": 52
+  },
+  "labeling_run": {
+   "run_at": "2026-10-29T00:23:29+00:00",
+   "models": {
+    "label": "claude-haiku-5-5",
+    "escalation": "claude-sonnet-5-5"
+   },
+   "codes": 171,
+   "calls": 361,
+   "failed_calls": 0,
+   "first_pass_runs_agreed": 156,
+   "escalations": {
+    "runs disagreed": 15,
+    "low confidence": 3,
+    "context overrides disagreed": 1
+   },
+   "escalation_chose_a_new_class": 8,
+   "unlabeled_codes": [],
+   "cost_usd": 0.1893,
+   "max_usd": 3.0,
+   "tokens": {
+    "input_tokens": 233114,
+    "cache_creation_input_tokens": 7338,
+    "cache_read_input_tokens": 2641680,
+    "output_tokens": 118278
+   },
+   "seconds": 233.7
   }
  },
  "queries": {
