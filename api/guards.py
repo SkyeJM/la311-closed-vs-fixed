@@ -121,6 +121,8 @@ class Policy:
         salt = os.environ.get("IP_HASH_SALT", "")
         if os.environ.get("VERCEL") and not (store.shared and salt):
             enabled, reason = False, "Ask needs a shared counter store and IP_HASH_SALT here."
+        if not os.environ.get("ANTHROPIC_API_KEY"):
+            enabled, reason = False, "Ask has no Anthropic API key configured."
         return cls(
             enabled=enabled,
             disabled_reason=reason,

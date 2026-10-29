@@ -22,6 +22,7 @@ def client(agent_db, monkeypatch, tmp_path):
     monkeypatch.setattr(db, "shared", lambda: agent_db)
     monkeypatch.setenv("TRACE_DIR", str(tmp_path / "traces"))
     monkeypatch.setenv("IP_HASH_SALT", "test-salt")
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")  # never used: the client is scripted
     monkeypatch.setenv("ASK_RATE_LIMIT_PER_HOUR", "2")
     monkeypatch.delenv("VERCEL", raising=False)
     monkeypatch.delenv("ASK_ENABLED", raising=False)
@@ -135,16 +136,16 @@ def test_suggested_questions_replay_from_the_cache(client, monkeypatch):
     assert all(e["cached"] for e in events(response))
 
 
-def test_production_needs_a_shared_store():
+def test_production_needs_a_shared_store_and_a_key(monkeypatch):
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+    monkeypatch.delenv("VERCEL", raising=False)
+    assert guards.Policy.from_env(guards.MemoryStore()).enabled
+    monkeypatch.setenv("VERCEL", "1")
+    assert not guards.Policy.from_env(guards.MemoryStore()).enabled
+    monkeypatch.delenv("VERCEL")
+    monkeypatch.delenv("ANTHROPIC_API_KEY")
     policy = guards.Policy.from_env(guards.MemoryStore())
-    assert policy.enabled
-    import os
-
-    os.environ["VERCEL"] = "1"
-    try:
-        assert not guards.Policy.from_env(guards.MemoryStore()).enabled
-    finally:
-        del os.environ["VERCEL"]
+    assert not policy.enabled and "API key" in policy.disabled_reason
 
 
 def test_feedback_is_logged(client, tmp_path):
