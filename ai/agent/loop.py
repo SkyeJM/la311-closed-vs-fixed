@@ -290,6 +290,8 @@ def _result_event(step, block, payload, is_error, toolbox, began) -> dict:
         }
     elif "chart_id" in payload:
         event |= {"chart_id": payload["chart_id"]}
+    elif "duplicate_of" in payload:
+        event |= {"duplicate_of": payload["duplicate_of"]}
     return event
 
 

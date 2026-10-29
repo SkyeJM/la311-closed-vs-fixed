@@ -151,3 +151,71 @@ def test_feedback_is_logged(client, tmp_path):
     ok = client.post("/api/feedback", json={"trace_id": "abc123def456", "rating": "down"})
     assert ok.json() == {"ok": True}
     assert traces(tmp_path)[0]["kind"] == "feedback"
+
+
+class FakeRedis:
+    """Just enough of Upstash's REST pipeline for the store: SET NX EX, INCRBYFLOAT, GET."""
+
+    def __init__(self):
+        self.values = {}
+        self.ttls = {}
+
+    def handle(self, request):
+        import httpx
+
+        assert request.headers["authorization"] == "Bearer token"
+        results = []
+        for command, key, *args in json.loads(request.content):
+            if command == "SET":
+                if key not in self.values:
+                    self.values[key] = args[0]
+                    self.ttls[key] = int(args[2])
+                results.append({"result": "OK"})
+            elif command == "INCRBYFLOAT":
+                self.values[key] = str(float(self.values.get(key, "0")) + float(args[0]))
+                results.append({"result": self.values[key]})
+            elif command == "GET":
+                results.append({"result": self.values.get(key)})
+        return httpx.Response(200, json=results)
+
+
+def test_the_upstash_store_counts_with_an_expiry():
+    import httpx
+
+    redis = FakeRedis()
+    client = httpx.Client(
+        transport=httpx.MockTransport(redis.handle), headers={"Authorization": "Bearer token"}
+    )
+    store = guards.UpstashStore("https://example.upstash.io", "token", client=client)
+    assert store.get("k") == 0.0
+    assert store.incr("k", 1, 3600) == 1.0
+    assert store.incr("k", 0.25, 60) == 1.25
+    assert redis.ttls["k"] == 3600  # the first expiry holds
+    assert store.get("k") == 1.25
+
+
+def test_a_dead_store_fails_closed(monkeypatch):
+    class Down(guards.Store):
+        shared = True
+
+        def incr(self, key, amount, ttl_s):
+            raise ConnectionError("down")
+
+        def get(self, key):
+            raise ConnectionError("down")
+
+    g = guards.Guards(Down(), guards.Policy(ip_salt="s"))
+    with pytest.raises(guards.StoreUnavailable):
+        g.take_question("abc")
+    with pytest.raises(Exception, match="paused"):
+        g.check()
+    g.add(0.01)  # recording spend never raises
+
+
+def test_the_store_comes_from_the_environment(monkeypatch):
+    for name in ("UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN", "KV_REST_API_URL"):
+        monkeypatch.delenv(name, raising=False)
+    assert isinstance(guards.store_from_env(), guards.MemoryStore)
+    monkeypatch.setenv("KV_REST_API_URL", "https://example.upstash.io")
+    monkeypatch.setenv("KV_REST_API_TOKEN", "token")
+    assert isinstance(guards.store_from_env(), guards.UpstashStore)
