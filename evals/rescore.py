@@ -40,7 +40,7 @@ def main(path: Path, judge_model: str = typer.Option(None, help="Default: the ru
         rubric = [c.format(**expect[q["id"]]["context"]) for c in q.get("caveats", [])]
         verdict, cost = None, 0.0
         if row["answer"] is not None:
-            verdict, cost = judge.grade(client, model, q["question"], row["answer"], rubric)
+            verdict, cost = judge.verdict(client, model, q["question"], row["answer"], rubric)
         run = {
             "answer": None
             if row["answer"] is None

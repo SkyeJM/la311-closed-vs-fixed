@@ -4,8 +4,8 @@ Latest full run of the golden set (evals/golden.yaml) per model. Numeric accurac
 
 | model | numeric accuracy | all checks | governed metric | evidence level | caveats | declines | Spanish | numbers supported | latency p50 / p90 | cost per question |
 |---|---|---|---|---|---|---|---|---|---|---|
-| claude-haiku-5-5 | **97%** | 95% | 100% | 100% | 100% | 100% | 80% | 100% | 6.84 s / 13.39 s | $0.0011 |
-| claude-sonnet-5-5 | **100%** | 100% | 100% | 100% | 100% | 100% | 100% | 100% | 8.83 s / 15.76 s | $0.0165 |
-| claude-opus-5-5 | **100%** | 100% | 100% | 100% | 100% | 100% | 100% | 100% | 12.26 s / 19.33 s | $0.0365 |
+| claude-haiku-5-5 | **94%** | 93% | 100% | 100% | 100% | 100% | 80% | 100% | 7.25 s / 11.67 s | $0.0012 |
+| claude-sonnet-5-5 | **100%** | 100% | 100% | 100% | 100% | 100% | 100% | 100% | 5.7 s / 9.75 s | $0.0123 |
+| claude-opus-5-5 | **100%** | 95% | 100% | 100% | 100% | 100% | 100% | 100% | 10.24 s / 17.12 s | $0.0337 |
 
 Runs: `2026-10-29_claude-haiku-5-5.json`, `2026-10-29_claude-sonnet-5-5.json`, `2026-10-29_claude-opus-5-5.json`

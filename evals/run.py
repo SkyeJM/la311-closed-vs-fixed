@@ -184,7 +184,7 @@ def main(
         verdict, judge_cost = None, 0.0
         if result["answer"] is not None:
             try:
-                verdict, judge_cost = judge.grade(
+                verdict, judge_cost = judge.verdict(
                     client, judge_model, q["question"], result["answer"]["answer"], rubric
                 )
             except anthropic.APIError as e:
