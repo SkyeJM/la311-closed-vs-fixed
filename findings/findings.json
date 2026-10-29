@@ -1,7 +1,7 @@
 {
  "version": 1,
- "generated_at": "2026-10-29T01:01:53+00:00",
- "git_commit": "a09f55d",
+ "generated_at": "2026-10-29T20:30:41+00:00",
+ "git_commit": "f45047e",
  "status": "final",
  "status_note": "Every resolution code in the data is mapped, and the map has been reviewed.",
  "parameters": {
@@ -1665,13 +1665,13 @@
  },
  "q4_cutover": {
   "periods": {
-   "after": {
-    "first_month": "2025-09-01",
-    "last_month": "2026-08-01"
-   },
    "before": {
     "first_month": "2024-02-01",
     "last_month": "2025-02-01"
+   },
+   "after": {
+    "first_month": "2025-09-01",
+    "last_month": "2026-08-01"
    }
   },
   "categories": [
@@ -7540,7 +7540,7 @@
   },
   "q3_item_not_out_by_nc": {
    "database": "serving",
-   "sql": "select b.nc_code, g.geo_name as nc_name, sum(n_requests) filter (where is_closed) as closed, sum(n_requests) filter (where is_closed and resolution_code = ?) as item_not_out from mart_bulky_items as b left join dim_geography as g on g.geo_level = 'neighborhood_council' and g.geo_code = b.nc_code where b.created_month between ? and ? and b.nc_code is not null group by b.nc_code, g.geo_name",
+   "sql": "select b.nc_code, g.geo_name as nc_name, sum(n_requests) filter (where is_closed) as closed, sum(n_requests) filter (where is_closed and resolution_code = ?) as item_not_out from mart_bulky_items as b left join dim_geography as g on g.geo_level = 'neighborhood_council' and g.geo_code = b.nc_code where b.created_month between ? and ? and b.nc_code is not null group by b.nc_code, g.geo_name order by b.nc_code",
    "params": [
     "QC-Item Not Out",
     "2025-03-01",
@@ -7782,12 +7782,12 @@
   },
   "q4_period_bounds": {
    "database": "serving",
-   "sql": "select period, min(first_month) as first_month, max(last_month) as last_month from mart_cutover_periods group by period",
+   "sql": "select period, min(first_month) as first_month, max(last_month) as last_month from mart_cutover_periods group by period order by min(first_month)",
    "params": []
   },
   "q4_comparability": {
    "database": "serving",
-   "sql": "select distinct unified_category, cross_era_comparison from mart_cutover_periods",
+   "sql": "select distinct unified_category, cross_era_comparison from mart_cutover_periods order by 1",
    "params": []
   },
   "q4_closed_within_30d_monthly": {
