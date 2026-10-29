@@ -1,9 +1,16 @@
 name: dbt docs
 
-# Publishes the dbt docs site to GitHub Pages. It is built from synthetic fixtures
-# (tests/fixtures/synthetic_raw.py), so CI never needs the real data. Manual until GitHub Pages
-# is enabled for the repo (Settings > Pages > Source: GitHub Actions); then add `push` to main.
+# Publishes the dbt docs site to GitHub Pages (https://skyejm.github.io/la311-closed-vs-fixed/)
+# whenever the dbt project changes on main, or on demand. It is built from synthetic fixtures
+# (tests/fixtures/synthetic_raw.py), so CI never needs the real data.
 on:
+  push:
+    branches: [main]
+    paths:
+      - "dbt/**"
+      - "tests/fixtures/**"
+      - "Makefile"
+      - ".github/workflows/docs.yml"
   workflow_dispatch:
 
 permissions:

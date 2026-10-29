@@ -34,3 +34,5 @@ node_modules/
 docs/BRIEF.md
 logs/
 .DS_Store
+# Raw Anthropic call logs from code labeling (the proposal and summary are committed)
+ai/labels/runs/

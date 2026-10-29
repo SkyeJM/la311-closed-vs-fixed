@@ -272,6 +272,27 @@ FULL = {
             cd="0",
             department="OCB - Normal Cases",
         ),
+        # A type only the new system has, filed 13 days after the cutover: its 30-day placebo
+        # window would start before the system existed, so it isn't re-report eligible.
+        current(
+            "00000110",
+            "2025-04-10 10:00:00",
+            "Street Pavement Issues",
+            closed="2025-04-11 10:00:00",
+            code="R-Repaired",
+            department="BSS - SMD",
+            lat=34.15,
+            lon=-118.45,
+        ),
+        # Cancelled 3 minutes after it was filed: past the 1-minute instant-close line.
+        current(
+            "00000111",
+            "2025-05-10 10:00:00",
+            "Dead Animal Removal",
+            status="Cancelled",
+            closed="2025-05-10 10:03:00",
+            code="CCAN-Cancelled by Customer",
+        ),
     ],
     "2cy6-i7zn": [
         current(

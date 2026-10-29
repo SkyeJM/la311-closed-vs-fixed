@@ -1,5 +1,6 @@
-# Lint and offline tests on every push to main and every PR. CI never calls the live API:
-# tests use pinned schemas and synthetic fixtures. dbt build joins in Phase 2.
+# Lint and offline tests on every push to main and every PR. CI never calls a live API: tests
+# use pinned schemas, a full dbt build on synthetic fixtures (tests/conftest.py), and a scripted
+# fake in place of the Anthropic client.
 # Actions are pinned to commit SHAs (version in the comment) so a moved tag can't change CI.
 name: CI
 

@@ -11,7 +11,7 @@ DBT := cd dbt && $(DBT_ENV) $(UV) run dbt
 SITE_BUILD := $(CURDIR)/build/docs-site
 
 .PHONY: help setup lint fmt test check discover schema-check pin ingest-sample ingest refresh \
-	profile build docs serving docs-site findings eval serve deploy
+	profile build docs serving docs-site label label-finalize findings eval serve deploy
 
 help: ## List targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-14s %s\n", $$1, $$2}'
@@ -67,12 +67,25 @@ serving: ## Export marts + slim fact to data/serving.duckdb (no addresses or coo
 docs-site: ## Public dbt docs built from synthetic fixtures (what CI publishes) -> site/
 	rm -rf $(SITE_BUILD) site
 	$(PY) -m tests.fixtures.synthetic_raw $(SITE_BUILD)/raw
+	# The fixtures plant an unmapped resolution code on purpose, so it may only warn here.
 	cd dbt && LA311_RAW_ROOT=$(SITE_BUILD)/raw LA311_WAREHOUSE=$(SITE_BUILD)/warehouse.duckdb \
-		$(UV) run dbt build --quiet --target-path $(SITE_BUILD)/target --log-path $(SITE_BUILD)/logs
+		$(UV) run dbt build --quiet --vars '{code_map_final: false}' \
+		--target-path $(SITE_BUILD)/target --log-path $(SITE_BUILD)/logs
 	cd dbt && LA311_RAW_ROOT=$(SITE_BUILD)/raw LA311_WAREHOUSE=$(SITE_BUILD)/warehouse.duckdb \
 		$(UV) run dbt docs generate --static --target-path $(SITE_BUILD)/target \
 		--log-path $(SITE_BUILD)/logs
 	mkdir -p site && cp $(SITE_BUILD)/target/static_index.html site/index.html
 
-findings eval serve deploy:
+label: ## Label new resolution codes with Claude, then write ai/labels/review.csv (needs .env key)
+	$(PY) -m ai.label_codes context
+	$(PY) -m ai.label_codes run
+	$(PY) -m ai.label_codes review
+
+label-finalize: ## Reviewed ai/labels/review.csv -> dbt/seeds/resolution_code_map.csv + agreement
+	$(PY) -m ai.label_codes finalize
+
+findings: serving ## Q1-Q5 numbers + E2 evidence -> findings/findings.json and findings/MEMO.md
+	$(PY) -m findings
+
+eval serve deploy:
 	@echo "'make $@' arrives in a later phase (brief section 8)." && exit 1

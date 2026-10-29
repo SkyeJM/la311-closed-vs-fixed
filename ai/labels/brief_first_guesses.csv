@@ -1,0 +1,54 @@
+resolution_code,closure_outcome
+1003-Referral to External Department,referred_out_of_scope
+1004-Closed,closed_unspecified
+1005-Cancelled,cancelled
+AR-Request Completed,fixed_work_done
+ASG-Already Serviced,already_resolved
+B-Duplicated Request,duplicate
+C-Closed,closed_unspecified
+C-Report has been received,info_only
+C-Report has been referred out.,referred_out_of_scope
+CAN-Cancelled,cancelled
+CANC-Cancelled,cancelled
+CCAN-Cancelled by Customer,cancelled
+CDR-Cancelled - Duplicate Request,duplicate
+CG-Cancelled,cancelled
+CL-CL - Closed,closed_unspecified
+COM-Request Completed,fixed_work_done
+DUP-Duplicate,duplicate
+DUP-Duplicate SR,duplicate
+DUP-Duplicated Request,duplicate
+E-Address Not in City Limits,referred_out_of_scope
+GI-General Information,info_only
+GOA-Animal gone on arrival,not_found
+INC-Incomplete Info,unable
+IP-Info Provided,info_only
+IP-Information Provided,info_only
+IPR-Issue Previously Resolved by a previous SR,already_resolved
+IWO-Issued Work Orders to Resolve,deferred
+KA-Referred to Knowledge Articles,info_only
+LR-Limb Removed,fixed_work_done
+MNT-Maintenance to Be Performed,deferred
+NA-No Access,unable
+NAT-No Action Taken,unable
+NEP-No Encampment Present,not_found
+NF-Nothing Found,not_found
+NMC-Not My Customer,referred_out_of_scope
+NON-Address Not in City Limits,referred_out_of_scope
+PE-Policy Explained,info_only
+PSP-Private Street/Property,referred_out_of_scope
+QC-Item Not Out,not_found
+R-Repaired,fixed_work_done
+RBI-Reschedule for Bulky Items,deferred
+RC-Contractor Serviced,fixed_work_done
+RCAN-Cancelled by Contractor,cancelled
+RF-Receive and File,info_only
+RW-Request Withdrawn,cancelled
+SARH-SAR completed-Hot,fixed_work_done
+TR-Tree Removed,fixed_work_done
+UA-Unable to Locate Address,unable
+UAC-Unable to Confirm Issue (including Anonymous),not_found
+UPS-Unable to Provide Desired Service,unable
+UTM-Unable to Make,unable
+VNL-Vehicle Not at Location,not_found
+WC-Work Completed,fixed_work_done

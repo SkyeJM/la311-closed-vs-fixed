@@ -1,0 +1,27 @@
+{
+ "run_at": "2026-10-29T00:23:29+00:00",
+ "models": {
+  "label": "claude-haiku-5-5",
+  "escalation": "claude-sonnet-5-5"
+ },
+ "codes": 171,
+ "calls": 361,
+ "failed_calls": 0,
+ "first_pass_runs_agreed": 156,
+ "escalations": {
+  "runs disagreed": 15,
+  "low confidence": 3,
+  "context overrides disagreed": 1
+ },
+ "escalation_chose_a_new_class": 8,
+ "unlabeled_codes": [],
+ "cost_usd": 0.1893,
+ "max_usd": 3.0,
+ "tokens": {
+  "input_tokens": 233114,
+  "cache_creation_input_tokens": 7338,
+  "cache_read_input_tokens": 2641680,
+  "output_tokens": 118278
+ },
+ "seconds": 233.7
+}

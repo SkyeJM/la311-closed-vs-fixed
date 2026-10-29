@@ -1,0 +1,390 @@
+# Governed metrics: the single source of truth for findings.json, the API and the Ask agent
+# (brief section 4.4). Every rate is computed at query time from additive counts in the served
+# marts, so it is right at any roll-up. api/metrics.py compiles a request (metric, filters,
+# group-by, time grain) into SQL against data/serving.duckdb; tests/test_metrics.py checks every
+# definition against a dbt build and the fact table.
+#
+# Evidence levels (brief section 4.3): E1 = the resolution code says what happened (new system
+# only); E2 = behavior (timing, status, re-reports), in both eras; status = what the status says;
+# none = a count.
+version: 1
+
+# Row filters metrics share. SQL over a source's columns; sources that hold a value for every row
+# (a `constants` entry) satisfy a filter on it without the column.
+populations:
+  # Requests whose own record can show whether the problem was fixed: everything except
+  # duplicates and information-only closes (outcome_group neutral) and intake handoffs
+  # (handed_off, status Reported: decision 4). Open requests stay in.
+  fix_rate_base: "coalesce(outcome_group, '') not in ('neutral', 'handed_off')"
+  # Crews logging their own finished work are closed by construction (instantly, and never
+  # re-reported by themselves), so behavioral metrics leave them out.
+  resident_reported: "not is_crew_self_report"
+
+sources:
+  outcomes_monthly:
+    table: mart_outcomes_monthly
+    time: {column: created_month, grain: month}
+    dimensions: [era, unified_category, request_type, department, is_crew_self_report, is_terminal,
+      is_closed, closure_outcome, outcome_group]
+    measures:
+      n_requests: n_requests
+      n_measured: n_requests
+      n_terminal: "case when is_terminal then n_requests else 0 end"
+      n_closed: "case when is_closed then n_requests else 0 end"
+      n_instant_close: n_instant_close
+      n_rereport_eligible: n_rereport_eligible
+      n_rereported_30d: n_rereported_30d
+      n_prior_reported_30d: n_prior_reported_30d
+
+  gap_by_district:
+    table: mart_gap_by_district
+    coverage: New system only.
+    time: {column: created_quarter, grain: quarter}
+    constants: {era: current}
+    dimensions: [unified_category, request_type, department, cd, is_crew_self_report, is_terminal,
+      is_closed, resolution_code, closure_outcome, outcome_group]
+    measures:
+      n_requests: n_requests
+      n_measured: n_requests
+      n_terminal: "case when is_terminal then n_requests else 0 end"
+      n_closed: "case when is_closed then n_requests else 0 end"
+
+  bulky_items:
+    table: mart_bulky_items
+    coverage: New-system bulky and dumped item pickups only.
+    time: {column: created_month, grain: month}
+    constants: {era: current, unified_category: "Bulky & dumped item pickups"}
+    dimensions: [request_type, nc_code, cd, closed_weekday, is_crew_self_report, is_terminal,
+      is_closed, resolution_code, closure_outcome, outcome_group]
+    measures:
+      n_requests: n_requests
+      n_measured: n_requests
+      n_terminal: "case when is_terminal then n_requests else 0 end"
+      n_closed: "case when is_closed then n_requests else 0 end"
+      n_rereport_eligible: n_rereport_eligible
+      n_rereported_30d: n_rereported_30d
+      n_prior_reported_30d: n_prior_reported_30d
+
+  cutover_monthly:
+    table: mart_cutover_comparison
+    coverage: Categories that exist in both systems, crew self-reports excluded.
+    time: {column: created_month, grain: month}
+    constants: {is_crew_self_report: false, is_crosswalked: true}
+    dimensions: [era, unified_category, cross_era_comparison, is_overlap_month, has_full_followup]
+    measures:
+      n_requests: n_requests
+      # Volume-only categories have no closure measures, so they drop out of rate denominators.
+      n_measured: "case when cross_era_comparison <> 'volume_only' then n_requests end"
+      n_terminal: n_terminal
+      n_closed: n_closed
+      n_status_cancelled: n_status_cancelled
+      n_instant_close: n_instant_close
+      n_rereport_eligible: n_rereport_eligible
+      n_rereported_30d: n_rereported_30d
+      n_prior_reported_30d: n_prior_reported_30d
+      n_followed: >-
+        case when has_full_followup and cross_era_comparison <> 'volume_only'
+        then n_requests end
+      n_closed_within_7d: n_closed_within_7d
+      n_closed_within_30d: n_closed_within_30d
+    precomputed:
+      grain: [created_month, unified_category, era]
+      columns: {0.5: p50_hours_to_close, 0.9: p90_hours_to_close}
+
+  cutover_periods:
+    table: mart_cutover_periods
+    coverage: >-
+      Categories that exist in both systems, crew self-reports excluded, in the 12 months before
+      the cutover (legacy) and the 12 months after the Apr-Aug 2025 overlap (new system).
+    constants: {is_crew_self_report: false, is_crosswalked: true}
+    dimensions: [era, unified_category, period, cross_era_comparison]
+    measures:
+      n_requests: n_requests
+      n_measured: "case when cross_era_comparison <> 'volume_only' then n_requests end"
+      n_terminal: n_terminal
+      n_closed: n_closed
+      n_status_cancelled: n_status_cancelled
+      n_instant_close: n_instant_close
+      n_rereport_eligible: n_rereport_eligible
+      n_rereported_30d: n_rereported_30d
+      n_prior_reported_30d: n_prior_reported_30d
+      # Every request in a period was followed for 30 days.
+      n_followed: "case when cross_era_comparison <> 'volume_only' then n_requests end"
+      n_closed_within_7d: n_closed_within_7d
+      n_closed_within_30d: n_closed_within_30d
+    precomputed:
+      grain: [unified_category, era, period]
+      columns: {0.5: p50_hours_to_close, 0.9: p90_hours_to_close}
+
+  current_requests:
+    table: fct_current_requests  # row-level; reachable only through these metrics
+    coverage: New system only.
+    time: {column: created_month, grain: month}
+    constants: {era: current}
+    dimensions: [unified_category, request_type, department, channel, cd, nc_code,
+      is_crew_self_report, status, is_terminal, is_closed, status_outcome, resolution_code,
+      closure_outcome, outcome_group, is_instant_close, is_rereported_30d, has_prior_report_30d]
+    measures:
+      n_requests: "1"
+      n_measured: "1"
+      n_terminal: "case when is_terminal then 1 else 0 end"
+      n_closed: "case when is_closed then 1 else 0 end"
+      n_status_cancelled: "case when status_outcome = 'cancelled' then 1 else 0 end"
+      n_instant_close: "case when is_instant_close then 1 else 0 end"
+      n_rereport_eligible: "case when is_rereport_eligible then 1 else 0 end"
+      n_rereported_30d: "case when is_rereported_30d then 1 else 0 end"
+      n_prior_reported_30d: "case when has_prior_report_30d then 1 else 0 end"
+      # {data_end} is the newest created_at in the table: requests filed in the last 30 days
+      # haven't had 30 days to close yet.
+      n_followed: "case when created_at <= {data_end} - interval 30 day then 1 else 0 end"
+      n_closed_within_7d: >-
+        case when is_closed and hours_to_close <= 7 * 24
+        and created_at <= {data_end} - interval 30 day then 1 else 0 end
+      n_closed_within_30d: >-
+        case when is_closed and hours_to_close <= 30 * 24
+        and created_at <= {data_end} - interval 30 day then 1 else 0 end
+    percentile_column: hours_to_close
+
+  contacts:
+    table: mart_contacts_info_only
+    time: {column: created_month, grain: month}
+    dimensions: [era, request_type, channel, department, resolution_code]
+    measures:
+      n_contacts: n_contacts
+
+metrics:
+  requests_created:
+    label: Requests created
+    unit: requests
+    evidence: none
+    eras: [legacy, current]
+    measure: n_requests
+    sources: [outcomes_monthly, gap_by_district, current_requests, bulky_items,
+      cutover_monthly, cutover_periods]
+    description: >
+      Service requests filed. Contacts (Information-Only, Feedback, Program Research and
+      current-era Other) are never service requests; see `contacts`.
+
+  contacts:
+    label: Contacts (not service requests)
+    unit: contacts
+    evidence: none
+    eras: [legacy, current]
+    measure: n_contacts
+    sources: [contacts]
+    description: >
+      Information-Only calls and other contacts, counted apart so they never inflate service
+      metrics (Information-Only cases are "closed" the second they are logged).
+
+  closure_rate:
+    label: Closure rate
+    unit: share
+    evidence: status
+    eras: [legacy, current]
+    numerator: {measure: n_closed}
+    denominator: {measure: n_measured}
+    sources: [outcomes_monthly, gap_by_district, current_requests, bulky_items,
+      cutover_monthly, cutover_periods]
+    description: >
+      The official view: the share of requests whose status says closed (Closed or Closed
+      Ext-Referred; in the legacy system Closed or Referred Out). Open, cancelled and intake-only
+      (Reported) requests count against it.
+
+  verified_fix_rate:
+    label: Verified fix rate
+    unit: share
+    evidence: E1
+    eras: [current]
+    population: fix_rate_base
+    numerator: {measure: n_requests, where: "outcome_group = 'fixed'"}
+    denominator: {measure: n_requests}
+    sources: [outcomes_monthly, gap_by_district, current_requests, bulky_items]
+    description: >
+      The share of requests whose resolution code says the work was done (fixed_work_done) or
+      had already been done (already_resolved). The base leaves out duplicates,
+      information-only closes and intake handoffs, whose own record can't show a fix; open
+      requests stay in, so this rate and closure_rate on the same base subtract cleanly.
+
+  closed_fixed_gap_pp:
+    label: Closed but not verified fixed
+    unit: percentage_points
+    evidence: E1
+    eras: [current]
+    difference:
+      - {metric: closure_rate, population: fix_rate_base}
+      - {metric: verified_fix_rate}
+    sources: [outcomes_monthly, gap_by_district, current_requests, bulky_items]
+    description: >
+      The headline: closure rate minus verified fix rate, both on the fix-rate base, in
+      percentage points. It equals the share of requests marked closed whose code doesn't say
+      the problem was fixed.
+
+  closed_not_fixed_share:
+    label: Closed, not fixed
+    unit: share
+    evidence: E1
+    eras: [current]
+    population: fix_rate_base
+    numerator: {measure: n_requests, where: "is_closed and outcome_group = 'not_fixed'"}
+    denominator: {measure: n_requests, where: is_closed}
+    sources: [outcomes_monthly, gap_by_district, current_requests, bulky_items]
+    description: >
+      Among closed requests, the share whose code says the problem wasn't fixed: not found,
+      referred out, deferred or unable. Cancelled is not in the numerator: cancellations carry
+      the status Cancelled, which isn't closed.
+
+  closed_unverified:
+    label: Closed without evidence of a fix
+    unit: requests
+    evidence: E1
+    eras: [current]
+    population: fix_rate_base
+    measure: n_requests
+    where: "is_closed and coalesce(outcome_group, '') <> 'fixed'"
+    sources: [outcomes_monthly, gap_by_district, current_requests, bulky_items]
+    description: >
+      How many requests make up the gap: marked closed, in the fix-rate base, without a code
+      saying the work was done. Group it by resolution_code to see which codes carry the gap.
+
+  unspecified_closure_share:
+    label: Closed without saying how
+    unit: share
+    evidence: E1
+    eras: [current]
+    population: fix_rate_base
+    numerator: {measure: n_requests, where: "is_closed and closure_outcome = 'closed_unspecified'"}
+    denominator: {measure: n_requests, where: is_closed}
+    sources: [outcomes_monthly, gap_by_district, current_requests, bulky_items]
+    description: Among closed requests, the share closed with a generic code or no code at all.
+
+  outcome_mix:
+    label: Outcome mix
+    unit: share
+    evidence: E1
+    eras: [current]
+    share_of: closure_outcome
+    measure: n_requests
+    where: is_terminal
+    sources: [outcomes_monthly, gap_by_district, current_requests, bulky_items]
+    description: >
+      How terminal requests ended: the share in each closure_outcome class, summing to 1 within
+      each group. Includes every class, duplicates and intake handoffs too.
+
+  cancellation_rate:
+    label: Cancellation rate
+    unit: share
+    evidence: E2
+    eras: [legacy, current]
+    population: resident_reported
+    numerator: {measure: n_status_cancelled}
+    denominator: {measure: n_measured}
+    sources: [current_requests, cutover_monthly, cutover_periods]
+    description: >
+      The share of requests whose status is Cancelled. Measured from the status in both eras,
+      so it compares across the cutover (the new system's cancellation codes are in outcome_mix).
+
+  instant_close_rate:
+    label: Instant-close rate
+    unit: share
+    evidence: E2
+    eras: [legacy, current]
+    population: resident_reported
+    numerator: {measure: n_instant_close}
+    denominator: {measure: n_closed}
+    sources: [outcomes_monthly, current_requests, cutover_monthly, cutover_periods]
+    description: >
+      The share of closed requests marked closed within 1 minute of being filed, before anyone
+      could have gone out. Cancellations and intake handoffs aren't closes, so they're in
+      neither count. Crew self-reports are left out (closed by construction).
+
+  closed_within_7d_rate:
+    label: Closed within 7 days
+    unit: share
+    evidence: E2
+    eras: [legacy, current]
+    population: resident_reported
+    numerator: {measure: n_closed_within_7d}
+    denominator: {measure: n_followed}
+    sources: [current_requests, cutover_monthly, cutover_periods]
+    description: >
+      The share of requests closed within 7 days of filing, among requests that could be
+      followed for 30 days in their own system. Unlike a median of closed requests, it counts
+      requests that never closed.
+
+  closed_within_30d_rate:
+    label: Closed within 30 days
+    unit: share
+    evidence: E2
+    eras: [legacy, current]
+    population: resident_reported
+    numerator: {measure: n_closed_within_30d}
+    denominator: {measure: n_followed}
+    sources: [current_requests, cutover_monthly, cutover_periods]
+    description: As closed_within_7d_rate, with a 30-day threshold.
+
+  median_hours_to_close:
+    label: Median hours to close
+    unit: hours
+    evidence: E2
+    eras: [legacy, current]
+    population: resident_reported
+    percentile: 0.5
+    where: "is_closed and hours_to_close >= 0"
+    sources: [current_requests, cutover_periods, cutover_monthly]
+    description: >
+      Median time from filing to a closed status, over requests that closed. It can't see
+      requests still open, so for slow categories prefer closed_within_30d_rate.
+
+  p90_hours_to_close:
+    label: 90th-percentile hours to close
+    unit: hours
+    evidence: E2
+    eras: [legacy, current]
+    population: resident_reported
+    percentile: 0.9
+    where: "is_closed and hours_to_close >= 0"
+    sources: [current_requests, cutover_periods, cutover_monthly]
+    description: As median_hours_to_close, at the 90th percentile.
+
+  rereport_30d_rate:
+    label: Re-report rate (30 days)
+    unit: share
+    evidence: E2
+    eras: [legacy, current]
+    population: resident_reported
+    numerator: {measure: n_rereported_30d}
+    denominator: {measure: n_rereport_eligible}
+    sources: [outcomes_monthly, current_requests, bulky_items, cutover_monthly,
+      cutover_periods]
+    description: >
+      The share of closed requests followed by a new request in the same category within 50 m
+      and 30 days. Compare it with prior_report_30d_rate: at many places new requests arrive
+      whatever happened to the last one.
+
+  prior_report_30d_rate:
+    label: Prior-report rate (placebo)
+    unit: share
+    evidence: E2
+    eras: [legacy, current]
+    population: resident_reported
+    numerator: {measure: n_prior_reported_30d}
+    denominator: {measure: n_rereport_eligible}
+    sources: [outcomes_monthly, current_requests, bulky_items, cutover_monthly,
+      cutover_periods]
+    description: >
+      The baseline for rereport_30d_rate, on the same requests: the share with a same-category
+      request within 50 m in the 30 days before they were filed.
+
+  rereport_excess_pp:
+    label: Re-reports above baseline
+    unit: percentage_points
+    evidence: E2
+    eras: [legacy, current]
+    difference:
+      - {metric: rereport_30d_rate}
+      - {metric: prior_report_30d_rate}
+    sources: [outcomes_monthly, current_requests, bulky_items, cutover_monthly,
+      cutover_periods]
+    description: >
+      rereport_30d_rate minus prior_report_30d_rate, in percentage points. Positive means more
+      new requests after a close than before the request was filed.

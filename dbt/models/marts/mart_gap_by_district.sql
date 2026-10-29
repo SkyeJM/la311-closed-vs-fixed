@@ -12,11 +12,14 @@ select
     cd,
     is_crew_self_report,
     is_terminal,
+    is_closed,
     resolution_code,
     closure_outcome,
+    outcome_group,
     count(*) as n_requests
 from {{ ref('fct_service_requests') }}
 where era = 'current'
 group by
     cast({{ dbt.date_trunc('quarter', 'created_at') }} as date), unified_category, request_type,
-    department, cd, is_crew_self_report, is_terminal, resolution_code, closure_outcome
+    department, cd, is_crew_self_report, is_terminal, is_closed, resolution_code,
+    closure_outcome, outcome_group

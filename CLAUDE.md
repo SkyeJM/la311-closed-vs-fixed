@@ -8,9 +8,9 @@ Full brief (local only, gitignored): `docs/BRIEF.md`. Decisions: `docs/DECISIONS
 `docs/DATA_NOTES.md`.
 
 ## How we work
-- **Phase gates (brief §8).** Finish one phase, stop with a checkpoint (what was built, key numbers, surprises, decisions needed), and wait for "go". Current phase: **2, dbt models**.
+- **Phase gates (brief §8).** Finish one phase, stop with a checkpoint (what was built, key numbers, surprises, decisions needed), and wait for "go". Current phase: **3, taxonomy and metrics**.
 - **Log as you go.** Every non-obvious choice goes in `docs/DECISIONS.md` (date, options, why). Every data quirk goes in `docs/DATA_NOTES.md`, with its source query.
-- **No invented numbers.** Prose numbers come from code: `findings/findings.json` once it exists.
+- **No invented numbers.** Prose numbers come from `findings/findings.json` (`make findings`), which stores each number with its query; `findings/MEMO.md` is rendered from it.
 - **Check current docs** for fast-moving tools: Anthropic SDK, dbt-duckdb, DuckDB (now **2.x**), Socrata, hosts.
 - **Commits:** small conventional commits on a phase branch, with `make check` passing first. One PR per phase, merged on "go".
 - **Secrets** live in `.env` (gitignored; template in `.env.example`).
@@ -21,7 +21,8 @@ Full brief (local only, gitignored): `docs/BRIEF.md`. Decisions: `docs/DECISIONS
 - `make setup` (uv sync + git hooks) · `make check` (lint + tests) · `make fmt`
 - `make discover` · `make schema-check` · `make pin` · `make ingest-sample`
 - `make ingest` (full pulls → `data/raw/{id}/full.parquet` + manifests) · `make refresh` (deltas for both current datasets) · `make profile` (→ `docs/PROFILE.md`)
-- `make build` (dbt build on the full data → `data/warehouse.duckdb`, ~35 s) · `make serving` (→ `data/serving.duckdb`) · `make docs` · `make docs-site` (public docs from fixtures → `site/`)
+- `make build` (dbt build on the full data → `data/warehouse.duckdb`, ~25 s) · `make serving` (→ `data/serving.duckdb`) · `make docs` · `make docs-site` (public docs from fixtures → `site/`)
+- `make findings` (rebuilds serving, then → `findings/findings.json` + `MEMO.md`) · `make label` (Claude labels new resolution codes → `ai/labels/review.csv`; needs the key in `.env`, spend-capped) · `make label-finalize` (reviewed sheet → `dbt/seeds/resolution_code_map.csv`)
 - CLI: `uv run python -m ingest --help`. dbt directly: `cd dbt && uv run dbt ...` (defaults point at `../data`)
 
 ## Conventions
@@ -34,6 +35,8 @@ Full brief (local only, gitignored): `docs/BRIEF.md`. Decisions: `docs/DECISIONS
   - E2 parameters and `code_map_final` are vars in `dbt/dbt_project.yml`.
   - DuckDB-only SQL goes in `macros/portability.sql` or at the raw-source edge; marts stay Snowflake-portable.
   - Marts store additive counts; rates come from `metrics.yml` (Phase 3).
+- **Metrics:** every rate is defined once in `metrics.yml` and compiled by `api/metrics.py` (structured filters, bound parameters). Findings, the UI and the agent all go through it; never hand-write a rate's SQL elsewhere.
+- **Code labels:** the AI proposes, a person reviews. `resolution_code_map.csv` changes only through `make label-finalize`, which records `label_source`. `code_map_final` is true, so a new code fails `make build`: run `make label` (spend-capped), review `ai/labels/review.csv`, then `make label-finalize`.
 - **Serving:** `api/serving.py` is the allowlist. Never add address, coordinate, ZIP, ID or crew columns (the build fails if you try).
 - **Makefile** must work with GNU Make 3.81.
 - **DuckDB 2.x:** implicit aliases that are keywords fail (`... AS month` works, `... month` doesn't),
@@ -49,7 +52,12 @@ Full brief (local only, gitignored): `docs/BRIEF.md`. Decisions: `docs/DECISIONS
 - Timestamps are floating local Pacific time. 2015–2019 have minute precision (2020 mixed); legacy
   streetlight closes in 2017–2021 are often date-only (midnight), hence ~14K negative durations.
 - Current status "Reported" = the 311 record ends at intake (a handoff). Homeless Encampment, Report a
-  Sidewalk Problem, Private Property Violation and Report Water Wasting are 100% Reported.
+  Sidewalk Problem, Private Property Violation and Report Water Wasting are 100% Reported. Their codes
+  ("C-Report has been received") acknowledge intake, so the status decides: outcome `handed_off`.
+- Legacy requests still open at the cutover never close in the legacy data (31% of streetlights in the
+  last year). Compare closure speed as "closed within N days" with full follow-up, never as a median
+  of closed requests.
+- Re-reports mostly measure place-level recurrence: always read them against the before-filing placebo.
 - Information-Only cases are contacts, not service requests (instantly "Closed", code "C-Closed").
 - "Driver Self Report(ed)" = crews logging their own work: 15% of legacy rows, 57% of legacy graffiti,
   and back in current graffiti from 2026. Closed by construction; excluded from cross-era comparisons.

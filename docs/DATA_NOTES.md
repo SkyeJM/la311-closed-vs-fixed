@@ -4,6 +4,8 @@ Every quirk found in the MyLA311 open data, with where it came from.
 
 - **Profile §n** = `docs/PROFILE.md`, computed from the full pulls of 2026-10-23 and regenerated with `make profile`.
 - **dbt** = the Phase 2 warehouse build of 2026-10-23 (`make build`), with the model or test named.
+- **Warehouse** = queries on the Phase 3 build of 2026-10-28 (data through 2026-10-28 10:39), run as read-only SQL on `data/warehouse.duckdb`.
+- **findings** = `findings/findings.json`, which stores each number with its query (`make findings`).
 - **Live query** = SoQL against data.lacity.org on 2026-10-23.
 - **Sample** = the Phase 0 random-cluster samples. Rough only, superseded wherever the profile covers the same ground.
 
@@ -67,7 +69,7 @@ Every quirk found in the MyLA311 open data, with where it came from.
   - 2020: 13.8% (the switch happened mid-year).
   - 2021 onward: about 1.6% (second precision).
 
-  Any instant-close threshold must be at least a few minutes, or legacy years can't be compared.
+  An instant-close threshold below a minute can't be compared with 2015–2019, which records whole minutes (none of its closes fall 1–59 s after creation; findings `e2_parameters.instant_close.legacy_timestamp_precision`). Phase 3 uses 1 minute.
 - **Legacy streetlight closes in 2017–2021 are often date-only (midnight)** (Profile §4).
   - Share of closes at midnight: Single Streetlight Issue 77.9%, Multiple 50.3%.
   - Nearly all of the ~14K negative durations are streetlights, mostly 1–24 hours "before" creation.
@@ -85,6 +87,14 @@ Every quirk found in the MyLA311 open data, with where it came from.
 - **Current-era geography gaps:** 215,936 cases have no CD, NC or coordinates; 61,813 have coordinates but no CD or NC; 25,965 have a CD and NC but no coordinates (live aggregate).
 - **The busiest points are real places, not geocoder defaults.** The top service-request coordinates each carry only 1–5 distinct address strings (counted, never printed). One point has 11,711 current-era graffiti cases. Only 4 current points are shared by 50 or more different addresses (720 rows). Re-reports there reflect real recurrence.
 
+## The legacy system's last year
+- **Legacy requests still open at the cutover never close in the legacy data** (warehouse).
+  - The share of legacy service requests that are still open rises from 0.55% (2022) to 2.2% (2023) and 4.6% (2024).
+  - In the 12 months before the cutover, 31% of legacy streetlight requests are still Open (last update 2025-09-04) and 32% of legacy encampment requests are still Pending (last update 2026-06-10).
+  - Whether they were carried into the new system isn't visible: new cases have new IDs.
+  - Consequence: legacy closure measures near the cutover are cut short. `mart_cutover_periods` ends the legacy period 30 days before the cutover and compares "closed within N days".
+- **Legacy closes kept arriving after the cutover** for some departments: the latest closes are Jul 2025 for graffiti, Aug 2025 for pickups and Sep 2025 for streetlights (warehouse, `max(updated_at)` per category).
+
 ## Statuses
 - **Legacy:**
   - Closed: 99.9% have a closed date.
@@ -96,6 +106,7 @@ Every quirk found in the MyLA311 open data, with where it came from.
   - Four types are 100% "Reported" and about 99% closed within a minute, then handed to another department's system: Homeless Encampment (LSD), Report a Sidewalk Problem (DPW), Private Property Violation (LADBS), Report Water Wasting (LADWP).
   - 311 data can't say whether these were fixed (Profile §11b).
   - The legacy Homeless Encampment, by contrast, was closed by LASAN with ordinary statuses.
+- **Reported cases carry intake codes, not outcomes** (warehouse): of 190,670 Reported service requests, 175,529 have "C-Report has been received", 13,007 "C-Closed" (all Private Property Violation), 1,905 "C-Report has been referred out." (Report Water Wasting), 113 "SR-Sidewalk Riding Incident Recorded" and 116 none. dbt lets the status decide their outcome (`handed_off`, decision 4).
 
 ## Channels and crew self-reports
 - **"Driver Self Report" means crews logging work they already did** (column description: "by work crews for work done in field then entered into system").
@@ -103,6 +114,7 @@ Every quirk found in the MyLA311 open data, with where it came from.
   - 79% of legacy crew self-reports close within 5 minutes (Profile §9, §12).
 - **In the current system, crew self-reports ("Driver Self Reported") barely exist until March 2026.** They then climb to 48% of graffiti in August 2026 (Profile §10). Graffiti closure trends inside the current era will move because of how work is logged, not how it's done.
 - **Fast closes are almost all crew self-reports or intake handoffs.** All other requests close within 5 minutes only 0.7% (legacy) and 1.2% (current) of the time (Profile §12).
+- **The new system's near-zero spike isn't closes** (warehouse). 225,923 terminal service requests end within 10 seconds of filing, but they are intake handoffs (Reported), duplicates, information-only replies and cancellations. Requests actually marked Closed within a minute are rare (findings `e2_parameters.instant_close`).
 - **Channel vocabulary changed.**
   - "Mobile App" is 25.8% of legacy rows and 0.1% of current rows; it was apparently folded into Self Service.
   - New current channels include "recycLA Service Provider", Chat and Social.
@@ -125,8 +137,18 @@ Every quirk found in the MyLA311 open data, with where it came from.
 - **"Other" (current):** mostly "GI-General Information" replies.
 - **Service Not Complete:** LASAN rows have no reason codes. recycLA rows carry collection codes such as "0200-Blocked in By Vehicle/Object" and "0212-Not SNC - On Call Request". They're mostly resolved as completed or "RCAN-Cancelled by Contractor". These are missed-collection complaints, not a general "not fixed" signal (Profile §13).
 
+## Re-reports
+- **Places generate requests whatever happened to the last one.** At 50 m and 30 days, the share of closed requests followed by a same-category request is *lower* than the share preceded by one in the 30 days before filing, in every crosswalked category and both eras. It holds across radii of 25–100 m and windows of 7–60 days (findings `e2_parameters.rereport`).
+- **Streetlights show the largest drop.** Before a request, other reports of the same outage are common; after a close they're rare.
+- **Completed and item-not-out pickups are followed by new pickup requests about equally often** (findings `q3_bulky_items.new_pickup_request_within_30d`). At pickups, re-reports follow the building, not the outcome.
+
 ## Resolution codes
-- **There are more codes than the brief estimated:** 149 distinct in 2025 Cases, 160 in 2026, 171 combined (the brief said about 120). Per-code stats are in `docs/profile/resolution_codes.csv`.
+- **There are more codes than the brief estimated:** 149 distinct in 2025 Cases, 160 in 2026, 171 combined (the brief said about 120). Per-code stats are in `docs/profile/resolution_codes.csv`. Still 171 on 2026-10-28.
+- **Five cases contradict themselves:** status Cancelled with code "WC-Work Completed" (Bus Stop Furniture; warehouse). They count as verified fixed but not closed, so the gap rate and the `closed_unverified` count differ by those five.
+- **Reason codes are a fixed vocabulary** (130 values, at most 51 characters; warehouse), not free text, so they're safe to send to the labeling model as context.
+- **Some high-volume codes weren't in the brief's examples**, e.g. "RC-Request Completed" (39,136 streetlight cases) and "VMRB-Vehicle moved for rebalancing" (16,921 scooter cases). Both are labeled *fixed_work_done* in the reviewed map.
+- **Street-services bureaus close most cases with a generic code.** Among terminal requests, "closed without saying how" is 99% of Street Sweeping, 76% of Obstructions and 68% of Landscape Maintenance, so those categories show fix rates near zero. That's a property of the record, not evidence the work wasn't done (findings `q1_outcome_mix.mix_by_category`).
+- **Enforcement codes record a step, not an outcome.** "Complaint accepted" (animal services), "Notice of Violation" and "Criminal Filing" say the department acted, not that the problem stopped. The reviewed map labels them *closed_unspecified* (decision 2026-10-28).
 - **Prefix collisions include:**
   - C: C-Closed, C-Report has been received, C-Report has been referred out.
   - DUP, RC, CAN, COM, INC, IP, NAR, UA

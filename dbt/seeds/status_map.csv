@@ -1,17 +1,17 @@
-era,status,is_terminal,status_outcome,note
-legacy,Closed,true,closed_unspecified,"Defined as ""The request has been completed""; the legacy era publishes no resolution field"
-legacy,Cancelled,true,cancelled,
-legacy,Referred Out,true,referred_out_of_scope,
-legacy,Open,false,,
-legacy,Pending,false,,
-legacy,Forward,false,,
-current,Closed,true,closed_unspecified,Applies only when the case has no resolution code
-current,Reported,true,closed_unspecified,"Intake handoff to another department's system; how it counts in the fix rate is a Phase 3 decision"
-current,Cancelled,true,cancelled,Applies only when the case has no resolution code
-current,Closed Ext-Referred,true,referred_out_of_scope,Applies only when the case has no resolution code
-current,Workorder Created,false,,
-current,New,false,,
-current,In Progress,false,,
-current,Potential Duplicate,false,,
-current,Duplicate Confirm,false,,
-current,Inspection Required,false,,
+era,status,is_terminal,is_closed,status_decides,status_outcome,note
+legacy,Closed,true,true,false,closed_unspecified,"Defined as ""The request has been completed""; the legacy era publishes no resolution field"
+legacy,Cancelled,true,false,false,cancelled,
+legacy,Referred Out,true,true,false,referred_out_of_scope,"Closed by referral, like the new system's Closed Ext-Referred"
+legacy,Open,false,false,false,,
+legacy,Pending,false,false,false,,
+legacy,Forward,false,false,false,,
+current,Closed,true,true,false,closed_unspecified,Applies only when the case has no resolution code
+current,Reported,true,false,true,handed_off,"Intake handoff to another department's system. The status decides even when there is a code: the codes on these cases (""C-Report has been received"") acknowledge intake, not an outcome (decision 4, Phase 3)"
+current,Cancelled,true,false,false,cancelled,Applies only when the case has no resolution code
+current,Closed Ext-Referred,true,true,false,referred_out_of_scope,Applies only when the case has no resolution code
+current,Workorder Created,false,false,false,,
+current,New,false,false,false,,
+current,In Progress,false,false,false,,
+current,Potential Duplicate,false,false,false,,
+current,Duplicate Confirm,false,false,false,,
+current,Inspection Required,false,false,false,,

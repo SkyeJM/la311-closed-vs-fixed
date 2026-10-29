@@ -9,3 +9,4 @@ unable,no,not_fixed,7,"Could not be done: no access, can't locate the address, i
 cancelled,no,cancelled,8,"Cancelled by the customer, a contractor or the department"
 info_only,not_a_service,neutral,9,Information was provided; not a service outcome
 closed_unspecified,unknown,unknown,10,"Closed without saying how: a generic code, or no code at all"
+handed_off,not_observable,handed_off,11,"Status Reported: the 311 record ends at intake and the case is worked in another department's own system, so its outcome isn't in this data. Set from the status, never from a code"

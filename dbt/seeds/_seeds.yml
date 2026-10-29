@@ -57,11 +57,11 @@ seeds:
   - name: status_map
     description: >
       Every status in each era: whether it is terminal (Phase 1 rule: at least 99% of rows carry
-      a closed date; signed off 2026-10-23) and the outcome a terminal status implies when a
-      case has no resolution code. An unseen status fails the build
-      (assert_statuses_are_mapped).
+      a closed date; signed off 2026-10-23), whether it counts as closed in the official view,
+      and the outcome a terminal status implies when a case has no resolution code (or always,
+      when status_decides). An unseen status fails the build (assert_statuses_are_mapped).
     config:
-      column_types: {era: varchar, status: varchar, is_terminal: boolean, status_outcome: varchar, note: varchar}
+      column_types: {era: varchar, status: varchar, is_terminal: boolean, is_closed: boolean, status_decides: boolean, status_outcome: varchar, note: varchar}
     data_tests:
       - dbt_utils.unique_combination_of_columns:
           arguments:
@@ -69,7 +69,14 @@ seeds:
       - dbt_utils.expression_is_true:
           arguments:
             expression: "(status_outcome is not null) = is_terminal"
+      - dbt_utils.expression_is_true:
+          arguments:
+            expression: "is_terminal or not (is_closed or status_decides)"
     columns:
+      - name: is_closed
+        description: "The status itself says closed: the official view behind closure_rate (Closed and Closed Ext-Referred; legacy Closed and Referred Out)"
+      - name: status_decides
+        description: "The status sets the outcome even when the case has a resolution code (only Reported: decision 4, Phase 3)"
       - name: status_outcome
         data_tests:
           - relationships:
@@ -90,24 +97,29 @@ seeds:
           - not_null
           - accepted_values:
               arguments:
-                values: [fixed_work_done, already_resolved, duplicate, not_found, referred_out_of_scope, deferred, unable, cancelled, info_only, closed_unspecified]
+                values: [fixed_work_done, already_resolved, duplicate, not_found, referred_out_of_scope, deferred, unable, cancelled, info_only, closed_unspecified, handed_off]
       - name: counts_as_fixed
         data_tests:
           - accepted_values:
               arguments:
-                values: ["yes", "no", neutral, not_a_service, unknown]
+                values: ["yes", "no", neutral, not_a_service, unknown, not_observable]
       - name: outcome_group
+        description: >
+          What the metrics roll classes up into. The fix-rate base (metrics.yml) keeps fixed,
+          not_fixed, cancelled and unknown, and leaves out neutral (duplicates, information-only
+          closes) and handed_off, whose outcome this record can't show.
         data_tests:
           - accepted_values:
               arguments:
-                values: [fixed, not_fixed, cancelled, neutral, unknown]
+                values: [fixed, not_fixed, cancelled, neutral, unknown, handed_off]
 
   - name: resolution_code_map
     description: >
-      Resolution code -> closure_outcome. PROVISIONAL in Phase 2: it holds only the brief's
-      first-guess examples (label_source = brief_first_guess). Phase 3 replaces it with the
-      AI-labeled, human-reviewed map. Optional department and request_type columns override the
-      code-level row for one context; the most specific matching row wins.
+      Resolution code -> closure_outcome, labeled by Claude and reviewed by Skye in Phase 3
+      (ai/label_codes.py; agreement in ai/labels/agreement.json). label_source says whether the
+      reviewer kept the AI's label (ai_accepted), changed it (ai_overridden) or wrote it without one
+      (human). Optional department and request_type columns override the code-level row for one
+      context; the most specific matching row wins. Change it only through `make label-finalize`.
     config:
       column_types: {resolution_code: varchar, department: varchar, request_type: varchar, closure_outcome: varchar, label_source: varchar, rationale: varchar}
     data_tests:
@@ -128,4 +140,4 @@ seeds:
         data_tests:
           - accepted_values:
               arguments:
-                values: [brief_first_guess, ai_accepted, ai_overridden, human]
+                values: [ai_accepted, ai_overridden, human]
