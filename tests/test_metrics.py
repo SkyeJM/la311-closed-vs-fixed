@@ -138,3 +138,51 @@ def test_every_source_column_exists_in_the_served_table(serving_db):
         measures = [f"sum({metrics._measure_sql(source, name)})" for name in source.measures]
         serving_db.execute(f"select {', '.join(columns)} from {source.table} limit 0")
         serving_db.execute(f"select {', '.join(measures)} from {source.table}")
+
+
+def test_a_date_range_never_shifts_on_a_quarterly_source(serving_db, dbt_build):
+    """Mar 2025 to Jul 2026 isn't whole quarters, so the district mart can't answer it exactly:
+    the compiler must fall through to a monthly source rather than round to quarters."""
+    window = ("2025-03-01", "2026-07-01")
+    query = metrics.compile_query("verified_fix_rate", group_by=["cd"], date_range=window)
+    assert query.source == "current_requests"
+    quarters = metrics.compile_query(
+        "verified_fix_rate", group_by=["cd"], date_range=("2025-04-01", "2026-06-01")
+    )
+    assert quarters.source == "gap_by_district"
+    assert quarters.params[-2:] == ["2025-04-01", "2026-04-01"]  # Q2 2026 holds June
+    direct = fact(
+        dbt_build,
+        "select avg(coalesce(outcome_group = 'fixed', false)::int) "
+        f"from marts.fct_service_requests where era = 'current' and {FIX_BASE} "
+        "and created_month between '2025-03-01' and '2026-07-01'",
+    )
+    assert value(serving_db, "verified_fix_rate", date_range=window) == pytest.approx(direct)
+
+
+def test_date_ranges_are_whole_months(serving_db):
+    for bad in [("2025-03-28", "2026-07-01"), ("2026-07-01", "2025-03-01"), ("March", "May")]:
+        with pytest.raises(metrics.MetricError, match="first and last month"):
+            metrics.compile_query("verified_fix_rate", date_range=bad)
+
+
+def test_rankings_order_cut_and_skip_small_groups(serving_db):
+    everything = metrics.run(
+        serving_db, metrics.compile_query("closure_rate", group_by=["unified_category"])
+    )
+    ranked = metrics.run(
+        serving_db,
+        metrics.compile_query(
+            "closure_rate", group_by=["unified_category"], order="value_desc", limit=2
+        ),
+    )
+    best = sorted(everything, key=lambda r: (-(r["value"] or -1), r["unified_category"]))[:2]
+    assert [r["unified_category"] for r in ranked] == [r["unified_category"] for r in best]
+    big = metrics.run(
+        serving_db,
+        metrics.compile_query("closure_rate", group_by=["unified_category"], min_count=3),
+    )
+    assert big and all(r["denominator"] >= 3 for r in big)
+    assert len(big) < len(everything)
+    with pytest.raises(metrics.MetricError, match="order"):
+        metrics.compile_query("closure_rate", order="random")
