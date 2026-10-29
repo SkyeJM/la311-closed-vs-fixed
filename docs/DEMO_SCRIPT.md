@@ -11,8 +11,8 @@ requests filed Mar 2025 to Jul 2026, 87.8% were marked closed, but only
 62.1% have a code saying the work was done: a 25.7-point gap."
 
 **0:20 — The chart (scroll down).**
-"The gap has held month after month since the relaunch. The old system recorded no codes, so
-there's no line before it, and I say so instead of inventing one."
+"The gap has held month after month. The old system recorded no codes, so there's no line
+before the relaunch."
 
 **0:35 — Where the gap is (the three cards).**
 "It's concentrated. One code, 'Item Not Out' on bulky-item pickups, carries
@@ -21,10 +21,9 @@ neighborhood council."
 
 **0:50 — Ask (open Ask, click 'Which council districts have the biggest gap between closed and
 fixed?').**
-"This is the AI analyst. It can only answer through governed metrics or read-only SQL over
-aggregate tables. Here's its trace: the metric it called, the SQL behind it, the rows it got
-back. Click a key number and it opens the exact query. Code checks every number in the answer
-against the tool results before you see it, so it can't state a number it didn't query."
+"This is the AI analyst. It answers only through governed metrics or read-only SQL. Here's its
+trace: the metric it called, the SQL, the rows. Click a key number and it opens the exact query.
+Code checks every number against the tool results before you see it."
 
 **1:25 — Methodology (scroll to 'How accurate is Ask 311?').**
 "I measure it, too: 43 test questions, including ones it must decline and
