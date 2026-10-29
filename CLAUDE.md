@@ -8,7 +8,7 @@ Full brief (local only, gitignored): `docs/BRIEF.md`. Decisions: `docs/DECISIONS
 `docs/DATA_NOTES.md`.
 
 ## How we work
-- **Phase gates (brief §8).** Finish one phase, stop with a checkpoint (what was built, key numbers, surprises, decisions needed), and wait for "go". Current phase: **3, taxonomy and metrics**.
+- **Phase gates (brief §8).** Finish one phase, stop with a checkpoint (what was built, key numbers, surprises, decisions needed), and wait for "go". Current phase: **4, API, agent and evals**.
 - **Log as you go.** Every non-obvious choice goes in `docs/DECISIONS.md` (date, options, why). Every data quirk goes in `docs/DATA_NOTES.md`, with its source query.
 - **No invented numbers.** Prose numbers come from `findings/findings.json` (`make findings`), which stores each number with its query; `findings/MEMO.md` is rendered from it.
 - **Check current docs** for fast-moving tools: Anthropic SDK, dbt-duckdb, DuckDB (now **2.x**), Socrata, hosts.
@@ -23,6 +23,7 @@ Full brief (local only, gitignored): `docs/BRIEF.md`. Decisions: `docs/DECISIONS
 - `make ingest` (full pulls → `data/raw/{id}/full.parquet` + manifests) · `make refresh` (deltas for both current datasets) · `make profile` (→ `docs/PROFILE.md`)
 - `make build` (dbt build on the full data → `data/warehouse.duckdb`, ~25 s) · `make serving` (→ `data/serving.duckdb`) · `make docs` · `make docs-site` (public docs from fixtures → `site/`)
 - `make findings` (rebuilds serving, then → `findings/findings.json` + `MEMO.md`) · `make label` (Claude labels new resolution codes → `ai/labels/review.csv`; needs the key in `.env`, spend-capped) · `make label-finalize` (reviewed sheet → `dbt/seeds/resolution_code_map.csv`)
+- `make serve` (API at http://127.0.0.1:8000/api/docs) · `make ask Q="..." [MODEL=...]` (one question in the terminal) · `make eval MODEL=...` (golden set → `evals/results/`, then `SUMMARY.md`) · `make suggested` (cached answers for the suggested questions). These three spend API credit: pilot with `python -m evals.run --limit 3` first.
 - CLI: `uv run python -m ingest --help`. dbt directly: `cd dbt && uv run dbt ...` (defaults point at `../data`)
 
 ## Conventions
@@ -38,6 +39,13 @@ Full brief (local only, gitignored): `docs/BRIEF.md`. Decisions: `docs/DECISIONS
 - **Metrics:** every rate is defined once in `metrics.yml` and compiled by `api/metrics.py` (structured filters, bound parameters). Findings, the UI and the agent all go through it; never hand-write a rate's SQL elsewhere.
 - **Code labels:** the AI proposes, a person reviews. `resolution_code_map.csv` changes only through `make label-finalize`, which records `label_source`. `code_map_final` is true, so a new code fails `make build`: run `make label` (spend-capped), review `ai/labels/review.csv`, then `make label-finalize`.
 - **Serving:** `api/serving.py` is the allowlist. Never add address, coordinate, ZIP, ID or crew columns (the build fails if you try).
+- **Ask agent** (`ai/agent/`):
+  - It reads serving only through `api/db.py`'s locked read-only connection.
+  - `run_sql` may touch only `sql_tool` tables. The row-level fact table is reachable only through `query_metric`.
+  - The system prompt is generated from metrics.yml and the data, and must never contain data numbers (a test checks this).
+  - Answers are checked in code: every number must come from a tool result.
+  - Set effort with `ASK_EFFORT`, never `CLAUDE_EFFORT`: Claude Code sets that one in its own shell.
+- **Evals:** `evals/golden.yaml` stores how to compute each expected number, never the number. After a judge or scoring change, `python -m evals.rescore <run.json>` re-grades a saved run without new agent calls.
 - **Makefile** must work with GNU Make 3.81.
 - **DuckDB 2.x:** implicit aliases that are keywords fail (`... AS month` works, `... month` doesn't),
   and relations have no `fetchone()` (use `con.execute(...).fetchone()` or `rel.fetchall()`).

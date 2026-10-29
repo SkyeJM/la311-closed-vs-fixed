@@ -1,6 +1,7 @@
 """Shared fixtures: one dbt build on synthetic data per test session, and its serving file."""
 
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -8,7 +9,7 @@ from pathlib import Path
 import duckdb
 import pytest
 
-from api import serving
+from api import db, serving
 from tests.fixtures.synthetic_raw import build
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -55,5 +56,16 @@ def serving_db(dbt_build):
     dest = dbt_build[2] / "serving.duckdb"
     serving.build(dbt_build[2] / "warehouse.duckdb", dest)
     con = duckdb.connect(str(dest), read_only=True)
+    yield con
+    con.close()
+
+
+@pytest.fixture(scope="session")
+def agent_db(serving_db, dbt_build):
+    """The fixture serving file behind the API's lockdown (api/db.py). A copy, because DuckDB
+    won't open one file twice in a process with different settings."""
+    dest = dbt_build[2] / "agent_serving.duckdb"
+    shutil.copy(dbt_build[2] / "serving.duckdb", dest)
+    con = db.connect(dest)
     yield con
     con.close()

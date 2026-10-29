@@ -82,7 +82,7 @@ Every quirk found in the MyLA311 open data, with where it came from.
   - CD 0: 3,338 current rows.
   - NC 0: 93,282 current rows, almost all without a name.
   - Legacy NC 0: 6,459 rows named "HISTORIC CULTURAL NORTH NC" or "NORTH WESTWOOD NC", NCs the current system codes as 128 and 127.
-  - Staging sets 0 to null.
+  - Staging sets 0 to null. In a breakdown by district, those requests form their own null group (7,227 requests in the findings window's fix-rate base, with a 36.0-point gap against at most 30.8 for any district), so rankings must leave it out (serving: `closed_fixed_gap_pp` grouped by `cd`, 2026-10-29).
 - **NC names vary by year and system** ("Sylmar" vs "SYLMAR NC"; three spellings for some codes), and NC boundaries changed when councils split. `dim_geography` uses each code's most common current-era name; cross-era NC comparisons are approximate.
 - **Current-era geography gaps:** 215,936 cases have no CD, NC or coordinates; 61,813 have coordinates but no CD or NC; 25,965 have a CD and NC but no coordinates (live aggregate).
 - **The busiest points are real places, not geocoder defaults.** The top service-request coordinates each carry only 1–5 distinct address strings (counted, never printed). One point has 11,711 current-era graffiti cases. Only 4 current points are shared by 50 or more different addresses (720 rows). Re-reports there reflect real recurrence.
@@ -133,6 +133,7 @@ Every quirk found in the MyLA311 open data, with where it came from.
   - Combined volume is steady, so the two must be one crosswalk category (Profile §11c).
 - **Streetlights:** current Streetlight Repair Services matches legacy Single + Multiple Streetlight Issue volume in the same months a year earlier. Streetlight ADA Repair Services and Non-Repair Services are small and current-era only.
 - **Information-Only:** 877,137 rows in 2025–2026, all "Closed" with code "C-Closed", split between ITA and LASAN departments. In 2026, 85.9% of "C-Closed" rows are Information-Only, which confirms the brief (Profile §6).
+- **The legacy open data has only 12 request types** (bulky items, e-waste, metal and appliances, illegal dumping, dead animals, graffiti, encampments, two streetlight types, water waste, feedback and other). Potholes ("Street Pavement Issues", Street Services) and every other current-era category have no legacy counterpart, so a question such as "pothole fix rates in 2018 vs 2026" can't be answered from this data (warehouse: `dim_request_category`, era = legacy).
 - **Program Research** (LASAN customer care): almost all "1004-Closed", with about half closed within a minute.
 - **"Other" (current):** mostly "GI-General Information" replies.
 - **Service Not Complete:** LASAN rows have no reason codes. recycLA rows carry collection codes such as "0200-Blocked in By Vehicle/Object" and "0212-Not SNC - On Call Request". They're mostly resolved as completed or "RCAN-Cancelled by Contractor". These are missed-collection complaints, not a general "not fixed" signal (Profile §13).

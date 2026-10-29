@@ -216,8 +216,8 @@ metrics:
     sources: [outcomes_monthly, gap_by_district, current_requests, bulky_items]
     description: >
       The headline: closure rate minus verified fix rate, both on the fix-rate base, in
-      percentage points. It equals the share of requests marked closed whose code doesn't say
-      the problem was fixed.
+      percentage points. It equals the share of all requests in the base that were marked
+      closed without a code saying the problem was fixed (not a share of closed requests).
 
   closed_not_fixed_share:
     label: Closed, not fixed

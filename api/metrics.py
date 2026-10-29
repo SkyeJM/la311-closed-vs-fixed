@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import functools
 from dataclasses import dataclass, field
+from datetime import date
 from pathlib import Path
 
 import duckdb
@@ -27,6 +28,8 @@ from sqlglot.optimizer.simplify import simplify
 ROOT = Path(__file__).resolve().parents[1]
 METRICS_FILE = ROOT / "metrics.yml"
 GRAINS = ["month", "quarter", "year"]
+ORDERS = ["dimensions", "value_desc", "value_asc"]
+MAX_LIMIT = 1000
 
 
 class MetricError(ValueError):
@@ -224,6 +227,11 @@ def _unfit(
             return f"no dimension {dim}"
     if (grain or date_range) and not source.time_column:
         return "no time column"
+    if date_range and not _aligned(date_range, source.time_grain):
+        return (
+            f"counts are stored by {source.time_grain}, and the date range doesn't start and end "
+            f"on {source.time_grain} boundaries"
+        )
     if grain and GRAINS.index(grain) < GRAINS.index(source.time_grain):
         return f"finest time grain is {source.time_grain}"
     if "percentile" in spec:
@@ -248,6 +256,40 @@ def _unfit(
         if not all(_bind(p, source) for p in _predicates(part, cat)):
             return "lacks a column the definition needs"
     return None
+
+
+# --- time ----------------------------------------------------------------------------------
+
+GRAIN_MONTHS = {"month": 1, "quarter": 3, "year": 12}
+
+
+def _months(date_range) -> tuple[str, str]:
+    """Check a date range is (first month, last month) as month starts, in order."""
+    try:
+        first, last = (date.fromisoformat(str(d)) for d in date_range)
+    except (TypeError, ValueError) as e:
+        raise MetricError("date_range takes two dates: the first and last month") from e
+    if first.day != 1 or last.day != 1 or first > last:
+        raise MetricError(
+            "date_range takes the first and last month as YYYY-MM-01, inclusive "
+            "(for example 2025-03-01 to 2026-07-01 is March 2025 through July 2026)"
+        )
+    return first.isoformat(), last.isoformat()
+
+
+def _period_start(month: str, grain: str) -> str:
+    d = date.fromisoformat(month)
+    span = GRAIN_MONTHS[grain]
+    return d.replace(month=(d.month - 1) // span * span + 1).isoformat()
+
+
+def _aligned(date_range, grain: str) -> bool:
+    """Can a source stored by `grain` answer exactly this (first month, last month) range?"""
+    first, last = _months(date_range)
+    span = GRAIN_MONTHS[grain]
+    return (date.fromisoformat(first).month - 1) % span == 0 and date.fromisoformat(
+        last
+    ).month % span == 0
 
 
 # --- compile -------------------------------------------------------------------------------
@@ -283,10 +325,15 @@ def compile_query(
     time_grain: str | None = None,
     date_range: tuple[str, str] | None = None,
     source: str | None = None,
+    order: str = "dimensions",
+    limit: int | None = None,
+    min_count: int | None = None,
 ) -> Query:
-    """SQL for one metric. filters: {dimension: value or [values]}; date_range: inclusive
-    (from, to) dates on the source's time column; time_grain: month, quarter or year; source:
-    one of the metric's sources, to skip the automatic choice."""
+    """SQL for one metric. filters: {dimension: value or [values]}; date_range: the first and
+    last month, inclusive, as YYYY-MM-01 strings; time_grain: month, quarter or year; source:
+    one of the metric's sources, to skip the automatic choice. order: dimensions, value_desc or
+    value_asc; limit: keep the first rows in that order; min_count: drop groups whose base (the
+    rate's denominator, or the count itself) is smaller, so rankings skip tiny groups."""
     cat = catalog()
     if metric not in cat.metrics:
         raise MetricError(f"unknown metric {metric}; list_metrics shows the catalog")
@@ -295,6 +342,14 @@ def compile_query(
     group_by = list(group_by)
     if time_grain and time_grain not in GRAINS:
         raise MetricError(f"time_grain must be one of {GRAINS}")
+    if order not in ORDERS:
+        raise MetricError(f"order must be one of {ORDERS}")
+    if limit is not None and not 0 < limit <= MAX_LIMIT:
+        raise MetricError(f"limit must be between 1 and {MAX_LIMIT}")
+    if min_count is not None and min_count < 1:
+        raise MetricError("min_count must be a positive count")
+    if date_range:
+        date_range = _months(date_range)
     era_filter = filters.get("era")
     eras = era_filter if isinstance(era_filter, list) else [era_filter] if era_filter else []
     if any(era not in spec["eras"] for era in eras):
@@ -334,8 +389,9 @@ def compile_query(
         where.append(f'"{dim}" in ({", ".join("?" for _ in values)})')
         params.extend(values)
     if date_range:
+        # The last month counts in full: on a quarterly source it is a quarter's last month.
         where.append(f"{source.time_column} between ? and ?")
-        params.extend(date_range)
+        params.extend([date_range[0], _period_start(date_range[1], source.time_grain)])
     if "legacy" not in spec["eras"] and "era" in source.dimensions:
         where.append("era = 'current'")
 
@@ -376,15 +432,48 @@ def compile_query(
 
     select_dims = ",\n        ".join(f"{sql} as {alias}" for sql, alias in dims)
     aliases = [alias for _, alias in dims]
-    sql = (
+    grouped = (
         "with grouped as (\n    select\n        "
         + ",\n        ".join(([select_dims] if dims else []) + inner)
         + f"\n    from {source.table}\n    where {_and(*where)}"
         + (f"\n    group by {', '.join(aliases)}" if aliases else "")
-        + f"\n)\nselect *, {outer} as value_\nfrom grouped"
-        + (f"\norder by {', '.join(aliases)}" if aliases else "")
+        + "\n)"
     )
+    if order == "dimensions" and limit is None and min_count is None:
+        sql = (
+            grouped
+            + f"\nselect *, {outer} as value_\nfrom grouped"
+            + (f"\norder by {', '.join(aliases)}" if aliases else "")
+        )
+        return Query(metric, source.name, sql, params, aliases, source.coverage)
+
+    # Ranking: the value is computed over every group first (so shares keep their totals), then
+    # small groups are dropped, then rows are ordered and cut.
+    sql = grouped + f",\nvalued as (\n    select *, {outer} as value_\n    from grouped\n)"
+    sql += "\nselect *\nfrom valued"
+    if min_count is not None:
+        sql += f"\nwhere {_base_column(spec, source)} >= ?"
+        params.append(min_count)
+    ordering = {"value_desc": ["value_ desc nulls last"], "value_asc": ["value_ asc nulls last"]}
+    keys = ordering.get(order, []) + aliases
+    if keys:
+        sql += f"\norder by {', '.join(keys)}"
+    if limit is not None:
+        sql += f"\nlimit {int(limit)}"
     return Query(metric, source.name, sql, params, aliases, source.coverage)
+
+
+def _base_column(spec: dict, source: Source) -> str:
+    """The column min_count applies to: the rate's denominator, or the count itself."""
+    if "percentile" in spec:
+        if not source.percentile_column:
+            raise MetricError("min_count needs a source with row-level durations")
+        return "n"
+    if "difference" in spec:
+        return "a_denominator"
+    if "numerator" in spec:
+        return "denominator"
+    return "n"
 
 
 def run(con: duckdb.DuckDBPyConnection, query: Query) -> list[dict]:

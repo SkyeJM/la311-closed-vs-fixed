@@ -321,6 +321,7 @@ def q3_bulky_items(rec: Recorder, window: tuple[str, str]) -> dict:
             on g.geo_level = 'neighborhood_council' and g.geo_code = b.nc_code
         where b.created_month between ? and ? and b.nc_code is not null
         group by b.nc_code, g.geo_name
+        order by b.nc_code
         """,
         params,
     )
@@ -418,7 +419,7 @@ def q4_cutover(rec: Recorder) -> dict:
     bounds = rec.sql(
         "q4_period_bounds",
         "select period, min(first_month) as first_month, max(last_month) as last_month "
-        "from mart_cutover_periods group by period",
+        "from mart_cutover_periods group by period order by min(first_month)",
     )
     periods = {
         r["period"]: {"first_month": r["first_month"], "last_month": r["last_month"]}
@@ -426,7 +427,8 @@ def q4_cutover(rec: Recorder) -> dict:
     }
     comparable = rec.sql(
         "q4_comparability",
-        "select distinct unified_category, cross_era_comparison from mart_cutover_periods",
+        "select distinct unified_category, cross_era_comparison from mart_cutover_periods "
+        "order by 1",
     )
     kinds = {r["unified_category"]: r["cross_era_comparison"] for r in comparable}
     categories = []
