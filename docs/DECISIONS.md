@@ -612,3 +612,36 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
   - performance 94 to 100;
   - best practices and SEO 100.
 - No horizontal overflow at 390 px wide.
+
+### 2026-10-29 · Live Ask on, and a fix it surfaced (Skye: option 1)
+- **Live Ask is on:** Skye connected Upstash Redis to the project and added the key from `.env` to Production (Skye's choice, since the account is prepaid and the balance bounds the worst case).
+- **A clean pause without a key:** before the key was added, Ask would have accepted a question and failed mid-stream. Ask now reports a missing key as a clean "paused" state.
+- **The first live answer (Sonnet) worked but used all 8 steps.** It made its calls one at a time, re-ran two queries it already had, and charted a single number: $0.067 and 23 s. Round 2 showed the same pattern on a smaller scale: 14 of 43 Sonnet answers repeated a query (duplicate protection caught each one), and 1 hit the cap.
+- **Fix:**
+  - After each tool turn the model reads "Step n of 8 used … don't repeat a call".
+  - The prompt says to batch independent calls.
+  - `make_chart` refuses a single row.
+- **Pilot on six of those questions:** repeats went from 7 to 0, steps from 3–8 down to 2, cost fell about 40%, and all six still passed.
+- **Skye chose option 1:** re-run all three models, so the published table describes the deployed agent.
+
+### 2026-10-29 · Eval round 3 (final), and a judge that has to quote its evidence
+- **Round 3 (agent at 03c4b3c)**, 43 questions per model, effort medium (`evals/results/SUMMARY.md`):
+
+  | model | numeric | all checks | cost per question | latency p50 / p90 | mean steps |
+  |---|---|---|---|---|---|
+  | claude-haiku-5-5 | 29/31 | 40/43 | $0.0012 | 7.3 s / 11.7 s | 2.1 |
+  | claude-sonnet-5-5 | 31/31 | 43/43 | $0.0123 | 5.7 s / 9.8 s | 2.0 |
+  | claude-opus-5-5 | 31/31 | 41/43 | $0.0337 | 10.2 s / 17.1 s | 2.1 |
+
+  - **Sonnet against round 2:** 26% cheaper ($0.0165 → $0.0123) and faster (p50 8.8 → 5.7 s), with no repeated queries.
+- **Judge changes,** re-graded on the saved answers so they cost only judge calls. They came from spot-checking the judge's causal flags, the review the brief asks for:
+  1. **Narrower definition:** the causal test follows the brief. It flags claims about why City performance or outcomes changed or differ. Explaining a number by how records are coded, defined or counted is not causal.
+  2. **Majority vote:** a failing verdict gets two more grades and stands only if a majority agree.
+  3. **Quoted evidence:** a causal flag counts only with a quote that is really in the answer.
+- **The remaining flags:**
+  - **Opus (2):** both explain district differences by request mix ("can reflect which kinds of requests each district gets"). That's defensible under the strict rule.
+  - **Haiku (1):** it quotes a data limitation ("the old data has no codes, so this rate can't be computed"). I count it as a judge miss, but it stays scored as is. The table reports the automated grade, and the spot-checks live here.
+- **Haiku's other two misses are real:**
+  - It narrowed "graffiti requests" to resident reports.
+  - It used a different denominator for the item-not-out share (24.5% against 24.2%).
+- **Spend for this fix:** about $2.40 (pilot, round 3, re-grading and the rebuilt suggested-answer cache).
