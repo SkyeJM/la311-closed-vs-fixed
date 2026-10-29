@@ -112,7 +112,7 @@ def _top(con: duckdb.DuckDBPyConnection, column: str, limit: int) -> dict[str, l
         qualify row_number() over (
             partition by resolution_code order by count(*) desc, {column}
         ) <= {limit}
-        order by resolution_code, cases desc
+        order by resolution_code, cases desc, {column}
         """
     ).fetchall()
     grouped: dict[str, list[tuple]] = defaultdict(list)
