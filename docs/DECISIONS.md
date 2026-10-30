@@ -645,3 +645,24 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
   - It narrowed "graffiti requests" to resident reports.
   - It used a different denominator for the item-not-out share (24.5% against 24.2%).
 - **Spend for this fix:** about $2.40 (pilot, round 3, re-grading and the rebuilt suggested-answer cache).
+
+## Phase 6: packaging
+
+### 2026-10-29 · Phase 5 sign-off
+- Skye chose option 1 (fix the repeated tool calls and re-run all three models), then said "go" for Phase 6. PR #6 merged; this phase is on `phase-6-packaging`.
+
+### 2026-10-29 · The portfolio documents are rendered from the numbers
+- **The rule:** "every number in the README, case study, UI copy or AI answers must come from code."
+- **How it's enforced:**
+  - `findings/packaging.py` fills `docs/templates/*.md` from `findings/findings.json` and writes `README.md`, `docs/CASE_STUDY.md`, `docs/DEMO_SCRIPT.md`, `docs/RESUME_BULLETS.md` and `docs/INTERVIEW_PREP.md` (`make packaging`).
+  - A few settings come from code: the metric count, the step cap, the rate limit and the daily cap.
+  - Rates, ratios and before/after comparisons are computed by the renderer, never written as words in a template ("nearly three times" became "2.7 times", from the eval summary).
+- **findings.json records the eval results too:** the current summary, plus Sonnet's round-2 summary as the baseline for the step-counter fix. Every number in the documents traces to that one file, as the AI-labeling agreement already did.
+- **Tests:**
+  - `tests/test_packaging.py` re-renders the documents and fails if a committed one is stale.
+  - It also scans every template for numbers typed by hand. Allowed: years, counts up to ten, definitions from metrics.yml and the findings parameters (30 days, 50 m), the service's name ("311"), model names and list numbering.
+- **A bug the documents exposed:** `evals/report.py` picked each model's "latest" run by file time, which renames and checkouts can change; it briefly published round 2 for two models. The current run is now the untagged `{date}_{model}.json`, and tagged files (`_round1`, `_round2`) are history.
+- **The GIF** (`docs/demo.gif`, 392 KB): seven frames from the live site (story, chart, findings, a cached Ask answer, its SQL, the eval table), captured with headless Chrome and assembled with ImageMagick. It shows a cached suggested question, so recording it cost nothing.
+- **Honest wording:**
+  - The resume bullets don't claim mix-adjusted comparisons. The cutover comparison is like for like (crosswalked categories, equal periods, crew self-reports excluded), but no geography was standardized, so mix-adjusted geography is listed as a next step.
+  - The interview prep says plainly that Claude Code was the main development tool, and points to the decision log for who decided what.

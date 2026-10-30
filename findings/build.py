@@ -26,6 +26,7 @@ SERVING = ROOT / "data" / "serving.duckdb"
 WAREHOUSE = ROOT / "data" / "warehouse.duckdb"
 OUT = ROOT / "findings" / "findings.json"
 AGREEMENT = ROOT / "ai" / "labels" / "agreement.json"
+EVALS = ROOT / "evals" / "results"
 DBT_PROJECT = ROOT / "dbt" / "dbt_project.yml"
 
 PICKUPS = "Bulky & dumped item pickups"
@@ -653,6 +654,14 @@ def build(serving: Path = SERVING, warehouse: Path | None = WAREHOUSE) -> dict:
         result["e2_parameters"] = e2.evidence(rec)
     if AGREEMENT.exists():
         result["ai_labeling"] = json.loads(AGREEMENT.read_text())
+    if (EVALS / "summary.json").exists():
+        # The Ask agent's eval results (make eval), so prose about the agent cites this file too.
+        # Round 2 ran before the step-counter fix; the docs quote what that fix changed.
+        evals = {"current": json.loads((EVALS / "summary.json").read_text())}
+        before = sorted(EVALS.glob("*_claude-sonnet-5-5_round2.json"))
+        if before:
+            evals["sonnet_before_step_counter"] = json.loads(before[-1].read_text())["summary"]
+        result["ask_evals"] = evals
     result = _clean(result)
     result["queries"] = rec.queries
     return result

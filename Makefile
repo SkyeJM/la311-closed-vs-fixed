@@ -11,7 +11,7 @@ DBT := cd dbt && $(DBT_ENV) $(UV) run dbt
 SITE_BUILD := $(CURDIR)/build/docs-site
 
 .PHONY: help setup lint fmt test check discover schema-check pin ingest-sample ingest refresh \
-	profile build docs serving docs-site label label-finalize findings eval serve ask \
+	profile build docs serving docs-site label label-finalize findings packaging eval serve ask \
 	suggested web release-data deploy-requirements deploy
 
 help: ## List targets
@@ -87,6 +87,9 @@ label-finalize: ## Reviewed ai/labels/review.csv -> dbt/seeds/resolution_code_ma
 
 findings: serving ## Q1-Q5 numbers + E2 evidence -> findings/findings.json and findings/MEMO.md
 	$(PY) -m findings
+
+packaging: ## Re-render README and docs/ (case study, demo, resume, interview prep) from the numbers
+	$(PY) -m findings.packaging
 
 eval: ## Golden-set eval for one model: make eval MODEL=claude-haiku-5-5 (spends credit)
 	$(PY) -m evals.run --model $(or $(MODEL),claude-sonnet-5-5) $(if $(MAX_USD),--max-usd $(MAX_USD))

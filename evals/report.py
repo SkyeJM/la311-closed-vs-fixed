@@ -17,18 +17,22 @@ MODELS = ["claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5"]
 
 
 def latest_runs() -> dict[str, dict]:
+    """The newest untagged full run per model. Tagged files ({date}_{model}_round2.json and the
+    like) are kept as history and never count as current; file times play no part."""
     full = len(expected.load()["questions"])
     runs = {}
     for path in sorted(RESULTS.glob("*.json")):
         if path.name == "summary.json":
             continue
         result = json.loads(path.read_text())
+        if path.stem != f"{result['date']}_{result['model']}":
+            continue
         if result["summary"]["questions"] != full:
             continue
         result["file"] = path.name
         current = runs.get(result["model"])
-        if current is None or (result["date"], path.stat().st_mtime) >= current["_key"]:
-            runs[result["model"]] = result | {"_key": (result["date"], path.stat().st_mtime)}
+        if current is None or result["date"] >= current["date"]:
+            runs[result["model"]] = result
     return runs
 
 
@@ -59,6 +63,7 @@ def main() -> None:
                 "latency_s": s["latency_s"],
                 "cost_per_question_usd": s["cost_usd"]["per_question"],
                 "cost_total_usd": s["cost_usd"]["total"],
+                "steps_mean": s["steps_mean"],
             }
         )
         table.append(
