@@ -32,9 +32,11 @@ node_modules/
 
 # Local-only working files
 docs/BRIEF.md
-# Personal career docs: `make packaging` still renders them locally; the public repo skips them
+# Personal prep docs: `make packaging` still renders them locally; the public repo skips them
+docs/DEMO_SCRIPT.md
 docs/RESUME_BULLETS.md
 docs/INTERVIEW_PREP.md
+docs/templates/DEMO_SCRIPT.md
 docs/templates/RESUME_BULLETS.md
 docs/templates/INTERVIEW_PREP.md
 logs/

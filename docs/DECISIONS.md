@@ -669,10 +669,10 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
 
 ## After the MVP
 
-### 2026-11-08 · Resume bullets and interview prep stay local
-- **Decision (Skye):** take `docs/RESUME_BULLETS.md` and `docs/INTERVIEW_PREP.md` out of the public repo. They're useful to Skye, but the repo's likely reader is a hiring manager, who doesn't need them.
+### 2026-11-08 · The demo script, resume bullets and interview prep stay local
+- **Decision (Skye):** take `docs/DEMO_SCRIPT.md`, `docs/RESUME_BULLETS.md` and `docs/INTERVIEW_PREP.md` out of the public repo. They're useful to Skye, but the repo's likely reader is a hiring manager, who doesn't need them.
 - **Options:** delete them, or keep them local. Kept local and still rendered, so their numbers keep tracking findings.json.
 - **How:**
-  - Both documents and their templates are gitignored, and untracked with `git rm --cached`, so Skye's copies stay.
-  - `findings/packaging.py` renders a local-only document only where its template exists. `make packaging` still updates them locally, and CI checks only the public documents.
-- **History:** both files remain in git history (PR #7). Removing them there would mean rewriting `main`.
+  - The documents and their templates are gitignored, and untracked with `git rm --cached`, so Skye's copies stay.
+  - `findings/packaging.py` renders a local-only document only where its template exists. `make packaging` still updates them locally, and CI checks only the public ones (the README and the case study).
+- **History:** the files remain in git history (PR #7). Removing them there would mean rewriting `main`.

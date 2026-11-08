@@ -4,9 +4,9 @@
 
 docs/templates/ holds the prose with {placeholders}. This fills them from findings.json, which
 also records the eval results, and from a few settings read from code (the metric count, the
-step cap, the rate limit). So README.md, docs/CASE_STUDY.md and docs/DEMO_SCRIPT.md never type
-a number by hand. The resume bullets and interview prep render the same way but are local-only:
-they and their templates are gitignored, so they render only where the templates exist.
+step cap, the rate limit). So README.md and docs/CASE_STUDY.md never type a number by hand. The
+demo script, resume bullets and interview prep render the same way but are local-only: they and
+their templates are gitignored, so they render only where the templates exist.
 tests/test_packaging.py re-renders them, fails on drift, and checks that no template types a
 number itself.
 """
@@ -25,10 +25,10 @@ TEMPLATES = ROOT / "docs" / "templates"
 OUTPUTS = {
     "README.md": ROOT / "README.md",
     "CASE_STUDY.md": ROOT / "docs" / "CASE_STUDY.md",
-    "DEMO_SCRIPT.md": ROOT / "docs" / "DEMO_SCRIPT.md",
 }
-# Personal career docs, kept out of the public repo (gitignored, templates included).
+# Personal prep docs, kept out of the public repo (gitignored, templates included).
 LOCAL_OUTPUTS = {
+    "DEMO_SCRIPT.md": ROOT / "docs" / "DEMO_SCRIPT.md",
     "RESUME_BULLETS.md": ROOT / "docs" / "RESUME_BULLETS.md",
     "INTERVIEW_PREP.md": ROOT / "docs" / "INTERVIEW_PREP.md",
 }
