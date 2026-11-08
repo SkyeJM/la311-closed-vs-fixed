@@ -21,8 +21,9 @@ NAMES = [
 
 def test_the_documents_are_rendered_from_the_numbers():
     """`make packaging` was run after the last change to a template or to the numbers."""
+    paths = packaging.outputs()
     for name, text in packaging.render().items():
-        assert packaging.OUTPUTS[name].read_text() == text, f"{name} is stale: make packaging"
+        assert paths[name].read_text() == text, f"{name} is stale: make packaging"
 
 
 def definitions() -> list[float]:
@@ -33,7 +34,7 @@ def definitions() -> list[float]:
     )
 
 
-@pytest.mark.parametrize("name", sorted(packaging.OUTPUTS))
+@pytest.mark.parametrize("name", sorted(packaging.outputs()))
 def test_templates_type_no_numbers(name):
     """Every data number comes from a {placeholder}; the prose itself may hold only years,
     small counts and definitions."""
