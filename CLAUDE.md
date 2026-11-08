@@ -8,7 +8,7 @@ Full brief (local only, gitignored): `docs/BRIEF.md`. Decisions: `docs/DECISIONS
 `docs/DATA_NOTES.md`.
 
 ## How we work
-- **Phase gates (brief §8).** Finish one phase, stop with a checkpoint (what was built, key numbers, surprises, decisions needed), and wait for "go". Current phase: **6, packaging** (the MVP is complete after this). Live at https://la311-closed-vs-fixed.vercel.app.
+- **Phase gates (brief §8).** Finish one phase, stop with a checkpoint (what was built, key numbers, surprises, decisions needed), and wait for "go". The MVP (Phases 0–6) is complete; each stretch goal needs its own "go". Live at https://la311-closed-vs-fixed.vercel.app.
 - **Log as you go.** Every non-obvious choice goes in `docs/DECISIONS.md` (date, options, why). Every data quirk goes in `docs/DATA_NOTES.md`, with its source query.
 - **No invented numbers.** Prose numbers come from `findings/findings.json` (`make findings`), which stores each number with its query; `findings/MEMO.md` is rendered from it.
 - **Check current docs** for fast-moving tools: Anthropic SDK, dbt-duckdb, DuckDB (now **2.x**), Socrata, hosts.
