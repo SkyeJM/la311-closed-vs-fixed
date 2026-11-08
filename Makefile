@@ -88,7 +88,7 @@ label-finalize: ## Reviewed ai/labels/review.csv -> dbt/seeds/resolution_code_ma
 findings: serving ## Q1-Q5 numbers + E2 evidence -> findings/findings.json and findings/MEMO.md
 	$(PY) -m findings
 
-packaging: ## Re-render README and docs/ (case study, demo, resume, interview prep) from the numbers
+packaging: ## Re-render README and docs/ (case study, demo script, local-only docs) from the numbers
 	$(PY) -m findings.packaging
 
 eval: ## Golden-set eval for one model: make eval MODEL=claude-haiku-5-5 (spends credit)

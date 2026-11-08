@@ -4,8 +4,9 @@
 
 docs/templates/ holds the prose with {placeholders}. This fills them from findings.json, which
 also records the eval results, and from a few settings read from code (the metric count, the
-step cap, the rate limit). So README.md, docs/CASE_STUDY.md, docs/DEMO_SCRIPT.md,
-docs/RESUME_BULLETS.md and docs/INTERVIEW_PREP.md never type a number by hand.
+step cap, the rate limit). So README.md, docs/CASE_STUDY.md and docs/DEMO_SCRIPT.md never type
+a number by hand. The resume bullets and interview prep render the same way but are local-only:
+they and their templates are gitignored, so they render only where the templates exist.
 tests/test_packaging.py re-renders them, fails on drift, and checks that no template types a
 number itself.
 """
@@ -25,6 +26,9 @@ OUTPUTS = {
     "README.md": ROOT / "README.md",
     "CASE_STUDY.md": ROOT / "docs" / "CASE_STUDY.md",
     "DEMO_SCRIPT.md": ROOT / "docs" / "DEMO_SCRIPT.md",
+}
+# Personal career docs, kept out of the public repo (gitignored, templates included).
+LOCAL_OUTPUTS = {
     "RESUME_BULLETS.md": ROOT / "docs" / "RESUME_BULLETS.md",
     "INTERVIEW_PREP.md": ROOT / "docs" / "INTERVIEW_PREP.md",
 }
@@ -179,15 +183,22 @@ def load() -> tuple[dict, dict, dict]:
     return findings, evals, settings()
 
 
+def outputs() -> dict[str, Path]:
+    """The public documents, plus each local-only one whose template is on this machine."""
+    local = {name: path for name, path in LOCAL_OUTPUTS.items() if (TEMPLATES / name).exists()}
+    return OUTPUTS | local
+
+
 def render() -> dict[str, str]:
     ctx = context(*load())
-    return {name: (TEMPLATES / name).read_text().format_map(ctx) for name in OUTPUTS}
+    return {name: (TEMPLATES / name).read_text().format_map(ctx) for name in outputs()}
 
 
 def main() -> None:
+    paths = outputs()
     for name, text in render().items():
-        OUTPUTS[name].write_text(text)
-        print(f"wrote {OUTPUTS[name].relative_to(ROOT)}")
+        paths[name].write_text(text)
+        print(f"wrote {paths[name].relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

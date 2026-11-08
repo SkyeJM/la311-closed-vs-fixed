@@ -129,6 +129,6 @@ in [`docs/DECISIONS.md`](docs/DECISIONS.md) and every data quirk in
 
 `ingest/` pulls · `dbt/` warehouse · `ai/` code labeling and the agent · `api/` FastAPI ·
 `web/` the site · `evals/` golden set and results · `findings/` the numbers and these docs ·
-`docs/` decisions, data notes, case study, demo script, resume bullets, interview prep.
+`docs/` decisions, data notes, case study, demo script.
 
 Code is MIT-licensed; the City's data is CC0. Built by Skye Jackel-Marken with Claude Code.
