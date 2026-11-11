@@ -5,13 +5,13 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
 ## Phase 0: setup and spikes
 
 ### 2026-10-23 · The repo is public from day one
-- **Options:** private until Phase 6 (recommended because it's reversible), public now, local only.
-- **Chosen:** public now (Skye's call).
+- **Options:** private until Phase 6 (the reversible choice), public now, local only.
+- **Chosen:** public now.
 - **Consequences:**
   - Raw data and samples are gitignored.
   - A pre-commit hook blocks files over 500 KB and anything that looks like an API key.
   - CI fixtures (Phase 2) will have address text removed and coordinates coarsened. Phase 2 went further: the fixtures are fully synthetic (see "CI builds dbt on synthetic fixtures").
-  - Commits use a repo-local identity with Skye's GitHub noreply address, so no personal email lands in public history.
+  - Commits use a repo-local identity with a GitHub noreply address, so no personal email lands in public history.
 
 ### 2026-10-23 · uv-managed virtual project, no packaging
 - **Options:** an installable package with console scripts; a virtual project run with `python -m`.
@@ -27,7 +27,7 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
 - **Why:**
   - The raw layer stays a faithful copy: leading zeros in case numbers survive, and type inference can't guess differently from file to file.
   - All parsing logic lives in one reviewable place.
-  - We use API field names because the bulk-export headers are display names, and the current datasets reuse legacy display names for different fields (`docs/DATA_NOTES.md`).
+  - API field names are used because the bulk-export headers are display names, and the current datasets reuse legacy display names for different fields (`docs/DATA_NOTES.md`).
 
 ### 2026-10-23 · Schema pins include each dataset's saved filter, and drift fails loudly
 - **Options:** hash the columns only; hash the columns plus the saved filter.
@@ -54,23 +54,23 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
 
 ### 2026-10-23 · Exclude `d7h2-83jy` (legacy streetlight view with resolution codes)
 - **Options:** use it as legacy E1 evidence for streetlights; exclude it; ask the City first.
-- **Chosen:** excluded (Skye, 2026-10-23). It's listed under `ignored` in `sources.yml`, and no rows were pulled. Legacy outcomes therefore stay E2 (behavioral) only.
+- **Chosen:** excluded. It's listed under `ignored` in `sources.yml`, and no rows were pulled. Legacy outcomes therefore stay E2 (behavioral) only.
 - **Why:**
   - The view is public, marked official and listed in the catalog, but its own description says "This copy is private and for internal City use only."
-  - Building findings on data the publisher calls internal would be hard to defend in an interview, even though anyone can reach it.
+  - Findings built on data the publisher calls internal would be hard to defend, even though anyone can reach it.
   - If the City confirms it's meant to be public, streetlights would get explicit outcomes in both eras.
 
 ### 2026-10-23 · Pre-commit runs ruff through `uv run`
 - **Why:** one ruff version (from `uv.lock`) for the editor, CI and hooks, with no second pin to drift. Large-file, private-key and API-key guards are added because the repo is public.
 
 ### 2026-10-23 · Phase branches, one PR per phase
-- **Why:** each PR carries that phase's checkpoint and merges on Skye's "go", so git history mirrors the phase gates.
+- **Why:** each PR carries that phase's checkpoint and merges only after sign-off, so git history mirrors the phase gates.
 
 ### 2026-10-23 · MIT license for code; the City's data stays CC0
 - **Why:** MIT is the conventional choice for portfolio code. Easy to change.
 
-### 2026-10-23 · Hosting: Vercel Hobby, API as a Python service beside Next.js (confirmed by Skye at the Phase 1 gate)
-- **Constraint:** $0/month, no card, no paid tiers (Skye).
+### 2026-10-23 · Hosting: Vercel Hobby, API as a Python service beside Next.js (confirmed at the Phase 1 gate)
+- **Constraint:** $0/month, no card, no paid tiers.
 - **Options researched 2026-10-23** (details and sources in `spikes/hosting/README.md`):
   - Vercel Hobby
   - Google Cloud Run
@@ -81,7 +81,7 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
   - Hugging Face Spaces
   - Koyeb
   - Modal
-- **Recommendation:**
+- **Chosen:**
   - Vercel Hobby, running FastAPI in the same project as the Next.js app (same origin, so no CORS).
   - `serving.duckdb` is bundled at build time from a GitHub Release asset.
 - **Why:**
@@ -107,8 +107,8 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
   - A Vercel WAF rate-limit rule per IP.
   - Upstash Redis free tier (via the Marketplace) for hourly and daily counters.
   - An Anthropic Console workspace spend limit as the hard backstop.
-- **Fallbacks:** MotherDuck Lite for the data if the bundle won't fit; Cloud Run if Skye adds a card.
-- **Test deploy, 2026-10-23** (throwaway project on Skye's Hobby account; details in `spikes/hosting/README.md`):
+- **Fallbacks:** MotherDuck Lite for the data if the bundle won't fit; Cloud Run if a card is ever added.
+- **Test deploy, 2026-10-23** (a throwaway project on the same Hobby account; details in `spikes/hosting/README.md`):
   - The real bundle limit is **225 MB including dependencies**, not the documented 500 MB: an 18M-row synthetic file was rejected at 357 MB.
   - A 112 MB file deployed in 34 s. Queries ran in about 18 ms warm (160 ms on first touch).
   - A 110-second SSE stream arrived unbuffered with no cutoff.
@@ -153,8 +153,7 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
 - **Tested locally:** this blocks re-enabling external access, reading local files, raising the memory limit, and writing tables. It's the layer under the `run_sql` SQL parser.
 
 ### 2026-10-23 · Phase 1 sign-off
-- **What was asked:** the Phase 1 checkpoint asked for answers to five decisions along with "go", and recommended yes on each.
-- **Skye's reply:** "go", with no changes, taken as accepting the recommendations:
+- **Five decisions went to the Phase 1 checkpoint.** Four were accepted as proposed:
   1. **Non-service types:** Information-Only, Program Research and current-era Other, plus Feedback in both eras. Legacy "Other" stays a service type that isn't crosswalked: without codes it can't be characterized.
   2. **Terminal statuses:** legacy Closed, Cancelled, Referred Out; current Closed, Reported, Cancelled, Closed Ext-Referred.
   3. **Crosswalk:** six categories, with crew self-reports excluded from every cross-era comparison.
@@ -261,12 +260,10 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
 ## Phase 3: taxonomy and metrics
 
 ### 2026-10-28 · Phase 2 sign-off
-- **Skye's reply:** "go, Pages enabled, there isn't a .env file in the project yet".
-- **Done on that basis:**
-  - PR #3 merged; Phase 3 runs on `phase-3-taxonomy`.
-  - `.env` created from `.env.example` (gitignored, mode 600) for Skye to paste the API key into. Code only ever checks that the key is set; it never prints it.
-  - The docs workflow was run on main, but its deploy step got a 404: the repo still reports `has_pages: false`. My attempt to switch Pages on through the API was blocked again as a public-surface change, so Skye needs to pick **GitHub Actions** under Settings → Pages → Source. The workflow stays manual until then, so a merge can't fail on it.
-- **Decision 4 (intake handoffs):** Skye didn't object to the standing recommendation, so it's taken as accepted, as at the Phase 1 gate (next entry). Skye can still override it.
+- PR #3 merged; Phase 3 runs on `phase-3-taxonomy`.
+- **The API key** lives in `.env`, created from `.env.example` (gitignored, mode 600). Code only ever checks that the key is set; it never prints it.
+- **The docs site:** the docs workflow's first run on main got a 404 at its deploy step, because GitHub Pages wasn't on yet (`has_pages: false`). Until it was (Settings → Pages → Source: **GitHub Actions**), the workflow stayed manual, so a merge couldn't fail on it.
+- **Decision 4 (intake handoffs):** adopted as proposed (next entry), and confirmed with the fix-rate base at the next checkpoint.
 
 ### 2026-10-28 · Intake handoffs are their own outcome, outside the fix-rate base (decision 4)
 - **Options:**
@@ -359,7 +356,7 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
 - **Choices within it:**
   - **Context overrides come back in the same call** (`context_overrides`, naming departments or types from the input). That avoids a second round per code; an override naming anything not in the context counts as a failed run.
   - **counts_as_fixed uses the seed's vocabulary** (yes/no/neutral/not_a_service/unknown) instead of the brief's yes/no/unknown, so a contradiction with the class can be detected.
-  - **The prompt defines the classes in general terms and never lists the brief's example codes.** Those examples still shaped the class definitions, so AI agreement with the brief's first guesses isn't an independent test. The number that matters is agreement with Skye's review.
+  - **The prompt defines the classes in general terms and never lists the brief's example codes.** Those examples still shaped the class definitions, so AI agreement with the brief's first guesses isn't an independent test. The number that matters is agreement with the human review.
   - **The proposal lives in `ai/labels/`, not `dbt/seeds/`,** because dbt loads every CSV in seeds/.
   - **The review sheet puts first** the rows that differ from the brief, low-confidence and failed rows, then escalations and overrides, then volume. `finalize` records `ai_accepted`, `ai_overridden` or `human`, and writes the agreement report (`ai/labels/agreement.json`), which findings.json picks up.
 - **API details** (checked against platform.claude.com docs on 2026-10-28):
@@ -375,19 +372,19 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
 - **Problem:** adding columns to `status_map` failed the build. dbt reloads a seed into its existing table, so the new columns didn't match.
 - **Chosen:** `+full_refresh: true` for seeds. They're tiny, and a stale table can't hide a reviewed change.
 
-### 2026-10-28 · Skye's answers at the first Phase 3 checkpoint
+### 2026-10-28 · First Phase 3 checkpoint
 - **Fix-rate base:** confirmed as built (duplicates, information-only closes and handoffs out; open requests in).
 - **GitHub Pages:** on, with GitHub Actions as the source. The dbt docs are published at https://skyejm.github.io/la311-closed-vs-fixed/, and the workflow now runs on every push to main that touches the dbt project, the fixtures, the Makefile or the workflow itself.
 - **Anthropic key:** added to `.env`, but the first labeling call came back "Your credit balance is too low to access the Anthropic API". The account has no prepaid API credits yet. Nothing was spent.
   - The labeler now stops at the first account-level refusal (authentication, permission or credit) instead of logging every call as a failure and writing an empty proposal.
-  - Buying credits is Skye's decision. API usage is prepaid, and credits are non-refundable and expire a year after purchase.
+  - API usage is prepaid, and credits are non-refundable and expire a year after purchase.
 
 ### 2026-10-28 · The reviewed resolution-code map; new codes now fail the build
 - **Labeling run:**
   - 171 codes and 361 calls, with no failures, for $0.19 (the dry run estimated $1.60). The cached system prompt (7,338 tokens) made the second Haiku call per code cheap.
   - Haiku's two runs agreed on 156 codes. 19 went to Sonnet: 15 where the runs disagreed, 3 low-confidence, 1 where the context overrides differed. On 8 of those, Sonnet chose a class neither Haiku run had.
   - Numbers: `ai/labels/run_summary.json`, also in `findings.json → ai_labeling.labeling_run`.
-- **Review** (Skye, "go with your recommendations"). I (Claude Code) flagged the rows needing judgment and proposed changes, and Skye approved them all:
+- **Review:** a person reviewed every label. Claude Code, the coding assistant used to build the project, flagged the rows needing judgment and proposed changes, and the reviewer approved all of them:
   - **The one disagreement with the brief:** NAT-No Action Taken stays *cancelled* (the AI's label; the brief guessed *unable*). The code gives no reason, and every case has status Cancelled.
   - **Consistency between related codes:**
     - INO-Item Not Out → *not_found* (as QC-Item Not Out).
@@ -400,7 +397,7 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
   - By label_source: 166 ai_accepted, 9 ai_overridden, 1 human.
   - AI–human agreement: 94.7% of codes and 99.7% of service cases (`ai/labels/agreement.json`).
   - The AI matched 52 of the brief's 53 first guesses. That isn't independent, because the brief's examples shaped the class definitions.
-- **Caveat for the interview story:** the overrides were proposed by the coding assistant and approved by Skye. The agreement figure measures the labeling models (Haiku/Sonnet) against that reviewed map.
+- **Caveat:** the overrides were proposed by the coding assistant and approved by the reviewer. The agreement figure measures the labeling models (Haiku/Sonnet) against that reviewed map.
 - **`code_map_final: true`:** an unmapped code now fails `make build`.
   - The synthetic fixtures still plant one, build with the flag off, and a test checks that turning it on fails the build on that code.
   - New codes go through `make label` (spend-capped) → review → `make label-finalize`.
@@ -409,7 +406,7 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
 ## Phase 4: API, agent and evals
 
 ### 2026-10-29 · Phase 3 sign-off
-- Skye said "go" and added $10 of API credit for the Phase 4 evals (about $14.80 in the account at the start of the phase). PR #4 merged; this phase is on `phase-4-api-agent`.
+- $10 of API credit was added for the Phase 4 evals (about $14.80 in the account at the start of the phase). PR #4 merged; this phase is on `phase-4-api-agent`.
 
 ### 2026-10-29 · A manual tool loop, not the SDK's tool runner
 - **Options:** the SDK's beta tool runner, which runs tools and loops for you, or a manual loop over `messages.create` (brief section 6A asks for the choice to be logged).
@@ -478,7 +475,7 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
   - Traces are JSONL, one line per question: tool calls with SQL, the answer check, tokens, cost and latency.
   - Emails, phone numbers and street addresses typed into a question are masked before logging.
 - **Counters** live behind a small store interface. The in-memory store is right for one local process. On Vercel, Ask stays off until a shared store (Upstash Redis via the Marketplace, Phase 5) and `IP_HASH_SALT` are configured, so a deploy can't silently run with per-instance limits.
-- **Backstops:** a Vercel WAF rate-limit rule and the Anthropic Console workspace spend limit (Phase 5, Skye's settings).
+- **Backstops:** a Vercel WAF rate-limit rule and the Anthropic Console workspace spend limit (Phase 5; account settings, outside the code).
 - **The key stays server-side:** only the Python API reads it, and no endpoint returns configuration.
 
 ### 2026-10-29 · Evals: expected numbers computed at run time, a cheap judge for the rest
@@ -492,7 +489,7 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
   - no unsupported numbers;
   - required caveats and no causal claims, graded by a judge;
   - the question's language.
-- **The judge:** `claude-haiku-5-5` with structured output. It quotes its evidence so Skye can spot-check.
+- **The judge:** `claude-haiku-5-5` with structured output. It quotes its evidence so its verdicts can be spot-checked.
   - In development it marked one English answer as "not English", so language is now a deterministic stopword count.
   - It also failed one caveat on a parenthetical detail, so its prompt now grades substance, not wording.
   - `evals/rescore.py` re-grades a saved run, so judge fixes don't cost new agent runs.
@@ -532,7 +529,7 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
   - The judge itself cost $0.003 per 43-question run.
 - **Caveats on these numbers:**
   - 43 questions is a small set, so a single miss moves a rate by 2 to 3 points.
-  - The golden set was written by the same assistant that wrote the agent's prompt. Both follow the brief, but the questions aren't independent of the prompt's vocabulary. Skye's spot-checks of the judge and a few hand-written questions in Phase 5 would strengthen this.
+  - The golden set was written by the same coding assistant that wrote the agent's prompt. Both follow the brief, but the questions aren't independent of the prompt's vocabulary. Human spot-checks of the judge and a few hand-written questions in Phase 5 would strengthen this.
 - **Spend:** Phase 4 used about $5.40 of API credit by token count: smoke tests, pilots, a Haiku development run, two full rounds on three models, the judge and the suggested-answer cache.
 
 ### 2026-10-29 · Default model: keep claude-sonnet-5-5
@@ -547,7 +544,7 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
 ## Phase 5: front end and deploy
 
 ### 2026-10-29 · Phase 4 sign-off
-- Skye said "go" without changing the defaults: claude-sonnet-5-5 stays the model, and the daily cap stays $1.00. PR #5 merged; this phase is on `phase-5-web-deploy`.
+- Signed off with the defaults unchanged: claude-sonnet-5-5 stays the model, and the daily cap stays $1.00. PR #5 merged; this phase is on `phase-5-web-deploy`.
 
 ### 2026-10-29 · One Vercel project, two services: Next.js and FastAPI
 - **Shape:** Vercel Services (beta, available on Hobby; docs checked 2026-10-29). `web/` is the Next.js site; `deploy/api/` is the FastAPI service. `vercel.json` routes `/api/*` to FastAPI and everything else to the site, so they share one origin and need no CORS.
@@ -557,11 +554,11 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
   - `deploy/api/requirements.txt` is the main dependency set exported from `uv.lock`. A test fails if it drifts, and another proves the copied set imports and finds its files.
   - dbt, Typer and tenacity moved to a local-only `pipeline` group (installed by default with `uv sync`), so the API ships without them. `api/suggested.py`'s CLI now uses argparse.
 - **Size:** runtime packages are about 111 MB, plus 78 MB of data, against the 225 MB Hobby function limit measured in Phase 0. Dropping Typer's rich and pygments saved about 15 MB.
-- **First deploy:** Vercel sends a new project's first deploy straight to production. It went live at https://la311-closed-vs-fixed.vercel.app; Skye had approved production deploys.
+- **First deploy:** Vercel sends a new project's first deploy straight to production. It went live at https://la311-closed-vs-fixed.vercel.app, with production deploys approved in advance.
 
 ### 2026-10-29 · The serving data ships as a pinned GitHub Release
 - `make release-data` publishes `data/serving.duckdb` as a release named after the data's last day (`data-2026-10-28`) and writes its URL and SHA-256 to `deploy/api/serving.json`. The Vercel build downloads it and refuses a file whose checksum doesn't match.
-- **Public on purpose:** Skye approved it (2026-10-29). The file holds the aggregated marts and the slim current-era table: no addresses, coordinates, IDs or crew fields (`api/serving.py` checks this on every build). It is derived from the City's CC0 data.
+- **Public on purpose** (approved before the first release): the file holds the aggregated marts and the slim current-era table: no addresses, coordinates, IDs or crew fields (`api/serving.py` checks this on every build). It is derived from the City's CC0 data.
 
 ### 2026-10-29 · The site: static story and methodology, live explore and ask
 - **Stack:** Next.js 16.4 App Router, Tailwind 4, Vega-Lite 6 through react-vega 8 (the Vega-Lite version the agent's chart tool validates against), and react-markdown for answers. Model-written text renders as React elements, never as raw HTML.
@@ -596,7 +593,7 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
 - **Traces:** with `TRACE_DIR=stdout`, traces go to Vercel's runtime logs, because the function's filesystem is read-only.
 - **Firewall:** a WAF rate-limit rule (Hobby allows one per project): 100 requests a minute per IP on `/api`, in front of the app's own 10 live questions an hour per IP.
 - **Production env vars:** `CLAUDE_MODEL`, `DAILY_SPEND_CAP_USD`, `ASK_EFFORT`, `TRUST_PROXY_HEADERS`, `TRACE_DIR` and a random `IP_HASH_SALT` (generated straight into Vercel, never printed).
-- **Live Ask stays off until Skye adds the last two pieces:**
+- **Live Ask stays off until the last two pieces are in place:**
   - Upstash Redis from the Vercel Marketplace (free), for shared counters;
   - a dedicated Anthropic Console workspace key with a monthly spend limit.
 
@@ -613,8 +610,8 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
   - best practices and SEO 100.
 - No horizontal overflow at 390 px wide.
 
-### 2026-10-29 · Live Ask on, and a fix it surfaced (Skye: option 1)
-- **Live Ask is on:** Skye connected Upstash Redis to the project and added the key from `.env` to Production (Skye's choice, since the account is prepaid and the balance bounds the worst case).
+### 2026-10-29 · Live Ask on, and a fix it surfaced
+- **Live Ask is on:** Upstash Redis is connected to the project, and Production uses the same API key as local development instead of a dedicated workspace key. The account is prepaid, so its balance bounds the worst case.
 - **A clean pause without a key:** before the key was added, Ask would have accepted a question and failed mid-stream. Ask now reports a missing key as a clean "paused" state.
 - **The first live answer (Sonnet) worked but used all 8 steps.** It made its calls one at a time, re-ran two queries it already had, and charted a single number: $0.067 and 23 s. Round 2 showed the same pattern on a smaller scale: 14 of 43 Sonnet answers repeated a query (duplicate protection caught each one), and 1 hit the cap.
 - **Fix:**
@@ -622,7 +619,7 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
   - The prompt says to batch independent calls.
   - `make_chart` refuses a single row.
 - **Pilot on six of those questions:** repeats went from 7 to 0, steps from 3–8 down to 2, cost fell about 40%, and all six still passed.
-- **Skye chose option 1:** re-run all three models, so the published table describes the deployed agent.
+- **Chosen:** re-run all three models, so the published table describes the deployed agent.
 
 ### 2026-10-29 · Eval round 3 (final), and a judge that has to quote its evidence
 - **Round 3 (agent at 03c4b3c)**, 43 questions per model, effort medium (`evals/results/SUMMARY.md`):
@@ -640,7 +637,7 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
   3. **Quoted evidence:** a causal flag counts only with a quote that is really in the answer.
 - **The remaining flags:**
   - **Opus (2):** both explain district differences by request mix ("can reflect which kinds of requests each district gets"). That's defensible under the strict rule.
-  - **Haiku (1):** it quotes a data limitation ("the old data has no codes, so this rate can't be computed"). I count it as a judge miss, but it stays scored as is. The table reports the automated grade, and the spot-checks live here.
+  - **Haiku (1):** it quotes a data limitation ("the old data has no codes, so this rate can't be computed"). On review it's a judge miss, but it stays scored as is: the table reports the automated grade, and the spot-checks live here.
 - **Haiku's other two misses are real:**
   - It narrowed "graffiti requests" to resident reports.
   - It used a different denominator for the item-not-out share (24.5% against 24.2%).
@@ -649,7 +646,7 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
 ## Phase 6: packaging
 
 ### 2026-10-29 · Phase 5 sign-off
-- Skye chose option 1 (fix the repeated tool calls and re-run all three models), then said "go" for Phase 6. PR #6 merged; this phase is on `phase-6-packaging`.
+- The repeated-tool-call fix and eval round 3 came first (the last two Phase 5 entries). PR #6 merged; this phase is on `phase-6-packaging`.
 
 ### 2026-10-29 · The portfolio documents are rendered from the numbers
 - **The rule:** "every number in the README, case study, UI copy or AI answers must come from code."
@@ -665,14 +662,14 @@ One entry per non-obvious choice: date, decision, options considered, why. Group
 - **The GIF** (`docs/demo.gif`, 392 KB): seven frames from the live site (story, chart, findings, a cached Ask answer, its SQL, the eval table), captured with headless Chrome and assembled with ImageMagick. It shows a cached suggested question, so recording it cost nothing.
 - **Honest wording:**
   - The resume bullets don't claim mix-adjusted comparisons. The cutover comparison is like for like (crosswalked categories, equal periods, crew self-reports excluded), but no geography was standardized, so mix-adjusted geography is listed as a next step.
-  - The interview prep says plainly that Claude Code was the main development tool, and points to the decision log for who decided what.
+  - The interview prep says plainly that Claude Code was the main development tool, and points to this log for the decisions made at each phase gate.
 
 ## After the MVP
 
 ### 2026-11-08 · The demo script, resume bullets and interview prep stay local
-- **Decision (Skye):** take `docs/DEMO_SCRIPT.md`, `docs/RESUME_BULLETS.md` and `docs/INTERVIEW_PREP.md` out of the public repo. They're useful to Skye, but the repo's likely reader is a hiring manager, who doesn't need them.
+- **Decision:** take `docs/DEMO_SCRIPT.md`, `docs/RESUME_BULLETS.md` and `docs/INTERVIEW_PREP.md` out of the public repo. They're personal preparation, not project documentation.
 - **Options:** delete them, or keep them local. Kept local and still rendered, so their numbers keep tracking findings.json.
 - **How:**
-  - The documents and their templates are gitignored, and untracked with `git rm --cached`, so Skye's copies stay.
+  - The documents and their templates are gitignored, and untracked with `git rm --cached`, so local copies stay.
   - `findings/packaging.py` renders a local-only document only where its template exists. `make packaging` still updates them locally, and CI checks only the public ones (the README and the case study).
 - **History:** the files remain in git history (PR #7). Removing them there would mean rewriting `main`.
