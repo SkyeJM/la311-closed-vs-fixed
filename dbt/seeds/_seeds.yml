@@ -2,7 +2,7 @@ seeds:
   - name: non_service_types
     description: >
       Request types that are contacts rather than service requests (Phase 1 proposal, signed off
-      by Skye 2026-10-23; evidence in docs/PROFILE.md section 11a). They are left out of every
+      2026-10-23; evidence in docs/PROFILE.md section 11a). They are left out of every
       service metric and counted in mart_contacts_info_only instead. Legacy "Other" is not listed:
       without codes it can't be characterized, so it stays a service type that isn't crosswalked.
     config:
@@ -115,7 +115,7 @@ seeds:
 
   - name: resolution_code_map
     description: >
-      Resolution code -> closure_outcome, labeled by Claude and reviewed by Skye in Phase 3
+      Resolution code -> closure_outcome, labeled by Claude and reviewed by a person in Phase 3
       (ai/label_codes.py; agreement in ai/labels/agreement.json). label_source says whether the
       reviewer kept the AI's label (ai_accepted), changed it (ai_overridden) or wrote it without one
       (human). Optional department and request_type columns override the code-level row for one

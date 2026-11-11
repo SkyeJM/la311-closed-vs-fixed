@@ -1,8 +1,8 @@
 # Hosting spike (Phase 0)
 
 **Question:** what is the cheapest reliable way to serve a small FastAPI app that reads a
-read-only DuckDB file and streams `/ask` answers over SSE? The constraint is $0/month with no card
-(Skye, 2026-10-23). The decision and its reasoning are in `docs/DECISIONS.md`.
+read-only DuckDB file and streams `/ask` answers over SSE? The constraint is $0/month with no card.
+The decision and its reasoning are in `docs/DECISIONS.md`.
 
 ## 1. Size and speed of the serving file (measured locally)
 
